@@ -109,3 +109,6 @@ config.ini
 .env.test.local
 .env.production.local
 
+# Uploads
+public/uploads/
+

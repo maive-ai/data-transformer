@@ -112,3 +112,11 @@ config.ini
 # Uploads
 public/uploads/
 
+# Next.js (JavaScript/TypeScript)
+node_modules/
+dist/
+build/
+.next/
+
+.node_modules/
+

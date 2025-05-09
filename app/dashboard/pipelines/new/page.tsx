@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { ArrowRight, FileUp, Upload } from "lucide-react";
+import { ArrowRight, FileUp, Loader2, Upload } from "lucide-react";
 import { FEATURE_FLAGS } from "@/app/config/feature-flags";
 
 export default function NewPipelinePage() {
@@ -84,6 +84,7 @@ export default function NewPipelinePage() {
           const geminiResponse = responses[FEATURE_FLAGS.ENABLE_PULSE_API ? 1 : 0];
           if (geminiResponse.status === "fulfilled" && geminiResponse.value.ok) {
             const geminiData = await geminiResponse.value.json();
+            console.log('Gemini Analysis Response:', geminiData);
             if (geminiData.markdown) {
               combinedDescription += "### Gemini Analysis\n" + geminiData.markdown;
             }
@@ -158,6 +159,7 @@ export default function NewPipelinePage() {
       }
 
       const data = await response.json();
+      console.log('Gemini Transform Response:', data);
 
       // Create and trigger CSV download
       const blob = new Blob([data.csvContent], { type: 'text/csv' });
@@ -425,11 +427,16 @@ export default function NewPipelinePage() {
               disabled={isSubmitting || isTransformed}
               data-oid="iuqcww5"
             >
-              {isSubmitting
-                ? "Running..."
-                : isTransformed
-                  ? "Transformation Complete"
-                  : "Run Pipeline"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Running...
+                </>
+              ) : isTransformed ? (
+                "Transformation Complete"
+              ) : (
+                "Run Pipeline"
+              )}
             </Button>
           </CardFooter>
         </form>

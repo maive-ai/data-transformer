@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { ArrowRight, FileUp, Upload } from "lucide-react";
+import { FEATURE_FLAGS } from "@/app/config/feature-flags";
 
 export default function NewPipelinePage() {
   const router = useRouter();
@@ -36,36 +37,67 @@ export default function NewPipelinePage() {
       setInputFile(file);
 
       try {
-        // Send file directly to Pulse AI
         const formData = new FormData();
         formData.append("file", file);
 
-        const pulseResponse = await fetch("/api/pulse", {
-          method: "POST",
-          body: formData,
-        });
+        const apiCalls = [];
 
-        if (!pulseResponse.ok) {
-          const errorData = await pulseResponse.json();
-          if (pulseResponse.status === 503) {
-            // Pulse API is disabled, just set the file without analysis
-            return;
-          }
-          throw new Error(
-            errorData.error || "Failed to process file with Pulse AI",
+        if (FEATURE_FLAGS.ENABLE_PULSE_API) {
+          apiCalls.push(
+            fetch("/api/pulse", {
+              method: "POST",
+              body: formData,
+            })
           );
         }
 
-        const data = await pulseResponse.json();
+        if (FEATURE_FLAGS.ENABLE_GEMINI_API) {
+          const geminiFormData = new FormData();
+          geminiFormData.append("file", file);
+          geminiFormData.append("inputFileName", file.name);
+          geminiFormData.append("outputFileName", outputFile?.name || "output file");
+          
+          apiCalls.push(
+            fetch("/api/gemini", {
+              method: "POST",
+              body: geminiFormData,
+            })
+          );
+        }
 
-        // Update the description with Pulse AI's analysis
-        if (data.markdown) {
-          setDescription(data.markdown);
+        const responses = await Promise.allSettled(apiCalls);
+        let combinedDescription = "";
+
+        // Process Pulse AI response
+        if (FEATURE_FLAGS.ENABLE_PULSE_API) {
+          const pulseResponse = responses[0];
+          if (pulseResponse.status === "fulfilled" && pulseResponse.value.ok) {
+            const pulseData = await pulseResponse.value.json();
+            if (pulseData.markdown) {
+              combinedDescription += "### Pulse AI Analysis\n" + pulseData.markdown + "\n\n";
+            }
+          }
+        }
+
+        // Process Gemini response
+        if (FEATURE_FLAGS.ENABLE_GEMINI_API) {
+          const geminiResponse = responses[FEATURE_FLAGS.ENABLE_PULSE_API ? 1 : 0];
+          if (geminiResponse.status === "fulfilled" && geminiResponse.value.ok) {
+            const geminiData = await geminiResponse.value.json();
+            if (geminiData.markdown) {
+              combinedDescription += "### Gemini Analysis\n" + geminiData.markdown;
+            }
+          }
+        }
+
+        // Update the description with combined analysis
+        if (combinedDescription) {
+          setDescription(combinedDescription);
         }
 
         toast({
           title: "Success",
-          description: "File processed with Pulse AI",
+          description: "File processed with AI analysis",
         });
       } catch (error) {
         toast({
@@ -109,18 +141,42 @@ export default function NewPipelinePage() {
     setIsTransformed(false);
 
     try {
-      // Simulate transformation process for 5 seconds
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      // Call Gemini API for transformation
+      const formData = new FormData();
+      formData.append("file", inputFile);
+      formData.append("outputFile", outputFile);
+      formData.append("inputFileName", inputFile.name);
+      formData.append("outputFileName", outputFile.name);
 
-      // In a real app, this would be an API call to create the pipeline
-      const newPipelineId = `pipeline-${Date.now()}`;
+      const response = await fetch("/api/gemini", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to process transformation");
+      }
+
+      const data = await response.json();
+
+      // Create and trigger CSV download
+      const blob = new Blob([data.csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = outputFile.name.replace(/\.[^/.]+$/, '') + '.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
       // Store in local storage for demo purposes
+      const newPipelineId = `pipeline-${Date.now()}`;
       const pipelines = JSON.parse(localStorage.getItem("pipelines") || "[]");
       pipelines.push({
         id: newPipelineId,
         name,
-        description,
+        description: data.markdown || description,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         steps: [],
@@ -136,18 +192,13 @@ export default function NewPipelinePage() {
         description: "Transformation completed successfully",
       });
 
-      // Trigger file download from public directory
-      const link = document.createElement("a");
-      link.href = "/transformed/Completed Tray Inspection Time Tracking.xlsx";
-      link.download = "Completed Tray Inspection Time Tracking.xlsx";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Navigate to dashboard after successful transformation
+      router.push("/dashboard");
     } catch (error) {
       toast({
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Failed to process file",
+          error instanceof Error ? error.message : "Failed to process transformation",
         variant: "destructive",
       });
     } finally {

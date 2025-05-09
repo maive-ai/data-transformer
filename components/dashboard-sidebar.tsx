@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Shuffle, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shuffle, PlusCircle, ChevronLeft, ChevronRight, Settings as SettingsIcon } from "lucide-react";
 import { useState } from "react";
 
 interface SidebarLink {
@@ -19,6 +19,14 @@ const mainLinks: SidebarLink[] = [
     title: "Pipelines",
     href: "/dashboard/pipelines",
     icon: <Shuffle className="h-5 w-5" data-oid="7apae41" />,
+  },
+];
+
+const secondaryLinks: SidebarLink[] = [
+  {
+    title: "Settings",
+    href: "#",
+    icon: <SettingsIcon className="h-5 w-5" data-oid="settings-gear" />,
   },
 ];
 
@@ -80,6 +88,22 @@ export function DashboardSidebar() {
                   {!collapsed && link.title}
                 </Link>
               ))}
+              {secondaryLinks.map((link) => (
+                <button
+                  key={link.title}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium w-full text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    collapsed && 'justify-center px-2'
+                  )}
+                  style={{ outline: 'none', border: 'none', background: 'none' }}
+                  tabIndex={0}
+                  type="button"
+                  data-oid="settings-menu"
+                >
+                  {link.icon}
+                  {!collapsed && link.title}
+                </button>
+              ))}
             </nav>
           </div>
         </div>
@@ -87,7 +111,7 @@ export function DashboardSidebar() {
       <button
         aria-label="Toggle sidebar"
         onClick={() => setCollapsed((c) => !c)}
-        className="absolute bottom-4 right-0 translate-x-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md border flex items-center justify-center transition-colors hover:bg-gray-100"
+        className="absolute bottom-16 right-0 translate-x-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md border flex items-center justify-center transition-colors hover:bg-gray-100"
         style={{
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
           border: '1px solid #e5e7eb',

@@ -37,7 +37,7 @@ export function DashboardSidebar() {
             data-oid="sidebar-logo-header"
           >
             <img
-              src="/maive_main_logo.png"
+              src="/maive_light_logo_dark_background.png"
               alt="Maive Logo"
               className="w-40 mb-6"
               data-oid="nra7ryn"

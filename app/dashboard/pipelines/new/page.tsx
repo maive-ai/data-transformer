@@ -22,7 +22,6 @@ import { FEATURE_FLAGS } from "@/app/config/feature-flags";
 
 export default function NewPipelinePage() {
   const router = useRouter();
-  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [inputFile, setInputFile] = useState<File | null>(null);
   const [outputFile, setOutputFile] = useState<File | null>(null);
@@ -120,15 +119,6 @@ export default function NewPipelinePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) {
-      toast({
-        title: "Error",
-        description: "Pipeline name is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!inputFile || !outputFile) {
       toast({
         title: "Error",
@@ -177,7 +167,7 @@ export default function NewPipelinePage() {
       const pipelines = JSON.parse(localStorage.getItem("pipelines") || "[]");
       pipelines.push({
         id: newPipelineId,
-        name,
+        name: "Tray Tracking",
         description: data.markdown || description,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -209,33 +199,16 @@ export default function NewPipelinePage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto" data-oid="mdch6wb">
-      <h1 className="text-2xl font-bold mb-6" data-oid="6flnz.m">
-        Create New Pipeline
-      </h1>
+    <div className="max-w-5xl mx-auto mt-16" data-oid="mdch6wb">
       <Card data-oid="yxobg91">
         <form onSubmit={handleSubmit} data-oid="er7ge3t">
           <CardHeader data-oid="p0dm8nc">
-            <CardTitle data-oid="ieh130b">Pipeline Details</CardTitle>
+            <CardTitle data-oid="ieh130b">Create New Pipeline</CardTitle>
             <CardDescription data-oid="-wjzca3">
               Provide basic information about your data pipeline.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6" data-oid="ytdk823">
-            <div className="space-y-2" data-oid="bvzczmd">
-              <Label htmlFor="name" data-oid="wa7eg4i">
-                Pipeline Name
-              </Label>
-              <Input
-                id="name"
-                placeholder="Enter pipeline name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                data-oid="2dyhv:t"
-              />
-            </div>
-
             <div
               className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"
               data-oid="0oh1.yy"
@@ -246,9 +219,6 @@ export default function NewPipelinePage() {
                   <CardTitle className="text-lg" data-oid="apj22rq">
                     Input File
                   </CardTitle>
-                  <CardDescription data-oid="zq7a5l_">
-                    Upload a sample input file
-                  </CardDescription>
                 </CardHeader>
                 <CardContent data-oid="99n_l6:">
                   <div
@@ -349,9 +319,6 @@ export default function NewPipelinePage() {
                   <CardTitle className="text-lg" data-oid="dec541q">
                     Output File
                   </CardTitle>
-                  <CardDescription data-oid="v4nsxkc">
-                    Upload your source data in any format
-                  </CardDescription>
                 </CardHeader>
                 <CardContent data-oid="1a07_00">
                   <div

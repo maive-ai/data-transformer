@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { FileText, PlusCircle } from "lucide-react";
+import { Shuffle, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 interface SidebarLink {
   title: string;
@@ -17,37 +18,44 @@ const mainLinks: SidebarLink[] = [
   {
     title: "Pipelines",
     href: "/dashboard/pipelines",
-    icon: <FileText className="h-5 w-5" data-oid="7apae41" />,
+    icon: <Shuffle className="h-5 w-5" data-oid="7apae41" />,
   },
 ];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <aside
-      className="hidden border-r md:block w-fit"
-      style={{ backgroundColor: "#0E1317" }}
+      className={`hidden border-r md:block relative ${collapsed ? 'w-20' : 'w-fit'}`}
+      style={{ backgroundColor: "#FFF9EF", transition: 'width 0.2s' }}
       data-oid="5hcjuqs"
     >
+      <div className="flex flex-col items-center pt-8 pb-2">
+        {collapsed ? (
+          <img
+            src="/maive_light_avatar.png"
+            alt="Maive Logo"
+            className="w-8 mb-4"
+            data-oid="nra7ryn"
+          />
+        ) : (
+          <img
+            src="/maive_main_logo.png"
+            alt="Maive Logo"
+            className="w-32 mb-10"
+            data-oid="nra7ryn"
+          />
+        )}
+      </div>
       <ScrollArea className="h-[calc(100vh-4rem)] py-6" data-oid="0l.n27i">
         <div className="px-4" data-oid="qp1kobx">
-          <div
-            className="flex flex-col items-center mb-8"
-            data-oid="sidebar-logo-header"
-          >
-            <img
-              src="/maive_light_logo_dark_background.png"
-              alt="Maive Logo"
-              className="w-40 mb-6"
-              data-oid="nra7ryn"
-            />
-          </div>
           <div className="mb-6" data-oid="c9yvzi9">
             <Link href="/dashboard/pipelines/new" data-oid="v.-1gu:">
               <Button className="w-full justify-start gap-2" data-oid="ux58-jr">
                 <PlusCircle className="h-4 w-4" data-oid="8uibz_a" />
-                New Pipeline
+                {!collapsed && 'New Pipeline'}
               </Button>
             </Link>
           </div>
@@ -64,17 +72,29 @@ export function DashboardSidebar() {
                         pathname.startsWith(link.href))
                       ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    collapsed && 'justify-center px-2'
                   )}
                   data-oid="wfdp29x"
                 >
                   {link.icon}
-                  {link.title}
+                  {!collapsed && link.title}
                 </Link>
               ))}
             </nav>
           </div>
         </div>
       </ScrollArea>
+      <button
+        aria-label="Toggle sidebar"
+        onClick={() => setCollapsed((c) => !c)}
+        className="absolute bottom-4 right-0 translate-x-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md border flex items-center justify-center transition-colors hover:bg-gray-100"
+        style={{
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          border: '1px solid #e5e7eb',
+        }}
+      >
+        {collapsed ? <ChevronRight /> : <ChevronLeft />}
+      </button>
     </aside>
   );
 }

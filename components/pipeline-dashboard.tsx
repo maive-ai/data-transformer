@@ -279,7 +279,7 @@ export function PipelineDashboard() {
                 <Link href="/dashboard/pipelines/new" data-oid="bni-v51">
                   <Button data-oid="qr6-86z">
                     <PlusCircle className="mr-2 h-4 w-4" data-oid="26_9mrb" />
-                    Run Transformation
+                    Create Pipeline
                   </Button>
                 </Link>
               </CardContent>

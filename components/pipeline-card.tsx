@@ -94,10 +94,6 @@ export function PipelineCard({ pipeline, onDelete }: PipelineCardProps) {
             <Calendar className="h-3.5 w-3.5" data-oid="ie1s--6" />
             <span data-oid="jnfoenj">Created: {formattedDate}</span>
           </div>
-          <div className="flex items-center gap-1" data-oid="vm3c7zt">
-            <Clock className="h-3.5 w-3.5" data-oid="l.9rs-3" />
-            <span data-oid="k9xbdmp">Last run: {lastRunFormatted}</span>
-          </div>
         </div>
       </CardContent>
       <CardFooter className="pt-2" data-oid="g59umtf">

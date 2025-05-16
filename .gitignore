@@ -59,7 +59,6 @@ ipython_config.py
 *.db
 *.sqlite
 *.sqlite3
-*.json
 *.parquet
 *.h5
 *.hdf5

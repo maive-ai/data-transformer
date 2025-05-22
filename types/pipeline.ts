@@ -1,3 +1,5 @@
+import { Node, Edge } from "reactflow";
+
 export interface PipelineStep {
   id: string
   type: string
@@ -16,7 +18,7 @@ export interface PipelineRun {
   id: string
   pipelineId: string
   timestamp: string
-  status: "success" | "failed" | "running"
+  status: "success" | "error" | "running"
   inputFile?: string
   outputFile?: string
   error?: string
@@ -25,10 +27,14 @@ export interface PipelineRun {
 export interface Pipeline {
   id: string
   name: string
-  description?: string
+  description: string
   createdAt: string
   updatedAt: string
   steps: PipelineStep[]
-  runs?: PipelineRun[]
+  runs: PipelineRun[]
+  workflow?: {
+    nodes: Node[]
+    edges: Edge[]
+  }
   naturalLanguageDescription?: string
 }

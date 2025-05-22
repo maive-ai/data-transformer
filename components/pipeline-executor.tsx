@@ -19,7 +19,7 @@ import type { Pipeline, PipelineRun } from "@/types/pipeline";
 import { Calendar, Clock, Download, Play, Upload } from "lucide-react";
 
 interface PipelineExecutorProps {
-  pipeline: Pipeline;
+  pipeline: Pipeline | null;
 }
 
 export function PipelineExecutor({ pipeline }: PipelineExecutorProps) {
@@ -35,20 +35,18 @@ export function PipelineExecutor({ pipeline }: PipelineExecutorProps) {
   };
 
   const executePipeline = async () => {
-    if (!selectedFile) {
-      toast({
-        title: "Error",
-        description: "Please select a file to process",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!pipeline || !selectedFile) return;
 
     setIsExecuting(true);
     setOutputFile(null);
 
     try {
-      // Simulate pipeline execution
+      // In a real app, this would be an API call
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("pipelineId", pipeline.id);
+
+      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // In a real app, this would process the file and return a result
@@ -88,7 +86,7 @@ export function PipelineExecutor({ pipeline }: PipelineExecutorProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to execute pipeline",
+        description: error instanceof Error ? error.message : "Failed to execute pipeline",
         variant: "destructive",
       });
     } finally {
@@ -104,13 +102,34 @@ export function PipelineExecutor({ pipeline }: PipelineExecutorProps) {
     });
   };
 
+  if (!pipeline) {
+    return (
+      <Card className="h-full flex flex-col" data-oid="sj2d5fe">
+        <CardHeader className="pb-3" data-oid="5g7o1h9">
+          <div className="flex items-center justify-between" data-oid="fvq-h43">
+            <div data-oid="y98t75c">
+              <CardTitle data-oid="0ozubkq">Pipeline Executor</CardTitle>
+              <CardDescription data-oid="_s6xp27">
+                Create a pipeline first to execute it
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="h-full flex flex-col" data-oid="xgq0c69">
-      <CardHeader data-oid="rovhbzy">
-        <CardTitle data-oid="4czp8-e">Pipeline Execution</CardTitle>
-        <CardDescription data-oid="r8z6cmb">
-          Run your pipeline manually or schedule it
-        </CardDescription>
+    <Card className="h-full flex flex-col" data-oid="sj2d5fe">
+      <CardHeader className="pb-3" data-oid="5g7o1h9">
+        <div className="flex items-center justify-between" data-oid="fvq-h43">
+          <div data-oid="y98t75c">
+            <CardTitle data-oid="0ozubkq">Pipeline Executor</CardTitle>
+            <CardDescription data-oid="_s6xp27">
+              Execute your data transformation pipeline
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="flex-1" data-oid="qvc0ups">
         <Tabs

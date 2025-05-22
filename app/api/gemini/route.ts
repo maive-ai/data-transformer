@@ -2,97 +2,105 @@ import { NextResponse } from "next/server";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
+// Map file extensions to MIME types
+const MIME_TYPES: { [key: string]: string } = {
+  'pdf': 'application/pdf',
+  'doc': 'application/msword',
+  'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'csv': 'text/csv',
+  'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'json': 'application/json',
+  'xml': 'application/xml',
+  'txt': 'text/plain'
+};
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const inputFile = formData.get("file") as File;
-    const outputFile = formData.get("outputFile") as File;
+    const inputFile = formData.get('inputFile') as File;
+    const prompt = formData.get('prompt') as string;
+    const outputTemplate = formData.get('outputTemplate') as File | null;
+    const useOutputTemplate = formData.get('useOutputTemplate') === 'true';
 
-    if (!inputFile || !outputFile) {
-      return NextResponse.json(
-        { error: "Both input and output files are required" },
-        { status: 400 }
-      );
+    if (!inputFile) {
+      return NextResponse.json({ error: 'No input file provided' }, { status: 400 });
     }
 
-    // 1. Upload both files to Gemini
-    const inputUpload = await uploadFileToGeminiResumable(inputFile, GEMINI_API_KEY);
-    const outputUpload = await uploadFileToGeminiResumable(outputFile, GEMINI_API_KEY);
+    // Get file extension and MIME type
+    const fileExt = inputFile.name.split('.').pop()?.toLowerCase() || '';
+    const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
 
-    // 2. Compose the prompt and reference the files
-    const prompt = "Please extract the data from the input file (tray_tracking.pdf) and generate a file that completes the uploaded output template csv file. Please format any dates for use in a csv file and times to be human readable. Please only return the CSV data, nothing else.";
+    // Upload input file to Gemini
+    const inputFileUrl = await uploadFileToGeminiResumable(inputFile, mimeType);
 
+    // Upload output template if provided
+    let outputTemplateUrl = null;
+    if (useOutputTemplate && outputTemplate) {
+      const outputTemplateExt = outputTemplate.name.split('.').pop()?.toLowerCase() || '';
+      const outputTemplateMimeType = MIME_TYPES[outputTemplateExt] || 'application/octet-stream';
+      outputTemplateUrl = await uploadFileToGeminiResumable(outputTemplate, outputTemplateMimeType);
+    }
 
-    // 4. Call Gemini generateContent
-    console.log('Sending Gemini prompt...');
+    // Compose the prompt with file references
+    let fullPrompt = prompt || "Please process this file and extract the data.";
+    if (useOutputTemplate && outputTemplateUrl) {
+      fullPrompt += `\n\nPlease use this file as a template and add the transformed data to it: ${outputTemplateUrl}`;
+    }
+
+    // Send request to Gemini API
     const startTime = Date.now();
-    const genRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                { file_data: { mime_type: inputUpload.mimeType, file_uri: inputUpload.uri } },
-                { file_data: { mime_type: outputUpload.mimeType, file_uri: outputUpload.uri } }
-              ]
-            }
-          ],
-          generationConfig: {
-            thinkingConfig: {
-              thinkingBudget: 128
-            },
-            maxOutputTokens: 4096,
-            temperature: 0.1
-          }
-        }),
-      }
-    );
-    const endTime = Date.now();
-    console.log(`Gemini API request took ${endTime - startTime}ms`);
-    
-    const genData = await genRes.json();
-    console.log('Gemini Analysis Response:', genData);
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: fullPrompt },
+            { file_data: { file_uri: inputFileUrl, mime_type: mimeType } }
+          ]
+        }]
+      })
+    });
 
-    // 5. Extract CSV from response
-    let csvContent = "";
-    if (genData.candidates?.[0]?.content?.parts) {
-      for (const part of genData.candidates[0].content.parts) {
-        if (part.text && part.text.includes(",")) {
-          csvContent = part.text;
-          break;
-        }
-      }
+    const responseTime = Date.now() - startTime;
+    console.log(`Gemini API response time: ${responseTime}ms`);
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Gemini API error:', error);
+      return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
     }
 
+    const data = await response.json();
+    const outputContent = data.candidates[0].content.parts[0].text;
+
+    // Return the transformed data
     return NextResponse.json({
-      csvContent,
-      markdown: "CSV file has been generated successfully."
+      success: true,
+      data: outputContent
     });
+
   } catch (error) {
-    console.error("Gemini API error:", error);
-    return NextResponse.json(
-      { error: "Failed to process file with Gemini" },
-      { status: 500 }
-    );
+    console.error('Error processing file:', error);
+    return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
   }
 }
 
-// Place the uploadFileToGemini helper here as well
-async function uploadFileToGeminiResumable(file: File, apiKey: string) {
+// Helper function to upload files to Gemini
+async function uploadFileToGeminiResumable(file: File, mimeType: string): Promise<string> {
   // 1. Start resumable upload (send metadata)
   const metadataRes = await fetch(
-    `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${GEMINI_API_KEY}`,
     {
       method: "POST",
       headers: {
         "X-Goog-Upload-Protocol": "resumable",
         "X-Goog-Upload-Command": "start",
         "X-Goog-Upload-Header-Content-Length": String(file.size),
-        "X-Goog-Upload-Header-Content-Type": file.type || "application/octet-stream",
+        "X-Goog-Upload-Header-Content-Type": mimeType,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ file: { display_name: file.name } }),
@@ -118,5 +126,5 @@ async function uploadFileToGeminiResumable(file: File, apiKey: string) {
   }
   const data = await bytesRes.json();
   console.log('Gemini Transform Response:', data);
-  return { uri: data.file.uri, mimeType: data.file.mimeType };
+  return data.file.uri;
 } 

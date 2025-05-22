@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database } from "lucide-react";
+import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp } from "lucide-react";
 import { Node } from "reactflow";
 
 interface WorkflowToolbarProps {
@@ -74,6 +74,24 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
             </Button>
           </TooltipTrigger>
           <TooltipContent>Event Trigger</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                handleAddNode("trigger", {
+                  label: "File Upload",
+                  type: "manual",
+                  icon: <FileUp className="w-6 h-6" />,
+                })
+              }
+            >
+              <FileUp className="w-6 h-6" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>File Upload</TooltipContent>
         </Tooltip>
         <span className="w-px h-6 bg-gray-200 mx-2" />
         <Tooltip>

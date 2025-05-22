@@ -1,5 +1,16 @@
 import { Node, Edge } from "reactflow";
 
+export interface NodeIOType {
+  type: string;  // e.g., "csv", "json", "excel"
+  schema?: Record<string, any>;  // Optional schema for validation
+  description?: string;
+}
+
+export interface NodeIOConfig {
+  inputTypes: NodeIOType[];
+  outputType: NodeIOType;
+}
+
 export interface PipelineStep {
   id: string
   type: string
@@ -7,6 +18,7 @@ export interface PipelineStep {
   source: string
   description?: string
   config: Record<string, any>
+  ioConfig?: NodeIOConfig  // New field for input/output configuration
   pulseAnalysis?: {
     markdown: string
     chunks: Record<string, any>

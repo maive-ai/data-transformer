@@ -27,10 +27,13 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
   const [fileName, setFileName] = useState(node.data.fileName || "");
   const [outputTemplate, setOutputTemplate] = useState<File | null>(null);
   const [outputTemplateName, setOutputTemplateName] = useState(node.data.outputTemplateName || "");
-  const [exampleInput, setExampleInput] = useState<File | null>(null);
-  const [exampleInputName, setExampleInputName] = useState(node.data.exampleInputName || "");
-  const [exampleOutput, setExampleOutput] = useState<File | null>(null);
-  const [exampleOutputName, setExampleOutputName] = useState(node.data.exampleOutputName || "");
+  const [inputTypes, setInputTypes] = useState<string[]>(node.data.ioConfig?.inputTypes?.map((t: any) => t.type) || []);
+  const [outputType, setOutputType] = useState<string>(node.data.ioConfig?.outputType?.type || "");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState(node.data.uploadedFileName || "");
+  const [outputFile, setOutputFile] = useState<File | null>(null);
+  const [outputFileName, setOutputFileName] = useState(node.data.outputFileName || "");
+  const [useOutputTemplate, setUseOutputTemplate] = useState(node.data.useOutputTemplate || false);
 
   const handleIntegrationSelect = (integration: any) => {
     setIntegration(integration);
@@ -55,17 +58,26 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
     }
   };
 
-  const handleExampleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputTypeChange = (type: string) => {
+    setInputTypes([type]);  // Changed to only allow one input type
+  };
+
+  const handleOutputTypeChange = (type: string) => {
+    setOutputType(type);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setExampleInput(e.target.files[0]);
-      setExampleInputName(e.target.files[0].name);
+      const file = e.target.files[0];
+      setUploadedFile(file);
+      setUploadedFileName(file.name);
     }
   };
 
-  const handleExampleOutputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOutputFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setExampleOutput(e.target.files[0]);
-      setExampleOutputName(e.target.files[0].name);
+      setOutputFile(e.target.files[0]);
+      setOutputFileName(e.target.files[0].name);
     }
   };
 
@@ -73,13 +85,32 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
     setSaving(true);
     if (node.type === "trigger" && node.data.type === "event") {
       await onChange(node.id, { integration, description });
+    } else if (node.type === "trigger" && node.data.type === "manual") {
+      await onChange(node.id, { 
+        uploadedFileName,
+        ioConfig: {
+          inputTypes: [],  // Manual upload doesn't need input types
+          outputType: { type: uploadedFile?.name.split('.').pop()?.toLowerCase() || "csv" }
+        }
+      });
     } else if (node.type === "action") {
-      await onChange(node.id, { prompt, exampleInputName, exampleOutputName });
+      await onChange(node.id, { 
+        prompt, 
+        outputFileName,
+        useOutputTemplate,
+        ioConfig: {
+          inputTypes: inputTypes.map(type => ({ type })),
+          outputType: { type: outputType }
+        }
+      });
     } else if (node.type === "output" && node.data.type === "excel") {
       await onChange(node.id, {
         fileName,
         outputTemplateName,
-        // Optionally, you could upload the file to a backend or store its contents here
+        ioConfig: {
+          inputTypes: [{ type: "csv" }],
+          outputType: { type: "excel" }
+        }
       });
     }
     setSaving(false);
@@ -122,23 +153,32 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
               />
             </div>
           </>
-        ) : node.type === "action" ? (
+        ) : node.type === "trigger" && node.data.type === "manual" ? (
           <div className="space-y-6">
             <div>
-              <div className="font-medium mb-2">Example Input</div>
+              <div className="font-medium mb-2">Upload File</div>
               <label className="block w-full border-dashed border-2 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
                 <input
                   type="file"
                   className="hidden"
-                  onChange={handleExampleInputChange}
+                  onChange={handleFileUpload}
+                  accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx"
                 />
-                {exampleInputName ? (
-                  <span className="text-sm">{exampleInputName}</span>
+                {uploadedFileName ? (
+                  <span className="text-sm">{uploadedFileName}</span>
                 ) : (
-                  <span className="text-gray-400 text-sm">Click to upload an example input file</span>
+                  <span className="text-gray-400 text-sm">Click to upload a file</span>
                 )}
               </label>
             </div>
+            <div className="p-4 border rounded-lg bg-blue-50">
+              <div className="text-sm text-blue-700">
+                This node will prompt for a file upload when the pipeline runs.
+              </div>
+            </div>
+          </div>
+        ) : node.type === "action" ? (
+          <div className="space-y-6">
             <div>
               <div className="font-medium mb-2">Transform Prompt</div>
               <textarea
@@ -149,19 +189,69 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
               />
             </div>
             <div>
-              <div className="font-medium mb-2">Example Output</div>
-              <label className="block w-full border-dashed border-2 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+              <div className="font-medium mb-2">Output Template</div>
+              <div className="flex items-center gap-2 mb-2">
                 <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleExampleOutputChange}
+                  type="checkbox"
+                  id="useOutputTemplate"
+                  checked={useOutputTemplate}
+                  onChange={(e) => setUseOutputTemplate(e.target.checked)}
+                  className="rounded border-gray-300"
                 />
-                {exampleOutputName ? (
-                  <span className="text-sm">{exampleOutputName}</span>
-                ) : (
-                  <span className="text-gray-400 text-sm">Click to upload an example output file</span>
-                )}
-              </label>
+                <label htmlFor="useOutputTemplate" className="text-sm">
+                  Use output template file
+                </label>
+              </div>
+              {useOutputTemplate && (
+                <label className="block w-full border-dashed border-2 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleOutputFileChange}
+                    accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx"
+                  />
+                  {outputFileName ? (
+                    <span className="text-sm">{outputFileName}</span>
+                  ) : (
+                    <span className="text-gray-400 text-sm">Click to upload an output template file</span>
+                  )}
+                </label>
+              )}
+              <p className="text-xs text-gray-500 mt-1">
+                {useOutputTemplate 
+                  ? "The AI will use this file as a template and add data to it"
+                  : "The AI will generate a new output file"}
+              </p>
+            </div>
+            <div>
+              <div className="font-medium mb-2">Input File Type</div>
+              <select
+                value={inputTypes[0] || ""}
+                onChange={(e) => handleInputTypeChange(e.target.value)}
+                className="w-full border rounded-lg p-2 text-sm"
+              >
+                <option value="">Select input type</option>
+                {["csv", "excel", "json", "xml", "pdf", "doc", "docx"].map((type) => (
+                  <option key={type} value={type}>
+                    {type.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <div className="font-medium mb-2">Output File Type</div>
+              <select
+                value={outputType}
+                onChange={(e) => handleOutputTypeChange(e.target.value)}
+                className="w-full border rounded-lg p-2 text-sm"
+              >
+                <option value="">Select output type</option>
+                {["csv", "excel", "json", "xml"].map((type) => (
+                  <option key={type} value={type}>
+                    {type.toUpperCase()}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         ) : node.type === "output" && node.data.type === "excel" ? (
@@ -176,13 +266,18 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
                 onChange={handleFileNameChange}
               />
             </div>
+            <div className="p-4 border rounded-lg bg-blue-50">
+              <div className="text-sm text-blue-700">
+                This node accepts CSV files as input and converts them to Excel format.
+              </div>
+            </div>
             {/* Download section for Excel output node after run */}
-            {runHistory.length > 0 && (
+            {runHistory.length > 0 && node.data.fileUrl && (
               <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-green-50">
                 <div className="font-medium text-sm">Download Output</div>
-                <div className="text-xs text-gray-700 mb-2">WO-2025-05-0015.xlsx</div>
+                <div className="text-xs text-gray-700 mb-2">{fileName || "output.xlsx"}</div>
                 <a
-                  href="/transformed/WO-2025-05-0015.xlsx"
+                  href={node.data.fileUrl}
                   download
                   className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold shadow hover:bg-green-700 transition"
                 >

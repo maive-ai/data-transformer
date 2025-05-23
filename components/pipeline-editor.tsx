@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,7 +14,7 @@ import { WorkflowCanvas } from "@/components/workflow-canvas";
 import type { Pipeline } from "@/types/pipeline";
 import { Save, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Node, Edge } from "reactflow";
+import { Node, Edge, applyEdgeChanges, applyNodeChanges, NodeChange, EdgeChange } from "reactflow";
 
 interface PipelineEditorProps {
   pipeline: Pipeline | null;
@@ -22,8 +22,8 @@ interface PipelineEditorProps {
 }
 
 export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps) {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nodes, setNodes] = useState<Node[]>(pipeline?.workflow?.nodes || []);
+  const [edges, setEdges] = useState<Edge[]>(pipeline?.workflow?.edges || []);
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const canvasRef = useRef<any>(null);
@@ -46,6 +46,36 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
     }
   }, [pipeline, isNew]);
 
+  // Ensure PipelineEditor always has the latest nodes state
+  const handleNodesChange = useCallback(
+    (updatedNodes: Node[]) => {
+      setNodes(updatedNodes);
+      // Auto-save pipeline to localStorage on node change
+      if (!pipeline) return;
+      const updatedPipeline = {
+        ...pipeline,
+        workflow: {
+          nodes: updatedNodes,
+          edges,
+        },
+        updatedAt: new Date().toISOString(),
+      };
+      const pipelines = JSON.parse(localStorage.getItem("pipelines") || "[]");
+      const index = pipelines.findIndex((p: Pipeline) => p.id === pipeline!.id);
+      if (index !== -1) {
+        pipelines[index] = updatedPipeline;
+        localStorage.setItem("pipelines", JSON.stringify(pipelines));
+      }
+    },
+    [pipeline, edges]
+  );
+
+  // Use ReactFlow's applyEdgeChanges for correct edge updates
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    []
+  );
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -53,8 +83,8 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
         // Create new pipeline
         const newPipeline = {
           id: `pipeline-${Date.now()}`,
-          name: "GMail to Excel",
-          description: "Convert PO in GMail to ERP Spreadsheet",
+          name: pipeline?.name || "GMail to Excel",
+          description: pipeline?.description || "Convert PO in GMail to ERP Spreadsheet",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           steps: [],
@@ -142,7 +172,7 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
             ref={canvasRef}
             initialNodes={nodes}
             initialEdges={edges}
-            onNodesChange={setNodes}
+            onNodesChange={handleNodesChange}
             onEdgesChange={setEdges}
           />
         </CardContent>

@@ -182,9 +182,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             formData.append('prompt', node.data.prompt);
           }
 
-          if (node.data.useOutputTemplate && node.data.outputFileName) {
-            const outputTemplate = await fetch(`/templates/${node.data.outputFileName}`).then(r => r.blob());
-            formData.append('outputTemplate', new File([outputTemplate], node.data.outputFileName));
+          if (node.data.useOutputTemplate && node.data.outputTemplateUrl) {
+            const outputTemplate = await fetch(node.data.outputTemplateUrl).then(r => r.blob());
+            formData.append('outputTemplate', new File([outputTemplate], node.data.outputTemplateName || 'output_template'));
             formData.append('useOutputTemplate', 'true');
           }
 

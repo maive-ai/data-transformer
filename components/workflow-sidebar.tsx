@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const INTEGRATIONS = [
   { name: "Gmail", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail" className="w-7 h-7" /> },
@@ -25,8 +25,6 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
   const [prompt, setPrompt] = useState(node.data.prompt || "");
   const [saving, setSaving] = useState(false);
   const [fileName, setFileName] = useState(node.data.fileName || "");
-  const [outputTemplate, setOutputTemplate] = useState<File | null>(null);
-  const [outputTemplateName, setOutputTemplateName] = useState(node.data.outputTemplateName || "");
   const [inputTypes, setInputTypes] = useState<string[]>(node.data.ioConfig?.inputTypes?.map((t: any) => t.type) || []);
   const [outputType, setOutputType] = useState<string>(node.data.ioConfig?.outputType?.type || "");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -34,6 +32,11 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
   const [outputFile, setOutputFile] = useState<File | null>(null);
   const [outputFileName, setOutputFileName] = useState(node.data.outputFileName || "");
   const [useOutputTemplate, setUseOutputTemplate] = useState(node.data.useOutputTemplate || false);
+  const [outputTemplateName, setOutputTemplateName] = useState(node.data.outputTemplateName || "");
+
+  useEffect(() => {
+    setOutputTemplateName(node.data.outputTemplateName || "");
+  }, [node.id, node.data.outputTemplateName]);
 
   const handleIntegrationSelect = (integration: any) => {
     setIntegration(integration);
@@ -51,10 +54,23 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
     setFileName(e.target.value);
   };
 
-  const handleOutputTemplateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOutputTemplateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setOutputTemplate(e.target.files[0]);
-      setOutputTemplateName(e.target.files[0].name);
+      const file = e.target.files[0];
+      // Upload the template file to the server
+      const formData = new FormData();
+      formData.append('file', file);
+      // Use /api/upload, but expect backend to save to /public/templates if it's a template
+      const response = await fetch('/api/upload?template=1', {
+        method: 'POST',
+        body: formData,
+      });
+      if (response.ok) {
+        const { url } = await response.json();
+        // Store the template URL and name in node data only
+        onChange(node.id, { outputTemplateUrl: url, outputTemplateName: file.name });
+        setOutputTemplateName(file.name);
+      }
     }
   };
 
@@ -106,7 +122,6 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
     } else if (node.type === "output" && node.data.type === "excel") {
       await onChange(node.id, {
         fileName,
-        outputTemplateName,
         ioConfig: {
           inputTypes: [{ type: "csv" }],
           outputType: { type: "excel" }
@@ -207,11 +222,11 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
                   <input
                     type="file"
                     className="hidden"
-                    onChange={handleOutputFileChange}
+                    onChange={handleOutputTemplateChange}
                     accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx"
                   />
-                  {outputFileName ? (
-                    <span className="text-sm">{outputFileName}</span>
+                  {outputTemplateName ? (
+                    <span className="text-sm">{outputTemplateName}</span>
                   ) : (
                     <span className="text-gray-400 text-sm">Click to upload an output template file</span>
                   )}

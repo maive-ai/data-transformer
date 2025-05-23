@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import path from 'path';
+import fs from 'fs/promises';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
@@ -13,6 +15,23 @@ const MIME_TYPES: { [key: string]: string } = {
   'xml': 'application/xml',
   'txt': 'text/plain'
 };
+
+// Utility: Generate JSON schema from CSV header row
+function generateJsonSchemaFromCsvHeader(headerLine: string) {
+  const columns = headerLine.split(',').map(col => col.trim()).filter(Boolean);
+  const properties: Record<string, any> = {};
+  columns.forEach(col => {
+    properties[col] = { type: 'string' };
+  });
+  return {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties,
+      required: columns
+    }
+  };
+}
 
 export async function POST(request: Request) {
   try {
@@ -44,25 +63,39 @@ export async function POST(request: Request) {
     // Compose the prompt with file references
     let fullPrompt = prompt || "Please process this file and extract the data.";
     if (useOutputTemplate && outputTemplateUrl) {
-      fullPrompt += `\n\nPlease use this file as a template and add the transformed data to it: ${outputTemplateUrl}`;
+      fullPrompt += `\n\nTake the attached output template file and insert the extracted data into the appropriate columns. Return the entire template, with the new data inserted, as a CSV file. Do not add any explanations or extra text. Only output the CSV file contents.`;
+    }
+
+    // Log the full prompt for debugging
+    console.log('Gemini prompt being sent:', fullPrompt);
+
+    // Prepare Gemini API request parts
+    const parts = [
+      { text: fullPrompt },
+      { file_data: { file_uri: inputFileUrl, mime_type: mimeType } }
+    ];
+    if (useOutputTemplate && outputTemplate && outputTemplateUrl) {
+      const outputTemplateExt = outputTemplate.name.split('.').pop()?.toLowerCase() || '';
+      const outputTemplateMimeType = MIME_TYPES[outputTemplateExt] || 'application/octet-stream';
+      parts.push({ file_data: { file_uri: outputTemplateUrl, mime_type: outputTemplateMimeType } });
     }
 
     // Send request to Gemini API
     const startTime = Date.now();
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent', {
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+    const body: any = {
+      contents: [{ parts }],
+      generationConfig: {
+        responseMimeType: 'text/plain'
+      }
+    };
+    const response = await fetch(geminiUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`
+        'Content-Type': 'application/json'
+        // No Authorization header for API key auth
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: fullPrompt },
-            { file_data: { file_uri: inputFileUrl, mime_type: mimeType } }
-          ]
-        }]
-      })
+      body: JSON.stringify(body)
     });
 
     const responseTime = Date.now() - startTime;
@@ -77,10 +110,16 @@ export async function POST(request: Request) {
     const data = await response.json();
     const outputContent = data.candidates[0].content.parts[0].text;
 
-    // Return the transformed data
+    // Extract CSV from markdown code block if present
+    function extractCsvFromMarkdown(text: string) {
+      return text.replace(/```csv\s*|```/g, '').trim();
+    }
+    const csv = extractCsvFromMarkdown(outputContent);
+
+    // Return only the CSV data for the next node
     return NextResponse.json({
       success: true,
-      data: outputContent
+      data: csv
     });
 
   } catch (error) {

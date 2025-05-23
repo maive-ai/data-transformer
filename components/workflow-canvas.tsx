@@ -74,19 +74,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const [currentUploadNode, setCurrentUploadNode] = useState<string | null>(null);
   const completedRef = useRef(new Set<string>());
 
-  // Reset all nodes to idle state on mount
-  useEffect(() => {
-    setNodes(nds =>
-      nds.map(n => ({
-        ...n,
-        data: {
-          ...n.data,
-          runState: 'idle',
-        },
-      }))
-    );
-  }, []);
-
   // Helper: get topological order of nodes (DAG)
   const getTopologicalOrder = () => {
     const adj: Record<string, string[]> = {};
@@ -146,6 +133,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   // Run pipeline animation logic
   const runPipeline = async () => {
+    // Reset all nodes to idle state at the start of each run
+    setNodes(nds =>
+      nds.map(n => ({
+        ...n,
+        data: {
+          ...n.data,
+          runState: 'idle',
+        },
+      }))
+    );
     setRunning(true);
     // Find root nodes (no incoming edges), sorted by y position
     const rootNodes = [...nodes.filter(n => !edges.some(e => e.target === n.id))].sort((a, b) => a.position.y - b.position.y);

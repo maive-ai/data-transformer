@@ -89,16 +89,16 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
   );
 
   const handleNodesChange = useCallback(
-    (updatedNodes: Node[]) => {
-      setNodes(updatedNodes);
+    (changes: NodeChange[]) => {
+      setNodes((nds) => applyNodeChanges(changes, nds));
       savePipeline();
     },
     [savePipeline]
   );
 
   const handleEdgesChange = useCallback(
-    (updatedEdges: Edge[]) => {
-      setEdges(updatedEdges);
+    (changes: EdgeChange[]) => {
+      setEdges((eds) => applyEdgeChanges(changes, eds));
       savePipeline();
     },
     [savePipeline]
@@ -134,6 +134,10 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
             ref={canvasRef}
             initialNodes={nodes}
             initialEdges={edges}
+            nodes={nodes}
+            setNodes={setNodes}
+            edges={edges}
+            setEdges={setEdges}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
           />

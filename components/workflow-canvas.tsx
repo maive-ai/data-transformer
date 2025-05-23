@@ -8,10 +8,11 @@ import ReactFlow, {
   Edge,
   Connection,
   addEdge,
-  useNodesState,
-  useEdgesState,
   MarkerType,
   applyEdgeChanges,
+  applyNodeChanges,
+  NodeChange,
+  EdgeChange,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { WorkflowNode } from './workflow-node';
@@ -32,8 +33,12 @@ const nodeTypes = {
 interface WorkflowCanvasProps {
   initialNodes?: Node[];
   initialEdges?: Edge[];
-  onNodesChange?: (nodes: Node[]) => void;
-  onEdgesChange?: (edges: Edge[]) => void;
+  nodes: Node[];
+  setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
+  edges: Edge[];
+  setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
+  onNodesChange?: (changes: NodeChange[]) => void;
+  onEdgesChange?: (changes: EdgeChange[]) => void;
 }
 
 // Helper to get PDT time string
@@ -55,20 +60,19 @@ function getPdtTimestamp() {
 export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   initialNodes = [],
   initialEdges = [],
+  nodes,
+  setNodes,
+  edges,
+  setEdges,
   onNodesChange,
   onEdgesChange,
 }: WorkflowCanvasProps, ref) {
-  const [nodes, setNodes, onNodesChangeInternal] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChangeInternal] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [nodeRunHistory, setNodeRunHistory] = useState<Record<string, Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>>>({});
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [currentUploadNode, setCurrentUploadNode] = useState<string | null>(null);
   const completedRef = useRef(new Set<string>());
-  const nodesRef = useRef(nodes);
-
-  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
 
   // Reset all nodes to idle state on mount
   useEffect(() => {
@@ -157,7 +161,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
     // Helper: run a node if all its dependencies are satisfied
     const runNode = async (nodeId: string) => {
-      const node = nodesRef.current.find(n => n.id === nodeId);
+      const node = nodes.find(n => n.id === nodeId);
       if (!node || completedRef.current.has(nodeId)) return;
       // Check if all upstream nodes are completed
       const upstream = getUpstream(nodeId);
@@ -216,6 +220,76 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
           setCurrentUploadNode(null);
           return;
+        }
+      } else if (node.type === 'output' && node.data.type === 'excel') {
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+        try {
+          // Gather all input files from upstream nodes
+          const inputFiles: File[] = [];
+          for (const upstreamId of getUpstream(nodeId)) {
+            const upstreamData = nodeData.get(upstreamId);
+            if (upstreamData?.files) inputFiles.push(...upstreamData.files);
+            else if (upstreamData?.file) inputFiles.push(upstreamData.file);
+          }
+          if (!inputFiles.length) throw new Error('No input files available');
+
+          // Process each CSV file and convert to Excel
+          const excelFiles: File[] = [];
+          for (const file of inputFiles) {
+            if (file.type === 'text/csv') {
+              const csvContent = await file.text();
+              const excelBlob = await convertCsvToExcel(csvContent, file.name.replace('.csv', '.xlsx'));
+              const excelFile = new File([excelBlob], file.name.replace('.csv', '.xlsx'), { 
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+              });
+              excelFiles.push(excelFile);
+            }
+          }
+
+          if (excelFiles.length > 0) {
+            nodeData.set(nodeId, { files: excelFiles });
+            setNodes(nds => nds.map(n => n.id === nodeId ? { 
+              ...n, 
+              data: { 
+                ...n.data, 
+                runState: 'done',
+                fileUrl: URL.createObjectURL(excelFiles[0]), // Create download URL for the first Excel file
+                outputFileName: excelFiles[0].name // Also store the output file name for display
+              } 
+            } : n));
+          } else {
+            throw new Error('No CSV files to convert');
+          }
+
+          // Log the conversion in run history
+          setNodeRunHistory(history => {
+            const entry = {
+              timestamp: new Date().toISOString(),
+              status: 'done',
+              inputFile: inputFiles.map(f => f.name).join(','),
+              outputFile: excelFiles.map(f => f.name).join(',')
+            };
+            return {
+              ...history,
+              [nodeId]: [...(history[nodeId] || []), entry],
+            };
+          });
+
+        } catch (error) {
+          console.error(`Error running Excel export node ${nodeId}:`, error);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        completedRef.current.add(nodeId);
+        // Notify any waiting downstream nodes
+        for (const downstreamId of getDownstream(nodeId)) {
+          if (waiting[downstreamId]) {
+            waiting[downstreamId].forEach(fn => fn());
+            waiting[downstreamId] = [];
+          }
+        }
+        // Proactively start downstream nodes
+        for (const downstreamId of getDownstream(nodeId)) {
+          runNode(downstreamId);
         }
       } else {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
@@ -303,19 +377,18 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   };
 
   const handleNodesChange = useCallback(
-    (changes: any) => {
-      onNodesChangeInternal(changes);
-      onNodesChange?.(nodes);
+    (changes: NodeChange[]) => {
+      onNodesChange?.(changes);
     },
-    [nodes, onNodesChange, onNodesChangeInternal]
+    [onNodesChange]
   );
 
   const handleEdgesChange = useCallback(
-    (changes: any) => {
+    (changes: EdgeChange[]) => {
       console.log('handleEdgesChange called with changes:', changes);
       setEdges((eds) => {
         const updated = applyEdgeChanges(changes, eds);
-        onEdgesChange?.(updated);
+        onEdgesChange?.(changes);
         return updated;
       });
     },
@@ -325,9 +398,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const handleAddNode = useCallback(
     (newNode: Node) => {
       setNodes((nds) => [...nds, newNode]);
-      onNodesChange?.(nodes);
     },
-    [nodes, onNodesChange]
+    [setNodes]
   );
 
   const handleNodeClick = useCallback((event: any, node: Node) => {

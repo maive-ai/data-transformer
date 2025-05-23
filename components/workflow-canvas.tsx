@@ -41,6 +41,17 @@ interface WorkflowCanvasProps {
   onEdgesChange?: (changes: EdgeChange[]) => void;
 }
 
+// Helper to slugify node label for filenames
+function slugify(str: string) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+// Helper to get readable timestamp
+function getReadableTimestamp() {
+  const now = new Date();
+  return now.toISOString().replace(/[:.]/g, '-');
+}
+
 // Helper to get PDT time string
 function getPdtTimestamp() {
   const now = new Date();
@@ -146,6 +157,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     setRunning(true);
     // Find root nodes (no incoming edges), sorted by y position
     const rootNodes = [...nodes.filter(n => !edges.some(e => e.target === n.id))].sort((a, b) => a.position.y - b.position.y);
+    // Only consider file upload root nodes (manual triggers)
+    const fileUploadRoots = rootNodes.filter(n => n.type === 'trigger' && n.data.type === 'manual');
+    const otherRoots = rootNodes.filter(n => !(n.type === 'trigger' && n.data.type === 'manual'));
     // Track node completion and outputs
     const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[] }> = new Map();
     completedRef.current = new Set();
@@ -170,7 +184,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return runNode(nodeId);
       }
       if (node.type === 'trigger' && node.data.type === 'manual') {
-        // Set all other file upload nodes to idle before starting this one
+        // Only this node is running (rainbow), all others idle/done
         setNodes(nds => nds.map(n =>
           n.type === 'trigger' && n.data.type === 'manual'
             ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'running' : (n.data.runState === 'done' ? 'done' : 'idle') } }
@@ -179,7 +193,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         setCurrentUploadNode(nodeId);
         try {
           await new Promise(requestAnimationFrame);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 200));
           const files = await new Promise<File[]>((resolve, reject) => {
             const input = document.createElement('input');
             input.type = 'file';
@@ -198,9 +212,13 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           nodeData.set(nodeId, { files });
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', uploadedFileNames: files.map(f => f.name) } } : n));
           setCurrentUploadNode(null);
-          for (const file of files) {
-            const pdtTimestamp = getPdtTimestamp();
-            const traceName = `${nodeId}-${pdtTimestamp}-${Date.now()}-input-${file.name}`;
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const labelSlug = slugify(node.data.label || nodeId);
+            const timestamp = getReadableTimestamp();
+            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+            const ext = file.name.split('.').pop() || 'dat';
+            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
             const inputFormData = new FormData();
             inputFormData.append('nodeId', nodeId);
             inputFormData.append('type', 'input');
@@ -212,11 +230,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           for (const downstreamId of getDownstream(nodeId)) {
             runNode(downstreamId);
           }
-          return;
         } catch (error) {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
           setCurrentUploadNode(null);
-          return;
         }
       } else if (node.type === 'output' && node.data.type === 'excel') {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
@@ -230,33 +246,80 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
           if (!inputFiles.length) throw new Error('No input files available');
 
-          // Process each CSV file and convert to Excel
-          const excelFiles: File[] = [];
-          for (const file of inputFiles) {
+          // Log each input CSV as a trace
+          for (let i = 0; i < inputFiles.length; i++) {
+            const file = inputFiles[i];
             if (file.type === 'text/csv') {
-              const csvContent = await file.text();
-              const excelBlob = await convertCsvToExcel(csvContent, file.name.replace('.csv', '.xlsx'));
-              const excelFile = new File([excelBlob], file.name.replace('.csv', '.xlsx'), { 
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-              });
-              excelFiles.push(excelFile);
+              const labelSlug = slugify(node.data.label || nodeId);
+              const timestamp = getReadableTimestamp();
+              const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+              const ext = file.name.split('.').pop() || 'csv';
+              const traceName = `${labelSlug}-input-${timestamp}-${i + 1}-${uuid}.${ext}`;
+              const inputFormData = new FormData();
+              inputFormData.append('nodeId', nodeId);
+              inputFormData.append('type', 'input');
+              inputFormData.append('file', file, traceName);
+              await fetch('/api/trace', { method: 'POST', body: inputFormData });
             }
           }
 
-          if (excelFiles.length > 0) {
-            nodeData.set(nodeId, { files: excelFiles });
-            setNodes(nds => nds.map(n => n.id === nodeId ? { 
-              ...n, 
-              data: { 
-                ...n.data, 
-                runState: 'done',
-                fileUrl: URL.createObjectURL(excelFiles[0]), // Create download URL for the first Excel file
-                outputFileName: excelFiles[0].name // Also store the output file name for display
-              } 
-            } : n));
-          } else {
-            throw new Error('No CSV files to convert');
+          // Merge all input CSVs into a single multi-sheet XLSX file
+          const wb = XLSX.utils.book_new();
+          let sheetCount = 1;
+          for (let i = 0; i < inputFiles.length; i++) {
+            const file = inputFiles[i];
+            if (file.type === 'text/csv') {
+              const csvContent = await file.text();
+              const rows = csvContent.split('\n').map(row => row.split(','));
+              const headers = rows[0];
+              const data = rows.slice(1).map(row => {
+                const obj: Record<string, string> = {};
+                headers.forEach((header, index) => {
+                  obj[header] = row[index] || '';
+                });
+                return obj;
+              });
+              const ws = XLSX.utils.json_to_sheet(data);
+              // Sheet name: use file name (without extension) or SheetN, ensure uniqueness
+              let baseSheetName = file.name.replace(/\.[^/.]+$/, "");
+              if (!baseSheetName) baseSheetName = `Sheet${sheetCount}`;
+              let sheetName = baseSheetName;
+              let suffix = 1;
+              while (wb.SheetNames.includes(sheetName)) {
+                sheetName = `${baseSheetName}_${suffix}`;
+                suffix++;
+              }
+              XLSX.utils.book_append_sheet(wb, ws, sheetName);
+              sheetCount++;
+            }
           }
+          // Generate single Excel file
+          const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+          const mergedExcelFile = new File([excelBuffer], 'merged_output.xlsx', {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
+
+          nodeData.set(nodeId, { files: [mergedExcelFile] });
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: 'done',
+              fileUrl: URL.createObjectURL(mergedExcelFile),
+              outputFileName: mergedExcelFile.name,
+            },
+          } : n));
+
+          // Log trace for the single merged Excel file
+          const labelSlug = slugify(node.data.label || nodeId);
+          const timestamp = getReadableTimestamp();
+          const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+          const traceName = `${labelSlug}-output-${timestamp}-1-${uuid}.xlsx`;
+          const outputFormData = new FormData();
+          outputFormData.append('nodeId', nodeId);
+          outputFormData.append('type', 'output');
+          outputFormData.append('file', mergedExcelFile, traceName);
+          await fetch('/api/trace', { method: 'POST', body: outputFormData });
 
           // Log the conversion in run history
           setNodeRunHistory(history => {
@@ -264,7 +327,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               timestamp: new Date().toISOString(),
               status: 'done',
               inputFile: inputFiles.map(f => f.name).join(','),
-              outputFile: excelFiles.map(f => f.name).join(',')
+              outputFile: mergedExcelFile.name,
             };
             return {
               ...history,
@@ -318,9 +381,13 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
           nodeData.set(nodeId, { files: csvFiles });
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
-          for (const file of inputFiles) {
-            const pdtTimestamp = getPdtTimestamp();
-            const traceName = `${nodeId}-${pdtTimestamp}-${Date.now()}-input-${file.name}`;
+          for (let i = 0; i < inputFiles.length; i++) {
+            const file = inputFiles[i];
+            const labelSlug = slugify(node.data.label || nodeId);
+            const timestamp = getReadableTimestamp();
+            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+            const ext = file.name.split('.').pop() || 'dat';
+            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
             const inputFormData = new FormData();
             inputFormData.append('nodeId', nodeId);
             inputFormData.append('type', 'input');
@@ -329,8 +396,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
           for (let i = 0; i < csvFiles.length; i++) {
             const outFile = csvFiles[i];
-            const pdtTimestamp = getPdtTimestamp();
-            const traceName = `${nodeId}-${pdtTimestamp}-${Date.now()}-output-${outFile.name}`;
+            const labelSlug = slugify(node.data.label || nodeId);
+            const timestamp = getReadableTimestamp();
+            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+            const ext = outFile.name.split('.').pop() || 'dat';
+            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
             const outputFormData = new FormData();
             outputFormData.append('nodeId', nodeId);
             outputFormData.append('type', 'output');
@@ -368,8 +438,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       });
     };
 
-    // Start each root node branch independently
-    await Promise.all(rootNodes.map(root => runNode(root.id)));
+    // Sequentially prompt for file upload roots in y order, but do not await downstreams
+    for (let i = 0; i < fileUploadRoots.length; i++) {
+      await runNode(fileUploadRoots[i].id);
+    }
+    // After all file upload roots, start any other root nodes (if any)
+    await Promise.all(otherRoots.map(root => runNode(root.id)));
     setRunning(false);
   };
 
@@ -425,9 +499,23 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [running]);
 
+  const stopPipeline = useCallback(() => {
+    setRunning(false);
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      data: {
+        ...n.data,
+        runState: 'idle',
+      },
+    })));
+    setCurrentUploadNode(null);
+    // Optionally clear other state if needed
+  }, [setNodes]);
+
   useImperativeHandle(ref, () => ({
     runPipeline,
     running,
+    stopPipeline,
   }));
 
   return (

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Shuffle, PlusCircle, ChevronLeft, ChevronRight, Settings as SettingsIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
@@ -39,12 +39,17 @@ export function DashboardSidebar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
 
+  // Load system prompt from localStorage on mount
+  useEffect(() => {
+    const savedPrompt = localStorage.getItem('globalSystemPrompt');
+    if (savedPrompt) setSystemPrompt(savedPrompt);
+  }, []);
+
   const handleSaveSettings = () => {
-    // Here you would typically save the system prompt to your backend
-    // For now, we'll just show a success toast
+    localStorage.setItem('globalSystemPrompt', systemPrompt);
     toast({
-      title: "Settings saved",
-      description: "Your system prompt has been updated.",
+      title: "System Prompt Saved",
+      description: "Your global system prompt has been updated and will be used for all workflows.",
     });
     setIsSettingsOpen(false);
   };

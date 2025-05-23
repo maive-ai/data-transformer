@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import path from 'path';
 import fs from 'fs/promises';
+import * as XLSX from 'xlsx';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
@@ -33,38 +34,63 @@ function generateJsonSchemaFromCsvHeader(headerLine: string) {
   };
 }
 
+// Utility: Convert Excel file to multiple CSV files (one per sheet)
+async function convertExcelToCsv(file: File): Promise<File[]> {
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: 'array' });
+  const csvFiles: File[] = [];
+  workbook.SheetNames.forEach(sheetName => {
+    const worksheet = workbook.Sheets[sheetName];
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const csvFile = new File([csv], `${file.name.replace('.xlsx', '')}_${sheetName}.csv`, { type: 'text/csv' });
+    csvFiles.push(csvFile);
+  });
+  return csvFiles;
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const inputFile = formData.get('inputFile') as File;
+    const inputFiles = formData.getAll('inputFile') as File[];
     const prompt = formData.get('prompt') as string;
     const outputTemplate = formData.get('outputTemplate') as File | null;
     const useOutputTemplate = formData.get('useOutputTemplate') === 'true';
 
-    if (!inputFile) {
-      return NextResponse.json({ error: 'No input file provided' }, { status: 400 });
+    if (inputFiles.length === 0) {
+      return NextResponse.json({ error: 'No input files provided' }, { status: 400 });
     }
 
     // Get file extension and MIME type
-    const fileExt = inputFile.name.split('.').pop()?.toLowerCase() || '';
+    const fileExt = inputFiles[0].name.split('.').pop()?.toLowerCase() || '';
     const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
 
-    // Upload input file to Gemini
-    const inputFileUrl = await uploadFileToGeminiResumable(inputFile, mimeType);
+    // Upload input files to Gemini
+    const inputFileUrls = await Promise.all(inputFiles.map((file: File) => uploadFileToGeminiResumable(file, mimeType)));
 
     // Upload output template if provided
-    let outputTemplateUrl = null;
+    let outputTemplateUrls: string[] = [];
     if (useOutputTemplate && outputTemplate) {
       const outputTemplateExt = outputTemplate.name.split('.').pop()?.toLowerCase() || '';
-      const outputTemplateMimeType = MIME_TYPES[outputTemplateExt] || 'application/octet-stream';
-      outputTemplateUrl = await uploadFileToGeminiResumable(outputTemplate, outputTemplateMimeType);
+      if (outputTemplateExt === 'xlsx') {
+        const csvFiles = await convertExcelToCsv(outputTemplate);
+        outputTemplateUrls = await Promise.all(csvFiles.map(file => uploadFileToGeminiResumable(file, 'text/csv')));
+      } else {
+        const outputTemplateMimeType = MIME_TYPES[outputTemplateExt] || 'application/octet-stream';
+        const url = await uploadFileToGeminiResumable(outputTemplate, outputTemplateMimeType);
+        outputTemplateUrls.push(url);
+      }
     }
 
-    // Compose the prompt with file references
-    let fullPrompt = prompt || "Please process this file and extract the data.";
-    if (useOutputTemplate && outputTemplateUrl) {
-      fullPrompt += `\n\nTake the attached output template file and insert the extracted data into the appropriate columns. Return the entire template, with the new data inserted, as a CSV file. Do not add any explanations or extra text. Only output the CSV file contents.`;
+    // Read global system prompt from custom header
+    let globalSystemPrompt = '';
+    if (request.headers.has('x-global-system-prompt')) {
+      globalSystemPrompt = request.headers.get('x-global-system-prompt') || '';
     }
+
+    const systemPrompt =
+      (globalSystemPrompt ? `GLOBAL SYSTEM PROMPT:\n${globalSystemPrompt}\n\n` : '') +
+      `You are given multiple PDF files containing tabular data, and an Excel template with multiple sheets (each sheet is provided as a CSV file). For each PDF, extract the relevant data and insert it into the most appropriate sheet(s) in the template, based on the content and structure of each sheet.\n\nReturn the output as multiple CSVs, one for each sheet, in the following format:\n\n\`\`\`csv Sheet: SheetName1\n<CSV content for sheet 1>\n\`\`\`\n\n\`\`\`csv Sheet: SheetName2\n<CSV content for sheet 2>\n\`\`\`\n\nDo not include any explanations or extra text—only output the CSV content for each sheet, in order, using the above format.`;
+    let fullPrompt = `USER INSTRUCTIONS:\n${prompt || '[none]'}\n\nSYSTEM INSTRUCTIONS:\n${systemPrompt}`;
 
     // Log the full prompt for debugging
     console.log('Gemini prompt being sent:', fullPrompt);
@@ -72,12 +98,10 @@ export async function POST(request: Request) {
     // Prepare Gemini API request parts
     const parts = [
       { text: fullPrompt },
-      { file_data: { file_uri: inputFileUrl, mime_type: mimeType } }
+      ...inputFileUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: mimeType } })),
     ];
-    if (useOutputTemplate && outputTemplate && outputTemplateUrl) {
-      const outputTemplateExt = outputTemplate.name.split('.').pop()?.toLowerCase() || '';
-      const outputTemplateMimeType = MIME_TYPES[outputTemplateExt] || 'application/octet-stream';
-      parts.push({ file_data: { file_uri: outputTemplateUrl, mime_type: outputTemplateMimeType } });
+    if (useOutputTemplate && outputTemplateUrls.length > 0) {
+      parts.push(...outputTemplateUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: 'text/csv' } })));
     }
 
     // Send request to Gemini API
@@ -104,27 +128,38 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const error = await response.json();
       console.error('Gemini API error:', error);
-      return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to process files' }, { status: 500 });
     }
 
     const data = await response.json();
     const outputContent = data.candidates[0].content.parts[0].text;
 
-    // Extract CSV from markdown code block if present
-    function extractCsvFromMarkdown(text: string) {
-      return text.replace(/```csv\s*|```/g, '').trim();
+    // Split the response into separate CSVs if possible (assuming Gemini outputs them in order, separated by a delimiter)
+    function extractCsvsFromResponse(text: string) {
+      // Try to extract blocks in the format ```csv Sheet: SheetName\n<CSV>```
+      const regex = /```csv Sheet: [^\n]+\n([\s\S]*?)```/g;
+      const matches = [];
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        matches.push(match[1].trim());
+      }
+      if (matches.length > 0) return matches;
+      // Fallback: previous logic
+      const csvBlocks = text.split(/```csv[\s\S]*?```/g).filter(Boolean);
+      if (csvBlocks.length > 1) return csvBlocks.map(s => s.replace(/```csv\s*|```/g, '').trim());
+      return text.split(/\n{2,}/).map(s => s.replace(/```csv\s*|```/g, '').trim()).filter(Boolean);
     }
-    const csv = extractCsvFromMarkdown(outputContent);
+    const csvDataArray = extractCsvsFromResponse(outputContent);
 
-    // Return only the CSV data for the next node
+    // Return the array of CSV data for the next node
     return NextResponse.json({
       success: true,
-      data: csv
+      data: csvDataArray
     });
 
   } catch (error) {
-    console.error('Error processing file:', error);
-    return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
+    console.error('Error processing files:', error);
+    return NextResponse.json({ error: 'Failed to process files' }, { status: 500 });
   }
 }
 

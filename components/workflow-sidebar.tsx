@@ -33,6 +33,8 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
   const [outputFileName, setOutputFileName] = useState(node.data.outputFileName || "");
   const [useOutputTemplate, setUseOutputTemplate] = useState(node.data.useOutputTemplate || false);
   const [outputTemplateName, setOutputTemplateName] = useState(node.data.outputTemplateName || "");
+  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
+  const [xlsxTemplate, setXlsxTemplate] = useState<File | null>(null);
 
   useEffect(() => {
     setOutputTemplateName(node.data.outputTemplateName || "");
@@ -171,24 +173,29 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
         ) : node.type === "trigger" && node.data.type === "manual" ? (
           <div className="space-y-6">
             <div>
-              <div className="font-medium mb-2">Upload File</div>
-              <label className="block w-full border-dashed border-2 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                  accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx"
-                />
-                {uploadedFileName ? (
-                  <span className="text-sm">{uploadedFileName}</span>
-                ) : (
-                  <span className="text-gray-400 text-sm">Click to upload a file</span>
-                )}
-              </label>
+              <div className="font-medium mb-2">Upload PDF(s)</div>
+              <input
+                type="file"
+                accept=".pdf"
+                multiple
+                onChange={e => {
+                  if (e.target.files) {
+                    const files = Array.from(e.target.files);
+                    setPdfFiles(files);
+                    // Optionally update node data or call onChange here
+                  }
+                }}
+                className="block"
+              />
+              <ul>
+                {pdfFiles.map((file, idx) => (
+                  <li key={idx}>{file.name}</li>
+                ))}
+              </ul>
             </div>
             <div className="p-4 border rounded-lg bg-blue-50">
               <div className="text-sm text-blue-700">
-                This node will prompt for a file upload when the pipeline runs.
+                This node will prompt for one or more PDF uploads when the pipeline runs.
               </div>
             </div>
           </div>
@@ -222,19 +229,26 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
                   <input
                     type="file"
                     className="hidden"
-                    onChange={handleOutputTemplateChange}
-                    accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx"
+                    accept=".csv,.xlsx"
+                    onChange={e => {
+                      if (e.target.files && e.target.files[0]) {
+                        setXlsxTemplate(e.target.files[0]);
+                        handleOutputTemplateChange(e); // keep existing upload logic
+                      }
+                    }}
                   />
-                  {outputTemplateName ? (
-                    <span className="text-sm">{outputTemplateName}</span>
+                  {xlsxTemplate ? (
+                    <span className="text-sm">{xlsxTemplate.name}</span>
+                  ) : node.data.outputTemplateName ? (
+                    <span className="text-sm">{node.data.outputTemplateName}</span>
                   ) : (
                     <span className="text-gray-400 text-sm">Click to upload an output template file</span>
                   )}
                 </label>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                {useOutputTemplate 
-                  ? "The AI will use this file as a template and add data to it"
+                {useOutputTemplate
+                  ? "The AI will use this file as a template and add data to it. Multi-sheet Excel templates (.xlsx) are supported."
                   : "The AI will generate a new output file"}
               </p>
             </div>

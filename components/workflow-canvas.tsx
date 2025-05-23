@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useCallback, useState, useEffect, forwardRef, useImperativeHandle, useRef } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -11,16 +11,18 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   MarkerType,
+  applyEdgeChanges,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { WorkflowNode } from "./workflow-node";
-import { WorkflowTriggerNode } from "./workflow-trigger-node";
-import { WorkflowOutputNode } from "./workflow-output-node";
+import { WorkflowNode } from './workflow-node';
+import { WorkflowTriggerNode } from './workflow-trigger-node';
+import { WorkflowOutputNode } from './workflow-output-node';
+import { WorkflowSidebar } from './workflow-sidebar';
 import { WorkflowToolbar } from "./workflow-toolbar";
-import { WorkflowSidebar } from "./workflow-sidebar";
 import { convertCsvToExcel } from "@/lib/utils";
 import * as XLSX from "xlsx";
 
+// Define nodeTypes outside the component for ReactFlow stability
 const nodeTypes = {
   trigger: WorkflowTriggerNode,
   action: WorkflowNode,
@@ -34,6 +36,22 @@ interface WorkflowCanvasProps {
   onEdgesChange?: (edges: Edge[]) => void;
 }
 
+// Helper to get PDT time string
+function getPdtTimestamp() {
+  const now = new Date();
+  // Convert to PDT (America/Los_Angeles)
+  return now.toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).replace(/[/:]/g, '-').replace(/, /g, '_').replace(/ /g, '');
+}
+
 export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   initialNodes = [],
   initialEdges = [],
@@ -44,10 +62,26 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const [edges, setEdges, onEdgesChangeInternal] = useEdgesState(initialEdges);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
-  const [nodeRunStates, setNodeRunStates] = useState<Record<string, 'idle' | 'running' | 'done' | 'error'>>({});
   const [nodeRunHistory, setNodeRunHistory] = useState<Record<string, Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>>>({});
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [currentUploadNode, setCurrentUploadNode] = useState<string | null>(null);
+  const completedRef = useRef(new Set<string>());
+  const nodesRef = useRef(nodes);
+
+  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
+
+  // Reset all nodes to idle state on mount
+  useEffect(() => {
+    setNodes(nds =>
+      nds.map(n => ({
+        ...n,
+        data: {
+          ...n.data,
+          runState: 'idle',
+        },
+      }))
+    );
+  }, []);
 
   // Helper: get topological order of nodes (DAG)
   const getTopologicalOrder = () => {
@@ -64,6 +98,14 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       (adj[v] || []).forEach(dfs);
       order.push(v);
     }
+    // Find root nodes (nodes with no incoming edges)
+    const sources = new Set(edges.map(e => e.source));
+    const rootNodes = nodes.filter(n => !edges.some(e => e.target === n.id));
+    // Sort root nodes by y position (ascending = highest on graph first)
+    const sortedRootNodes = [...rootNodes].sort((a, b) => a.position.y - b.position.y);
+    // Start DFS from sorted root nodes
+    sortedRootNodes.forEach(n => dfs(n.id));
+    // For any disconnected nodes, run DFS as well
     nodes.forEach(n => dfs(n.id));
     return order.reverse().filter((id, i, arr) => arr.indexOf(id) === i);
   };
@@ -101,197 +143,151 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   // Run pipeline animation logic
   const runPipeline = async () => {
     setRunning(true);
-    const order = getTopologicalOrder();
-    const newRunStates: Record<string, 'idle' | 'running' | 'done' | 'error'> = {};
-    order.forEach(id => { newRunStates[id] = 'idle'; });
-    setNodeRunStates({ ...newRunStates });
+    // Find root nodes (no incoming edges), sorted by y position
+    const rootNodes = [...nodes.filter(n => !edges.some(e => e.target === n.id))].sort((a, b) => a.position.y - b.position.y);
+    // Track node completion and outputs
+    const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[] }> = new Map();
+    completedRef.current = new Set();
+    const waiting: Record<string, (() => void)[]> = {};
 
-    // Track data flow between nodes
-    const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string }> = new Map();
+    // Helper: get all downstream nodes
+    const getDownstream = (nodeId: string) => edges.filter(e => e.source === nodeId).map(e => e.target);
+    // Helper: get all upstream nodes
+    const getUpstream = (nodeId: string) => edges.filter(e => e.target === nodeId).map(e => e.source);
 
-    for (const nodeId of order) {
-      const node = nodes.find(n => n.id === nodeId);
-      if (!node) continue;
-
-      // Update node run state
-      setNodes(nds => nds.map(n => {
-        if (n.id === nodeId) {
-          return {
-            ...n,
-            data: {
-              ...n.data,
-              runState: 'running'
-            }
-          };
-        }
-        return n;
-      }));
-
-      try {
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        if (node.type === 'trigger' && node.data.type === 'manual') {
-          // Handle manual file upload
-          const file = await new Promise<File>((resolve, reject) => {
+    // Helper: run a node if all its dependencies are satisfied
+    const runNode = async (nodeId: string) => {
+      const node = nodesRef.current.find(n => n.id === nodeId);
+      if (!node || completedRef.current.has(nodeId)) return;
+      // Check if all upstream nodes are completed
+      const upstream = getUpstream(nodeId);
+      if (upstream.some(id => !completedRef.current.has(id))) {
+        // Wait for dependencies
+        if (!waiting[nodeId]) waiting[nodeId] = [];
+        await new Promise<void>(resolve => waiting[nodeId].push(resolve));
+        // After dependencies are done, re-run
+        return runNode(nodeId);
+      }
+      if (node.type === 'trigger' && node.data.type === 'manual') {
+        // Set all other file upload nodes to idle before starting this one
+        setNodes(nds => nds.map(n =>
+          n.type === 'trigger' && n.data.type === 'manual'
+            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'running' : (n.data.runState === 'done' ? 'done' : 'idle') } }
+            : n
+        ));
+        setCurrentUploadNode(nodeId);
+        try {
+          await new Promise(requestAnimationFrame);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const files = await new Promise<File[]>((resolve, reject) => {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.csv,.xlsx,.json,.xml,.pdf,.doc,.docx';
+            input.multiple = true;
             input.onchange = (e) => {
-              const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) {
-                resolve(file);
+              const files = Array.from((e.target as HTMLInputElement).files || []);
+              if (files.length > 0) {
+                resolve(files);
               } else {
-                reject(new Error('No file selected'));
+                reject(new Error('No files selected'));
               }
             };
             input.click();
           });
-
-          // Store the file for downstream nodes
-          nodeData.set(nodeId, { file });
-          
-          // Update node run state
-          setNodes(nds => nds.map(n => {
-            if (n.id === nodeId) {
-              return {
-                ...n,
-                data: {
-                  ...n.data,
-                  runState: 'done',
-                  uploadedFileName: file.name
-                }
-              };
-            }
-            return n;
-          }));
-        } else if (node.type === 'action') {
-          // Get input file from previous node
-          const inputNode = edges.find(e => e.target === nodeId)?.source;
-          const inputData = inputNode ? nodeData.get(inputNode) : null;
-          
-          if (!inputData?.file) {
-            throw new Error('No input file available');
+          nodeData.set(nodeId, { files });
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', uploadedFileNames: files.map(f => f.name) } } : n));
+          setCurrentUploadNode(null);
+          for (const file of files) {
+            const pdtTimestamp = getPdtTimestamp();
+            const traceName = `${nodeId}-${pdtTimestamp}-${Date.now()}-input-${file.name}`;
+            const inputFormData = new FormData();
+            inputFormData.append('nodeId', nodeId);
+            inputFormData.append('type', 'input');
+            inputFormData.append('file', file, traceName);
+            await fetch('/api/trace', { method: 'POST', body: inputFormData });
           }
-
-          // Create form data for Gemini API
+          completedRef.current.add(nodeId);
+          // On successful upload, trigger downstream nodes
+          for (const downstreamId of getDownstream(nodeId)) {
+            runNode(downstreamId);
+          }
+          return;
+        } catch (error) {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setCurrentUploadNode(null);
+          return;
+        }
+      } else {
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+        try {
+          // Gather all input files from all upstream nodes
+          const inputFiles: File[] = [];
+          for (const upstreamId of getUpstream(nodeId)) {
+            const upstreamData = nodeData.get(upstreamId);
+            if (upstreamData?.files) inputFiles.push(...upstreamData.files);
+            else if (upstreamData?.file) inputFiles.push(upstreamData.file);
+          }
+          if (!inputFiles.length) throw new Error('No input files available');
           const formData = new FormData();
-          formData.append('inputFile', inputData.file);
-          
-          if (node.data.prompt) {
-            formData.append('prompt', node.data.prompt);
-          }
-
+          formData.append('inputFile', inputFiles[0]);
+          if (node.data.prompt) formData.append('prompt', node.data.prompt);
           if (node.data.useOutputTemplate && node.data.outputTemplateUrl) {
             const outputTemplate = await fetch(node.data.outputTemplateUrl).then(r => r.blob());
             formData.append('outputTemplate', new File([outputTemplate], node.data.outputTemplateName || 'output_template'));
             formData.append('useOutputTemplate', 'true');
           }
-
-          // Call Gemini API
+          const globalSystemPrompt = typeof window !== 'undefined' ? localStorage.getItem('globalSystemPrompt') : '';
           const response = await fetch('/api/gemini', {
             method: 'POST',
-            body: formData
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to process file with Gemini');
-          }
-
-          const result = await response.json();
-          
-          // Store the transformed data for downstream nodes
-          nodeData.set(nodeId, { 
-            file: new File([result.data], 'transformed.csv', { type: 'text/csv' })
-          });
-
-          // Update node run state
-          setNodes(nds => nds.map(n => {
-            if (n.id === nodeId) {
-              return {
-                ...n,
-                data: {
-                  ...n.data,
-                  runState: 'done'
-                }
-              };
-            }
-            return n;
-          }));
-        } else if (node.type === 'output' && node.data.type === 'excel') {
-          // Get input file from previous node
-          const inputNode = edges.find(e => e.target === nodeId)?.source;
-          const inputData = inputNode ? nodeData.get(inputNode) : null;
-          
-          if (!inputData?.file) {
-            throw new Error('No input file available');
-          }
-
-          // Convert CSV to Excel
-          const csvContent = await inputData.file.text();
-          const workbook = XLSX.utils.book_new();
-          const worksheet = XLSX.utils.aoa_to_sheet(csvContent.split('\n').map(row => row.split(',')));
-          XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-          
-          // Generate Excel file
-          const excelBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
-          const excelFile = new File([excelBuffer], node.data.fileName || 'output.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-          // Upload the Excel file to the backend
-          const formData = new FormData();
-          formData.append('file', excelFile);
-          const uploadResponse = await fetch('/api/upload', {
-            method: 'POST',
             body: formData,
+            headers: globalSystemPrompt ? { 'x-global-system-prompt': globalSystemPrompt } : undefined
           });
-          if (!uploadResponse.ok) {
-            throw new Error('Failed to upload Excel file to backend');
+          if (!response.ok) throw new Error('Failed to process file with Gemini');
+          const result = await response.json();
+          const csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
+          nodeData.set(nodeId, { files: csvFiles });
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          for (const file of inputFiles) {
+            const pdtTimestamp = getPdtTimestamp();
+            const traceName = `${nodeId}-${pdtTimestamp}-${Date.now()}-input-${file.name}`;
+            const inputFormData = new FormData();
+            inputFormData.append('nodeId', nodeId);
+            inputFormData.append('type', 'input');
+            inputFormData.append('file', file, traceName);
+            await fetch('/api/trace', { method: 'POST', body: inputFormData });
           }
-          const uploadResult = await uploadResponse.json();
-          const fileUrl = uploadResult.url; // e.g., /uploads/uuid-output.xlsx
-
-          // Store the file URL for downstream use (e.g., download link)
-          nodeData.set(nodeId, { fileUrl });
-
-          // Update node run state
-          setNodes(nds => nds.map(n => {
-            if (n.id === nodeId) {
-              return {
-                ...n,
-                data: {
-                  ...n.data,
-                  runState: 'done',
-                  fileUrl, // Make available for sidebar
-                }
-              };
-            }
-            return n;
-          }));
+          for (let i = 0; i < csvFiles.length; i++) {
+            const outFile = csvFiles[i];
+            const pdtTimestamp = getPdtTimestamp();
+            const traceName = `${nodeId}-${pdtTimestamp}-${Date.now()}-output-${outFile.name}`;
+            const outputFormData = new FormData();
+            outputFormData.append('nodeId', nodeId);
+            outputFormData.append('type', 'output');
+            outputFormData.append('file', outFile, traceName);
+            await fetch('/api/trace', { method: 'POST', body: outputFormData });
+          }
+        } catch (error) {
+          console.error(`Error running node ${nodeId}:`, error);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
         }
-      } catch (error) {
-        console.error(`Error running node ${nodeId}:`, error);
-        
-        // Update node run state to error
-        setNodes(nds => nds.map(n => {
-          if (n.id === nodeId) {
-            return {
-              ...n,
-              data: {
-                ...n.data,
-                runState: 'error'
-              }
-            };
+        completedRef.current.add(nodeId);
+        // Notify any waiting downstream nodes
+        for (const downstreamId of getDownstream(nodeId)) {
+          if (waiting[downstreamId]) {
+            waiting[downstreamId].forEach(fn => fn());
+            waiting[downstreamId] = [];
           }
-          return n;
-        }));
+        }
+        // Proactively start downstream nodes
+        for (const downstreamId of getDownstream(nodeId)) {
+          runNode(downstreamId);
+        }
       }
-
-      // Add run history for this node
       setNodeRunHistory(history => {
         const entry = {
           timestamp: new Date().toISOString(),
           status: 'done',
-          inputFile: node?.data?.uploadedFileName,
+          inputFile: node?.data?.uploadedFileNames?.join(','),
           outputFile: node?.data?.fileName,
         };
         return {
@@ -299,7 +295,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           [nodeId]: [...(history[nodeId] || []), entry],
         };
       });
-    }
+    };
+
+    // Start each root node branch independently
+    await Promise.all(rootNodes.map(root => runNode(root.id)));
     setRunning(false);
   };
 
@@ -313,10 +312,14 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   const handleEdgesChange = useCallback(
     (changes: any) => {
-      onEdgesChangeInternal(changes);
-      onEdgesChange?.(edges);
+      console.log('handleEdgesChange called with changes:', changes);
+      setEdges((eds) => {
+        const updated = applyEdgeChanges(changes, eds);
+        onEdgesChange?.(updated);
+        return updated;
+      });
     },
-    [edges, onEdgesChange, onEdgesChangeInternal]
+    [onEdgesChange, setEdges]
   );
 
   const handleAddNode = useCallback(
@@ -363,15 +366,23 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       <WorkflowToolbar onAddNode={handleAddNode} />
       <div className="flex-1 h-full">
         <ReactFlow
-          nodes={nodes.map(n => ({
-            ...n,
-            selected: n.id === selectedNodeId,
-            data: {
-              ...n.data,
-              runState: nodeRunStates[n.id] || 'idle',
-              running,
-            },
-          }))}
+          nodes={nodes.map(n => {
+            let isHighlighted = false;
+            if (n.type === 'trigger' && n.data.type === 'manual') {
+              isHighlighted = n.id === currentUploadNode;
+            } else {
+              isHighlighted = n.data.runState === 'running';
+            }
+            return {
+              ...n,
+              selected: n.id === selectedNodeId,
+              data: {
+                ...n.data,
+                running,
+                highlighted: isHighlighted,
+              },
+            };
+          })}
           edges={edges.map(e => ({ ...e, markerEnd: { type: MarkerType.ArrowClosed } }))}
           onNodesChange={handleNodesChange}
           onEdgesChange={handleEdgesChange}

@@ -29,11 +29,17 @@ const INTEGRATIONS = [
   { name: "Custom API", icon: "🔌" },
 ];
 
-export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNodeData & { runState?: string }>) => {
+export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNodeData & { runState?: string, highlighted?: boolean }>) => {
   let borderClass = "";
   if (data.runState === "running") borderClass = "border-2 border-blue-400 animate-pulse";
   else if (data.runState === "done") borderClass = "border-2 border-green-500";
   else borderClass = "border border-blue-100";
+
+  const highlighted = data.highlighted;
+  if (highlighted) {
+    // Debug: log when a trigger node is highlighted
+    console.log('Rainbow highlight (trigger):', data.label, highlighted);
+  }
 
   const getIcon = () => {
     switch (data.type) {
@@ -49,7 +55,7 @@ export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNode
   };
 
   return (
-    <Card className={`p-4 w-48 shadow-lg bg-blue-50 ${borderClass}`}>
+    <Card className={`p-4 w-48 shadow-lg bg-blue-50 ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">

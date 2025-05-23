@@ -109,6 +109,7 @@ config.ini
 
 # Uploads
 public/uploads/
+public/traces/
 
 # Next.js (JavaScript/TypeScript)
 node_modules/

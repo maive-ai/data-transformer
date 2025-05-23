@@ -92,3 +92,25 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.rainbow-outline {
+  position: relative;
+  z-index: 1;
+  border: 2px dashed red !important; /* DEBUG: Remove after confirming highlight works */
+}
+.rainbow-outline::after {
+  content: '';
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  z-index: -1;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(270deg, #ff0080, #7928ca, #007cf0, #00dfd8, #ff0080);
+  background-size: 1200% 1200%;
+  animation: rainbow 3s linear infinite;
+}
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

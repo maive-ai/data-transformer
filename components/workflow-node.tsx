@@ -11,11 +11,17 @@ interface WorkflowNodeData {
   type: "action" | "trigger" | "output";
 }
 
-export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runState?: string }>) => {
+export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runState?: string, highlighted?: boolean }>) => {
   let borderClass = "";
   if (data.runState === "running") borderClass = "border-2 border-blue-400 animate-pulse";
   else if (data.runState === "done") borderClass = "border-2 border-green-500";
   else borderClass = "border border-gray-200";
+
+  const highlighted = data.highlighted;
+  if (highlighted) {
+    // Debug: log when a node is highlighted
+    console.log('Rainbow highlight:', data.label, highlighted);
+  }
 
   // Render icon based on iconType string
   const getIcon = () => {
@@ -32,7 +38,7 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runSt
   };
 
   return (
-    <Card className={`p-4 w-48 shadow-lg ${borderClass}`}>
+    <Card className={`p-4 w-48 shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         {data.iconType && <div className="text-2xl">{getIcon()}</div>}

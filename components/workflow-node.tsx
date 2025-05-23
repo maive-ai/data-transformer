@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { FileSpreadsheet, Mail, Database } from "lucide-react";
+import { FileSpreadsheet, Mail, Database, Brain } from "lucide-react";
 
 interface WorkflowNodeData {
   label: string;
@@ -32,7 +32,11 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runSt
         return <Mail className="w-6 h-6" />;
       case "erp":
         return <Database className="w-6 h-6" />;
+      case "brain":
+        return <Brain className="w-6 h-6" />;
       default:
+        // Default to Brain icon for action nodes
+        if (data.type === "action") return <Brain className="w-6 h-6" />;
         return null;
     }
   };
@@ -41,7 +45,7 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runSt
     <Card className={`p-4 w-48 shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
-        {data.iconType && <div className="text-2xl">{getIcon()}</div>}
+        <div className="text-2xl">{getIcon()}</div>
         <div className="text-sm font-medium text-center">{data.label}</div>
       </div>
       <Handle type="source" position={Position.Right} className="w-3 h-3" />

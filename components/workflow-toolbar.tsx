@@ -101,7 +101,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
               size="icon"
               onClick={() =>
                 handleAddNode("action", {
-                  label: "AI Data Transform",
+                  label: "AI Transform",
                   type: "action",
                   icon: <Brain className="w-6 h-6" />,
                 })

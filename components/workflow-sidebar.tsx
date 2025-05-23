@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const INTEGRATIONS = [
   { name: "Gmail", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail" className="w-7 h-7" /> },
@@ -13,11 +13,13 @@ const INTEGRATIONS = [
   { name: "Salesforce", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/640px-Salesforce.com_logo.svg.png " alt="Salesforce" className="w-7 h-7" /> },
 ];
 
-export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
+export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], nodes = [], edges = [] }: {
   node: any;
   onClose: () => void;
   onChange: (id: string, newData: any) => void;
   runHistory?: Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>;
+  nodes?: any[];
+  edges?: any[];
 }) {
   // For event trigger: integration and description
   const [integration, setIntegration] = useState(node.data.integration || null);
@@ -35,6 +37,34 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
   const [outputTemplateName, setOutputTemplateName] = useState(node.data.outputTemplateName || "");
   const [pdfFiles, setPdfFiles] = useState<File[]>([]);
   const [xlsxTemplate, setXlsxTemplate] = useState<File | null>(null);
+  const [sheetNames, setSheetNames] = useState<string[]>(node.data.sheetNames || []);
+
+  // For Excel Export node: compute inbound CSV count based on actual edges
+  const inboundCsvCount = useMemo(() => {
+    if (node.type !== 'output' || node.data.type !== 'excel') return 0;
+    // Find all edges where this node is the target
+    const inboundEdges = edges.filter(e => e.target === node.id);
+    // For each, check if the source node outputs CSV
+    let count = 0;
+    for (const edge of inboundEdges) {
+      const sourceNode = nodes.find(n => n.id === edge.source);
+      if (sourceNode && sourceNode.data?.ioConfig?.outputType?.type === 'csv') {
+        count++;
+      }
+    }
+    return count || 1;
+  }, [node, nodes, edges]);
+
+  // Ensure sheetNames array matches inboundCsvCount
+  useEffect(() => {
+    if (node.type === 'output' && node.data.type === 'excel') {
+      let names = sheetNames.slice();
+      while (names.length < inboundCsvCount) names.push(`Sheet${names.length + 1}`);
+      if (names.length > inboundCsvCount) names = names.slice(0, inboundCsvCount);
+      setSheetNames(names);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inboundCsvCount, node.id]);
 
   useEffect(() => {
     setOutputTemplateName(node.data.outputTemplateName || "");
@@ -108,7 +138,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
         uploadedFileName,
         ioConfig: {
           inputTypes: [],  // Manual upload doesn't need input types
-          outputType: { type: uploadedFile?.name.split('.').pop()?.toLowerCase() || "csv" }
+          outputType: { type: uploadedFile?.name.split('.')?.pop()?.toLowerCase() || "csv" }
         }
       });
     } else if (node.type === "action") {
@@ -124,6 +154,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
     } else if (node.type === "output" && node.data.type === "excel") {
       await onChange(node.id, {
         fileName,
+        sheetNames,
         ioConfig: {
           inputTypes: [{ type: "csv" }],
           outputType: { type: "excel" }
@@ -300,6 +331,29 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [] }: {
                 This node accepts CSV files as input and converts them to Excel format.
               </div>
             </div>
+            {/* Sheet name configuration for Excel Export node */}
+            {node.type === 'output' && node.data.type === 'excel' && (
+              <div className="mt-4">
+                <div className="font-medium mb-2">Sheet Names</div>
+                <div className="space-y-2">
+                  {sheetNames.map((name, idx) => (
+                    <input
+                      key={idx}
+                      type="text"
+                      className="w-full border rounded-lg p-2 text-sm"
+                      value={name}
+                      onChange={e => {
+                        const newNames = [...sheetNames];
+                        newNames[idx] = e.target.value;
+                        setSheetNames(newNames);
+                      }}
+                      placeholder={`Sheet${idx + 1}`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">You can customize the name of each sheet in the final Excel file. The number of sheets matches the number of inbound CSV files.</p>
+              </div>
+            )}
             {/* Download section for Excel output node after run */}
             {runHistory.length > 0 && node.data.fileUrl && (
               <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-green-50">

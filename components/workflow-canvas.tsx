@@ -266,6 +266,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           // Merge all input CSVs into a single multi-sheet XLSX file
           const wb = XLSX.utils.book_new();
           let sheetCount = 1;
+          const sheetNamesFromNode = Array.isArray(node.data.sheetNames) ? node.data.sheetNames : [];
           for (let i = 0; i < inputFiles.length; i++) {
             const file = inputFiles[i];
             if (file.type === 'text/csv') {
@@ -280,9 +281,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 return obj;
               });
               const ws = XLSX.utils.json_to_sheet(data);
-              // Sheet name: use file name (without extension) or SheetN, ensure uniqueness
-              let baseSheetName = file.name.replace(/\.[^/.]+$/, "");
-              if (!baseSheetName) baseSheetName = `Sheet${sheetCount}`;
+              // Sheet name: use user-specified name, fallback to SheetN, ensure uniqueness
+              let baseSheetName = (sheetNamesFromNode[i] || '').trim() || `Sheet${sheetCount}`;
               let sheetName = baseSheetName;
               let suffix = 1;
               while (wb.SheetNames.includes(sheetName)) {
@@ -558,6 +558,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             onClose={handleSidebarClose}
             onChange={handleNodeDataChange}
             runHistory={nodeRunHistory[selectedNode.id] || []}
+            nodes={nodes}
+            edges={edges}
           />
         )}
         {showFileUpload && currentUploadNode && (

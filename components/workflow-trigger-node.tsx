@@ -31,11 +31,12 @@ const INTEGRATIONS = [
 
 export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNodeData & { runState?: string, highlighted?: boolean }>) => {
   let borderClass = "";
-  if (data.runState === "running") borderClass = "border-2 border-blue-400 animate-pulse";
+  if (data.runState === "prompt") borderClass = "border-2 border-blue-400 animate-pulse";
+  else if (data.runState === "running") borderClass = "";
   else if (data.runState === "done") borderClass = "border-2 border-green-500";
   else borderClass = "border border-blue-100";
 
-  const highlighted = data.highlighted;
+  const highlighted = data.highlighted && data.runState !== "prompt";
   if (highlighted) {
     // Debug: log when a trigger node is highlighted
     console.log('Rainbow highlight (trigger):', data.label, highlighted);

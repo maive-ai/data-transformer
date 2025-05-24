@@ -184,10 +184,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return runNode(nodeId);
       }
       if (node.type === 'trigger' && node.data.type === 'manual') {
-        // Only this node is running (rainbow), all others idle/done
+        // Only this node is being prompted for file upload
         setNodes(nds => nds.map(n =>
           n.type === 'trigger' && n.data.type === 'manual'
-            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'running' : (n.data.runState === 'done' ? 'done' : 'idle') } }
+            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'prompt' : (n.data.runState === 'done' ? 'done' : 'idle') } }
             : n
         ));
         setCurrentUploadNode(nodeId);

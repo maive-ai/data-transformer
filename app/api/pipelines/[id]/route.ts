@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPipeline, savePipeline } from '@/lib/storage';
+import { getPipeline, savePipeline, deletePipeline } from '@/lib/storage';
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
@@ -29,4 +29,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newPipeline);
   }
   return NextResponse.json({ error: "Failed to create pipeline" }, { status: 500 });
+}
+
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  const pipeline = getPipeline(id);
+  if (!pipeline) {
+    return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
+  }
+  if (deletePipeline(id)) {
+    return NextResponse.json({ success: true });
+  }
+  return NextResponse.json({ error: "Failed to delete pipeline" }, { status: 500 });
 }

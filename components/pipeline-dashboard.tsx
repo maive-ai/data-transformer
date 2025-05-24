@@ -16,20 +16,20 @@ export function PipelineDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const loadPipelines = () => {
+    async function loadPipelines() {
+      setIsLoading(true);
       try {
-        const storedPipelines = localStorage.getItem("pipelines");
-        if (storedPipelines) {
-          setPipelines(JSON.parse(storedPipelines));
+        const res = await fetch('/api/pipelines');
+        if (res.ok) {
+          const data = await res.json();
+          setPipelines(data);
         }
       } catch (error) {
         console.error("Failed to load pipelines:", error);
       } finally {
         setIsLoading(false);
       }
-    };
-
+    }
     loadPipelines();
   }, []);
 
@@ -46,10 +46,18 @@ export function PipelineDashboard() {
     )
     .slice(0, 4);
 
-  const handleDelete = (id: string) => {
-    const updated = pipelines.filter((p) => p.id !== id);
-    setPipelines(updated);
-    localStorage.setItem("pipelines", JSON.stringify(updated));
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/pipelines/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setPipelines(pipelines.filter((p) => p.id !== id));
+      } else {
+        // Optionally show an error toast
+        console.error('Failed to delete pipeline');
+      }
+    } catch (error) {
+      console.error('Error deleting pipeline:', error);
+    }
   };
 
   return (

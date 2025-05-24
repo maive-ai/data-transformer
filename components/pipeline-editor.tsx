@@ -25,6 +25,7 @@ interface PipelineEditorProps {
 export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps) {
   const [nodes, setNodes] = useState<Node[]>(pipeline?.workflow?.nodes || []);
   const [edges, setEdges] = useState<Edge[]>(pipeline?.workflow?.edges || []);
+  const [pipelineName, setPipelineName] = useState(pipeline?.name || "New Pipeline");
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
   const canvasRef = useRef<any>(null);
@@ -33,8 +34,10 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
   // Refs to always have latest nodes/edges
   const nodesRef = useRef(nodes);
   const edgesRef = useRef(edges);
+  const pipelineNameRef = useRef(pipelineName);
   useEffect(() => { nodesRef.current = nodes; }, [nodes]);
   useEffect(() => { edgesRef.current = edges; }, [edges]);
+  useEffect(() => { pipelineNameRef.current = pipelineName; }, [pipelineName]);
 
   // Load pipeline from backend on mount
   useEffect(() => {
@@ -46,6 +49,7 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
           const data = await res.json();
           setNodes(data.workflow.nodes);
           setEdges(data.workflow.edges);
+          setPipelineName(data.name || "New Pipeline");
         }
       } catch (error) {
         toast({
@@ -65,6 +69,7 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
       try {
         const payload = {
           ...pipeline,
+          name: pipelineNameRef.current,
           workflow: { nodes: nodesRef.current, edges: edgesRef.current },
           updatedAt: new Date().toISOString(),
         };
@@ -87,6 +92,11 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
     }, 500),
     [pipeline, pipelineId]
   );
+
+  const handlePipelineNameChange = (newName: string) => {
+    setPipelineName(newName);
+    savePipeline();
+  };
 
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -150,6 +160,8 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
             setEdges={setEdges}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
+            pipelineName={pipelineName}
+            onPipelineNameChange={handlePipelineNameChange}
           />
         </CardContent>
       </div>

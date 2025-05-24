@@ -39,6 +39,8 @@ interface WorkflowCanvasProps {
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
   onNodesChange?: (changes: NodeChange[]) => void;
   onEdgesChange?: (changes: EdgeChange[]) => void;
+  pipelineName?: string;
+  onPipelineNameChange?: (name: string) => void;
 }
 
 // Helper to slugify node label for filenames
@@ -77,13 +79,28 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   setEdges,
   onNodesChange,
   onEdgesChange,
+  pipelineName = "New Pipeline",
+  onPipelineNameChange,
 }: WorkflowCanvasProps, ref) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [nodeRunHistory, setNodeRunHistory] = useState<Record<string, Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>>>({});
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [currentUploadNode, setCurrentUploadNode] = useState<string | null>(null);
+  const [localPipelineName, setLocalPipelineName] = useState(pipelineName);
   const completedRef = useRef(new Set<string>());
+
+  // Update local name when prop changes
+  useEffect(() => {
+    setLocalPipelineName(pipelineName);
+  }, [pipelineName]);
+
+  // Handle pipeline name changes
+  const handlePipelineNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setLocalPipelineName(newName);
+    onPipelineNameChange?.(newName);
+  };
 
   // Helper: get topological order of nodes (DAG)
   const getTopologicalOrder = () => {
@@ -520,7 +537,21 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   return (
     <div className="w-full h-full flex flex-col relative">
-      <WorkflowToolbar onAddNode={handleAddNode} />
+      {/* Pipeline name input, absolutely positioned top-left */}
+      <div className="absolute top-4 left-4 z-40">
+        <input
+          type="text"
+          value={localPipelineName}
+          onChange={handlePipelineNameChange}
+          className="text-xl font-semibold bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Enter pipeline name"
+          style={{ minWidth: 180 }}
+        />
+      </div>
+      {/* Toolbar absolutely centered at the top, no border or padding */}
+      <div className="absolute left-1/2 top-6 transform -translate-x-1/2 z-30">
+        <WorkflowToolbar onAddNode={handleAddNode} />
+      </div>
       <div className="flex-1 h-full">
         <ReactFlow
           nodes={nodes.map(n => {

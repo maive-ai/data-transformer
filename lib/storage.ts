@@ -38,4 +38,16 @@ export function savePipeline(id: string, pipeline: any) {
 export function getPipeline(id: string) {
   const pipelines = getPipelines();
   return pipelines[id];
+}
+
+export function deletePipeline(id: string) {
+  try {
+    const pipelines = getPipelines();
+    delete pipelines[id];
+    fs.writeFileSync(STORAGE_FILE, JSON.stringify(pipelines, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error deleting pipeline:', error);
+    return false;
+  }
 } 

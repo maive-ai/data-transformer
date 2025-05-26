@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useMemo } from "react";
 
@@ -38,6 +38,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
   const [pdfFiles, setPdfFiles] = useState<File[]>([]);
   const [xlsxTemplate, setXlsxTemplate] = useState<File | null>(null);
   const [sheetNames, setSheetNames] = useState<string[]>(node.data.sheetNames || []);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   // For Excel Export node: compute inbound CSV count based on actual edges
   const inboundCsvCount = useMemo(() => {
@@ -168,12 +169,49 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
   return (
     <div className="fixed top-0 right-0 h-full w-[380px] bg-white shadow-2xl z-40 flex flex-col border-l border-gray-200 animate-in slide-in-from-right duration-200">
       <div className="flex items-center justify-between p-4 border-b">
-        <div className="font-semibold text-lg">Node Details</div>
+        <div className="flex items-center gap-2">
+          <div className="font-semibold text-lg truncate" title={node.data.label || fileName || 'Node'}>{node.data.label || fileName || 'Node'}</div>
+          <button
+            type="button"
+            aria-label="Node information"
+            onClick={() => setShowInfoModal(true)}
+            className="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none"
+            style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: 0 }}
+          >
+            <Info className="w-5 h-5" />
+          </button>
+        </div>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="w-5 h-5" />
         </Button>
       </div>
       <div className="flex-1 overflow-y-auto p-6 pb-20">
+        {/* Info Modal */}
+        {showInfoModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30"
+            onClick={() => setShowInfoModal(false)}
+          >
+            <div
+              className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full relative"
+              onClick={e => e.stopPropagation()}
+            >
+              <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowInfoModal(false)}><X className="w-5 h-5" /></button>
+              <div className="font-semibold text-lg mb-4">{node.data.label || fileName || 'Node'}</div>
+              <p className="text-base text-gray-800">
+                {node.type === "output" && node.data.type === "excel"
+                  ? "This node accepts CSV files as input and converts them to Excel format."
+                  : node.type === "trigger" && node.data.type === "event"
+                  ? "This node triggers when an event occurs in the selected integration."
+                  : node.type === "trigger" && node.data.type === "manual"
+                  ? "This node will prompt for one or more PDF uploads when the pipeline runs."
+                  : node.type === "action"
+                  ? "This node performs an AI-powered transformation on the input file(s)."
+                  : "No additional details for this node type."}
+              </p>
+            </div>
+          </div>
+        )}
         {node.type === "trigger" && node.data.type === "event" ? (
           <>
             <div className="mb-6">
@@ -202,34 +240,9 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             </div>
           </>
         ) : node.type === "trigger" && node.data.type === "manual" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Upload PDF(s)</div>
-              <input
-                type="file"
-                accept=".pdf"
-                multiple
-                onChange={e => {
-                  if (e.target.files) {
-                    const files = Array.from(e.target.files);
-                    setPdfFiles(files);
-                    // Optionally update node data or call onChange here
-                  }
-                }}
-                className="block"
-              />
-              <ul>
-                {pdfFiles.map((file, idx) => (
-                  <li key={idx}>{file.name}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="p-4 border rounded-lg bg-blue-50">
-              <div className="text-sm text-blue-700">
-                This node will prompt for one or more PDF uploads when the pipeline runs.
-              </div>
-            </div>
-          </div>
+          <>
+            {/* Only show run history and other relevant sections for manual trigger node */}
+          </>
         ) : node.type === "action" ? (
           <div className="space-y-6">
             <div>
@@ -326,11 +339,6 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                 onChange={handleFileNameChange}
               />
               <p className="text-xs text-gray-500 mt-1">Enter the name for your Excel file (e.g., report.xlsx)</p>
-            </div>
-            <div className="p-4 border rounded-lg bg-blue-50">
-              <div className="text-sm text-blue-700">
-                This node accepts CSV files as input and converts them to Excel format.
-              </div>
             </div>
             {/* Sheet name configuration for Excel Export node */}
             {node.type === 'output' && node.data.type === 'excel' && (

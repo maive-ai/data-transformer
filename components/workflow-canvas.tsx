@@ -41,6 +41,7 @@ interface WorkflowCanvasProps {
   onEdgesChange?: (changes: EdgeChange[]) => void;
   pipelineName?: string;
   onPipelineNameChange?: (name: string) => void;
+  renderRight?: React.ReactNode;
 }
 
 // Helper to slugify node label for filenames
@@ -81,6 +82,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   onEdgesChange,
   pipelineName = "New Pipeline",
   onPipelineNameChange,
+  renderRight,
 }: WorkflowCanvasProps, ref) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
@@ -537,20 +539,25 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   return (
     <div className="w-full h-full flex flex-col relative">
-      {/* Pipeline name input, absolutely positioned top-left */}
-      <div className="absolute top-4 left-4 z-40">
-        <input
-          type="text"
-          value={localPipelineName}
-          onChange={handlePipelineNameChange}
-          className="text-xl font-semibold bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter pipeline name"
-          style={{ minWidth: 180 }}
-        />
-      </div>
-      {/* Toolbar absolutely centered at the top, no border or padding */}
-      <div className="absolute left-1/2 top-6 transform -translate-x-1/2 z-30">
-        <WorkflowToolbar onAddNode={handleAddNode} />
+      {/* Top bar: pipeline name, toolbar, play/stop button, absolutely positioned */}
+      <div className="absolute left-0 right-0 top-6 z-40 flex flex-row items-center justify-between px-8 pointer-events-none">
+        {/* Pipeline name input, left */}
+        <div className="pointer-events-auto">
+          <input
+            type="text"
+            value={localPipelineName}
+            onChange={handlePipelineNameChange}
+            className="text-xl font-semibold bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden text-ellipsis whitespace-nowrap"
+            placeholder="Enter pipeline name"
+            style={{ minWidth: 280, maxWidth: 520 }}
+          />
+        </div>
+        {/* Toolbar, center */}
+        <div className="flex-1 flex justify-center pointer-events-auto">
+          <WorkflowToolbar onAddNode={handleAddNode} />
+        </div>
+        {/* Play/Stop button or placeholder, right */}
+        <div className="pointer-events-auto">{renderRight ?? <div style={{ width: 48 }} />}</div>
       </div>
       <div className="flex-1 h-full">
         <ReactFlow

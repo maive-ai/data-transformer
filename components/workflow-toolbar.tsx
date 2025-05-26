@@ -38,7 +38,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
   return (
     <TooltipProvider>
       <div
-        className="absolute left-1/2 top-6 z-20 -translate-x-1/2 flex items-center gap-3 px-4 py-2 rounded-xl shadow-lg bg-white/80 backdrop-blur border border-gray-200"
+        className="flex items-center gap-3 px-4 py-2 rounded-xl shadow-lg bg-white/80 backdrop-blur border border-gray-200"
         style={{ pointerEvents: "auto" }}
       >
         <Tooltip>

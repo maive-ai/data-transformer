@@ -293,13 +293,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               const rows = csvContent.split('\n').map(row => row.split(','));
               const headers = rows[0];
               const data = rows.slice(1).map(row => {
-                const obj: Record<string, string> = {};
+                const obj: Record<string, any> = {};
                 headers.forEach((header, index) => {
-                  obj[header] = row[index] || '';
+                  const value = row[index] || '';
+                  // Try to convert to number if possible
+                  const numValue = Number(value);
+                  obj[header] = !isNaN(numValue) && value.trim() !== '' ? numValue : value;
                 });
                 return obj;
               });
-              const ws = XLSX.utils.json_to_sheet(data);
+              const ws = XLSX.utils.json_to_sheet(data, { cellDates: true });
               // Sheet name: use user-specified name, fallback to SheetN, ensure uniqueness
               let baseSheetName = (sheetNamesFromNode[i] || '').trim() || `Sheet${sheetCount}`;
               let sheetName = baseSheetName;

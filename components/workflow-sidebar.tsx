@@ -325,6 +325,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                 value={fileName}
                 onChange={handleFileNameChange}
               />
+              <p className="text-xs text-gray-500 mt-1">Enter the name for your Excel file (e.g., report.xlsx)</p>
             </div>
             <div className="p-4 border rounded-lg bg-blue-50">
               <div className="text-sm text-blue-700">
@@ -359,13 +360,44 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-green-50">
                 <div className="font-medium text-sm">Download Output</div>
                 <div className="text-xs text-gray-700 mb-2">{fileName || "output.xlsx"}</div>
-                <a
-                  href={node.data.fileUrl}
-                  download
+                <button
+                  onClick={async () => {
+                    try {
+                      // Try to use the File System Access API if available
+                      if ('showSaveFilePicker' in window) {
+                        const handle = await window.showSaveFilePicker({
+                          suggestedName: fileName || 'output.xlsx',
+                          types: [{
+                            description: 'Excel Spreadsheet',
+                            accept: {
+                              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+                            }
+                          }]
+                        });
+                        const writable = await handle.createWritable();
+                        const response = await fetch(node.data.fileUrl);
+                        const blob = await response.blob();
+                        await writable.write(blob);
+                        await writable.close();
+                      } else {
+                        // Fallback for browsers that don't support File System Access API
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = node.data.fileUrl;
+                        downloadLink.download = fileName || 'output.xlsx';
+                        downloadLink.click();
+                      }
+                    } catch (err) {
+                      // If user cancels or there's an error, fall back to standard download
+                      const downloadLink = document.createElement('a');
+                      downloadLink.href = node.data.fileUrl;
+                      downloadLink.download = fileName || 'output.xlsx';
+                      downloadLink.click();
+                    }
+                  }}
                   className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold shadow hover:bg-green-700 transition"
                 >
                   Download File
-                </a>
+                </button>
               </div>
             )}
           </div>

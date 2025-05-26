@@ -23,6 +23,21 @@ import { WorkflowToolbar } from "./workflow-toolbar";
 import { convertCsvToExcel } from "@/lib/utils";
 import * as XLSX from "xlsx";
 
+// Add File System Access API type declarations
+declare global {
+  interface Window {
+    showSaveFilePicker(options?: SaveFilePickerOptions): Promise<FileSystemFileHandle>;
+  }
+}
+
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+  types?: Array<{
+    description: string;
+    accept: Record<string, string[]>;
+  }>;
+}
+
 // Define nodeTypes outside the component for ReactFlow stability
 const nodeTypes = {
   trigger: WorkflowTriggerNode,
@@ -321,6 +336,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           });
 
+          // Store the file data without triggering download
           nodeData.set(nodeId, { files: [mergedExcelFile] });
           setNodes(nds => nds.map(n => n.id === nodeId ? {
             ...n,
@@ -328,7 +344,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               ...n.data,
               runState: 'done',
               fileUrl: URL.createObjectURL(mergedExcelFile),
-              outputFileName: mergedExcelFile.name,
+              outputFileName: node.data.fileName || mergedExcelFile.name,
             },
           } : n));
 

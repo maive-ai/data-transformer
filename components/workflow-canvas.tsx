@@ -17,11 +17,11 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { WorkflowNode } from './workflow-node';
 import { WorkflowTriggerNode } from './workflow-trigger-node';
-import { WorkflowOutputNode } from './workflow-output-node';
 import { WorkflowSidebar } from './workflow-sidebar';
 import { WorkflowToolbar } from "./workflow-toolbar";
 import { convertCsvToExcel } from "@/lib/utils";
 import * as XLSX from "xlsx";
+import { WorkflowOutputNode } from './workflow-output-node';
 
 // Add File System Access API type declarations
 declare global {

@@ -119,3 +119,18 @@ body {
   0% { background-position: 0% 50%; }
   100% { background-position: 100% 50%; }
 }
+
+/* Normalize React Flow output node wrapper to match card size and remove extra padding */
+.react-flow__node-output {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}

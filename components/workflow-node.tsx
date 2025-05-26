@@ -43,7 +43,7 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runSt
   };
 
   return (
-    <Card className={`p-4 w-48 shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>

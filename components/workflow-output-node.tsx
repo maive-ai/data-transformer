@@ -43,7 +43,6 @@ export const WorkflowOutputNode = memo(({ data }: NodeProps<WorkflowOutputNodeDa
         <div className="text-2xl">{getIcon()}</div>
         <div className="text-sm font-medium text-center">{data.label}</div>
       </div>
-      <Handle type="source" position={Position.Right} className="w-3 h-3" />
     </Card>
   );
 }); 

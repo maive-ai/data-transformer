@@ -401,52 +401,28 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               </select>
             </div>
             {/* Download section for AI Transform node after run */}
-            {runHistory.length > 0 && node.data.fileUrl && (
+            {node.data.ioConfig?.outputType?.type === 'json' && node.data.fileUrl && (
               <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-purple-50">
-                <div className="font-medium text-sm">Download Transform Output</div>
-                <div className="text-xs text-gray-700 mb-2">{outputFileName || `output.${outputType}`}</div>
+                <div className="font-medium text-sm">Download JSON Output</div>
+                <div className="text-xs text-gray-700 mb-2">{outputFileName || 'output.json'}</div>
                 <button
                   onClick={async () => {
-                    try {
-                      // Try to use the File System Access API if available
-                      if ('showSaveFilePicker' in window) {
-                        const handle = await window.showSaveFilePicker({
-                          suggestedName: outputFileName || `output.${outputType}`,
-                          types: [{
-                            description: 'Transform Output',
-                            accept: {
-                              'text/csv': ['.csv'],
-                              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-                              'application/json': ['.json'],
-                              'application/xml': ['.xml'],
-                              'text/markdown': ['.md']
-                            }
-                          }]
-                        });
-                        const writable = await handle.createWritable();
-                        const response = await fetch(node.data.fileUrl);
-                        const blob = await response.blob();
-                        await writable.write(blob);
-                        await writable.close();
-                      } else {
-                        // Fallback for browsers that don't support File System Access API
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = node.data.fileUrl;
-                        downloadLink.download = outputFileName || `output.${outputType}`;
-                        downloadLink.click();
-                      }
-                    } catch (err) {
-                      // If user cancels or there's an error, fall back to standard download
-                      const downloadLink = document.createElement('a');
-                      downloadLink.href = node.data.fileUrl;
-                      downloadLink.download = outputFileName || `output.${outputType}`;
-                      downloadLink.click();
-                    }
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = node.data.fileUrl;
+                    downloadLink.download = outputFileName || 'output.json';
+                    downloadLink.click();
                   }}
                   className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-semibold shadow hover:bg-purple-700 transition"
                 >
                   Download File
                 </button>
+                {/* Optionally, show a preview of the JSON */}
+                <pre className="mt-2 text-xs bg-gray-100 rounded p-2 max-h-48 overflow-auto">
+                  <code>
+                    {/* We'll fetch and show the JSON preview using a useEffect+useState in a real app, but for now just show the fileUrl */}
+                    {node.data.fileUrl}
+                  </code>
+                </pre>
               </div>
             )}
           </div>

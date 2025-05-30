@@ -418,8 +418,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       } else if (node.type === 'aiOperator') {
         try {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
-          // Do not mark as done here; let the sidebar video onEnded handler do it
-          // Do not call any backend or set a timeout
+          // Simulate AI processing delay
+          await new Promise(res => setTimeout(res, 4000));
+          // Mark as done
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          // Mark as completed
+          completedRef.current.add(nodeId);
+          // Trigger downstream nodes
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
         } catch (err) {
           console.error('Error in AI Operator node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));

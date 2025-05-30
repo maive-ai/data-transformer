@@ -412,7 +412,7 @@
     "name": "AI Operator Endpoint",
     "description": "",
     "createdAt": "2025-05-30T16:41:41.886Z",
-    "updatedAt": "2025-05-30T18:46:22.275Z",
+    "updatedAt": "2025-05-30T18:58:17.499Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -474,10 +474,12 @@
             "type": "http",
             "statusCode": 200,
             "contentType": "application/json",
-            "runState": "idle"
+            "runState": "done",
+            "responseValue": 81.72,
+            "responseStatus": 200
           },
-          "width": 146,
-          "height": 110,
+          "width": 148,
+          "height": 112,
           "selected": true,
           "positionAbsolute": {
             "x": 625.5963788850084,

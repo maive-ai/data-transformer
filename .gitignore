@@ -66,6 +66,7 @@ ipython_config.py
 *.npy
 *.npz
 datasets/
+data/
 raw_data/
 processed_data/
 temp_data/

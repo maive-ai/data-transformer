@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp } from "lucide-react";
+import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp, FileText } from "lucide-react";
 import { Node } from "reactflow";
 
 interface WorkflowToolbarProps {
@@ -129,6 +129,23 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
             </Button>
           </TooltipTrigger>
           <TooltipContent>Excel Output</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                handleAddNode("output", {
+                  label: "Doc Export",
+                  type: "doc",
+                })
+              }
+            >
+              <FileText className="w-6 h-6" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Doc Output</TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>

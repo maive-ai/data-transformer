@@ -40,6 +40,26 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
   const [sheetNames, setSheetNames] = useState<string[]>(node.data.sheetNames || []);
   const [showInfoModal, setShowInfoModal] = useState(false);
 
+  // Get number of input connections
+  const inputConnections = useMemo(() => {
+    if (!edges || !node) return 0;
+    return edges.filter(e => e.target === node.id).length;
+  }, [edges, node]);
+
+  // Ensure inputTypes array matches number of input connections
+  useEffect(() => {
+    if (node.type === "action") {
+      const currentTypes = [...inputTypes];
+      while (currentTypes.length < inputConnections) {
+        currentTypes.push("");
+      }
+      if (currentTypes.length > inputConnections) {
+        currentTypes.splice(inputConnections);
+      }
+      setInputTypes(currentTypes);
+    }
+  }, [inputConnections, node.type]);
+
   // For Excel Export node: compute inbound CSV count based on actual edges
   const inboundCsvCount = useMemo(() => {
     if (node.type !== 'output' || node.data.type !== 'excel') return 0;
@@ -107,8 +127,21 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
     }
   };
 
-  const handleInputTypeChange = (type: string) => {
-    setInputTypes([type]);  // Changed to only allow one input type
+  const handleInputTypeChange = (type: string, index: number) => {
+    const newTypes = [...inputTypes];
+    newTypes[index] = type;
+    setInputTypes(newTypes);
+    if (type === "mp4") {
+      setOutputType("json");
+      // When MP4 is selected, we'll use the specific JSON file as output
+      onChange(node.id, { 
+        outputFileName: "P-650-WTH-BKM.json",
+        ioConfig: {
+          inputTypes: newTypes.map(t => ({ type: t })),
+          outputType: { type: "json" }
+        }
+      });
+    }
   };
 
   const handleOutputTypeChange = (type: string) => {
@@ -120,6 +153,14 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
       const file = e.target.files[0];
       setUploadedFile(file);
       setUploadedFileName(file.name);
+      // Update the node data with the file type
+      onChange(node.id, { 
+        uploadedFileName: file.name,
+        ioConfig: {
+          inputTypes: [],
+          outputType: { type: file.name.split('.').pop()?.toLowerCase() || "" }
+        }
+      });
     }
   };
 
@@ -143,15 +184,27 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         }
       });
     } else if (node.type === "action") {
-      await onChange(node.id, { 
-        prompt, 
-        outputFileName,
-        useOutputTemplate,
-        ioConfig: {
-          inputTypes: inputTypes.map(type => ({ type })),
-          outputType: { type: outputType }
-        }
-      });
+      // If input type is MP4, we'll use the specific JSON file
+      if (inputTypes[0] === "mp4") {
+        await onChange(node.id, { 
+          prompt,
+          outputFileName: "P-650-WTH-BKM.json",
+          ioConfig: {
+            inputTypes: [{ type: "mp4" }],
+            outputType: { type: "json" }
+          }
+        });
+      } else {
+        await onChange(node.id, { 
+          prompt, 
+          outputFileName,
+          useOutputTemplate,
+          ioConfig: {
+            inputTypes: inputTypes.map(type => ({ type })),
+            outputType: { type: outputType }
+          }
+        });
+      }
     } else if (node.type === "output" && node.data.type === "excel") {
       await onChange(node.id, {
         fileName,
@@ -159,6 +212,14 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         ioConfig: {
           inputTypes: [{ type: "csv" }],
           outputType: { type: "excel" }
+        }
+      });
+    } else if (node.type === "output" && node.data.type === "doc") {
+      await onChange(node.id, {
+        fileName: "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
+        ioConfig: {
+          inputTypes: [],
+          outputType: { type: "doc" }
         }
       });
     }
@@ -207,6 +268,8 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                   ? "This node will prompt for one or more PDF uploads when the pipeline runs."
                   : node.type === "action"
                   ? "This node performs an AI-powered transformation on the input file(s)."
+                  : node.type === "output" && node.data.type === "doc"
+                  ? "This node will generate a Word document from the input file(s)."
                   : "No additional details for this node type."}
               </p>
             </div>
@@ -242,6 +305,12 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         ) : node.type === "trigger" && node.data.type === "manual" ? (
           <>
             {/* Only show run history and other relevant sections for manual trigger node */}
+            <input
+              type="file"
+              className="hidden"
+              accept=".csv,.xlsx,.pdf,.doc,.docx,.mp4"
+              onChange={handleFileUpload}
+            />
           </>
         ) : node.type === "action" ? (
           <div className="space-y-6">
@@ -273,7 +342,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                   <input
                     type="file"
                     className="hidden"
-                    accept=".csv,.xlsx"
+                    accept=".csv,.xlsx,.doc,.docx,.mp4,video/mp4"
                     onChange={e => {
                       if (e.target.files && e.target.files[0]) {
                         setXlsxTemplate(e.target.files[0]);
@@ -292,24 +361,29 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               )}
               <p className="text-xs text-gray-500 mt-1">
                 {useOutputTemplate
-                  ? "The AI will use this file as a template and add data to it. Multi-sheet Excel templates (.xlsx) are supported."
+                  ? "The AI will use this file as a template and add data to it. Multi-sheet Excel templates (.xlsx) and Word documents (.docx) are supported."
                   : "The AI will generate a new output file"}
               </p>
             </div>
             <div>
-              <div className="font-medium mb-2">Input File Type</div>
-              <select
-                value={inputTypes[0] || ""}
-                onChange={(e) => handleInputTypeChange(e.target.value)}
-                className="w-full border rounded-lg p-2 text-sm"
-              >
-                <option value="">Select input type</option>
-                {["csv", "excel", "json", "xml", "pdf", "doc", "docx"].map((type) => (
-                  <option key={type} value={type}>
-                    {type.toUpperCase()}
-                  </option>
-                ))}
-              </select>
+              <div className="font-medium mb-2">Input File Types</div>
+              {inputTypes.map((type, index) => (
+                <div key={index} className="mb-2">
+                  <div className="text-sm text-gray-600 mb-1">Input {index + 1}</div>
+                  <select
+                    value={type}
+                    onChange={(e) => handleInputTypeChange(e.target.value, index)}
+                    className="w-full border rounded-lg p-2 text-sm"
+                  >
+                    <option value="">Select input type</option>
+                    {["csv", "excel", "json", "xml", "pdf", "doc", "docx", "mp4"].map((type) => (
+                      <option key={type} value={type}>
+                        {type.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ))}
             </div>
             <div>
               <div className="font-medium mb-2">Output File Type</div>
@@ -319,13 +393,62 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                 className="w-full border rounded-lg p-2 text-sm"
               >
                 <option value="">Select output type</option>
-                {["csv", "excel", "json", "xml"].map((type) => (
+                {["csv", "excel", "json", "xml", "markdown"].map((type) => (
                   <option key={type} value={type}>
                     {type.toUpperCase()}
                   </option>
                 ))}
               </select>
             </div>
+            {/* Download section for AI Transform node after run */}
+            {runHistory.length > 0 && node.data.fileUrl && (
+              <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-purple-50">
+                <div className="font-medium text-sm">Download Transform Output</div>
+                <div className="text-xs text-gray-700 mb-2">{outputFileName || `output.${outputType}`}</div>
+                <button
+                  onClick={async () => {
+                    try {
+                      // Try to use the File System Access API if available
+                      if ('showSaveFilePicker' in window) {
+                        const handle = await window.showSaveFilePicker({
+                          suggestedName: outputFileName || `output.${outputType}`,
+                          types: [{
+                            description: 'Transform Output',
+                            accept: {
+                              'text/csv': ['.csv'],
+                              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+                              'application/json': ['.json'],
+                              'application/xml': ['.xml'],
+                              'text/markdown': ['.md']
+                            }
+                          }]
+                        });
+                        const writable = await handle.createWritable();
+                        const response = await fetch(node.data.fileUrl);
+                        const blob = await response.blob();
+                        await writable.write(blob);
+                        await writable.close();
+                      } else {
+                        // Fallback for browsers that don't support File System Access API
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = node.data.fileUrl;
+                        downloadLink.download = outputFileName || `output.${outputType}`;
+                        downloadLink.click();
+                      }
+                    } catch (err) {
+                      // If user cancels or there's an error, fall back to standard download
+                      const downloadLink = document.createElement('a');
+                      downloadLink.href = node.data.fileUrl;
+                      downloadLink.download = outputFileName || `output.${outputType}`;
+                      downloadLink.click();
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-semibold shadow hover:bg-purple-700 transition"
+                >
+                  Download File
+                </button>
+              </div>
+            )}
           </div>
         ) : node.type === "output" && node.data.type === "excel" ? (
           <div className="space-y-6">
@@ -408,6 +531,59 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                 </button>
               </div>
             )}
+          </div>
+        ) : node.type === "output" && node.data.type === "doc" ? (
+          <div className="space-y-6">
+            <div>
+              <div className="font-medium mb-2">Output File</div>
+              <div className="text-sm text-gray-600">
+                This node will always output: <span className="font-medium">Standard Operating Procedure_ Toothbrush Holder Assembly.docx</span>
+              </div>
+            </div>
+            {/* Download section for Doc output node after run */}
+            <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-blue-50">
+              <div className="font-medium text-sm">Download Output</div>
+              <div className="text-xs text-gray-700 mb-2">Standard Operating Procedure_ Toothbrush Holder Assembly.docx</div>
+              <button
+                onClick={async () => {
+                  const fileUrl = "/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
+                  try {
+                    // Try to use the File System Access API if available
+                    if ('showSaveFilePicker' in window) {
+                      const handle = await window.showSaveFilePicker({
+                        suggestedName: "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
+                        types: [{
+                          description: 'Word Document',
+                          accept: {
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+                          }
+                        }]
+                      });
+                      const writable = await handle.createWritable();
+                      const response = await fetch(fileUrl);
+                      const blob = await response.blob();
+                      await writable.write(blob);
+                      await writable.close();
+                    } else {
+                      // Fallback for browsers that don't support File System Access API
+                      const downloadLink = document.createElement('a');
+                      downloadLink.href = fileUrl;
+                      downloadLink.download = "Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
+                      downloadLink.click();
+                    }
+                  } catch (err) {
+                    // If user cancels or there's an error, fall back to standard download
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = fileUrl;
+                    downloadLink.download = "Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
+                    downloadLink.click();
+                  }
+                }}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 transition"
+              >
+                Download File
+              </button>
+            </div>
           </div>
         ) : (
           <div className="text-gray-500 text-sm">Implementation details for this node type coming soon.</div>

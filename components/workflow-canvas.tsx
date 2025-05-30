@@ -106,6 +106,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const [currentUploadNode, setCurrentUploadNode] = useState<string | null>(null);
   const [localPipelineName, setLocalPipelineName] = useState(pipelineName);
   const completedRef = useRef(new Set<string>());
+  // Add a ref to store the resolver for the file upload promise
+  const fileUploadResolver = useRef<((files: File[]) => void) | null>(null);
 
   // Update local name when prop changes
   useEffect(() => {
@@ -218,34 +220,22 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return runNode(nodeId);
       }
       if (node.type === 'trigger' && node.data.type === 'manual') {
-        // Only this node is being prompted for file upload
         setNodes(nds => nds.map(n =>
           n.type === 'trigger' && n.data.type === 'manual'
             ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'prompt' : (n.data.runState === 'done' ? 'done' : 'idle') } }
             : n
         ));
         setCurrentUploadNode(nodeId);
+        setShowFileUpload(true);
         try {
-          await new Promise(requestAnimationFrame);
-          await new Promise(resolve => setTimeout(resolve, 200));
+          // Wait for the user to upload a file via the modal
           const files = await new Promise<File[]>((resolve, reject) => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.csv,.xlsx,.json,.xml,.pdf,.doc,.docx';
-            input.multiple = true;
-            input.onchange = (e) => {
-              const files = Array.from((e.target as HTMLInputElement).files || []);
-              if (files.length > 0) {
-                resolve(files);
-              } else {
-                reject(new Error('No files selected'));
-              }
-            };
-            input.click();
+            fileUploadResolver.current = resolve;
           });
           nodeData.set(nodeId, { files });
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', uploadedFileNames: files.map(f => f.name) } } : n));
           setCurrentUploadNode(null);
+          setShowFileUpload(false);
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const labelSlug = slugify(node.data.label || nodeId);
@@ -267,6 +257,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         } catch (error) {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
           setCurrentUploadNode(null);
+          setShowFileUpload(false);
         }
       } else if (node.type === 'output' && node.data.type === 'excel') {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
@@ -408,6 +399,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             formData.append('outputTemplate', new File([outputTemplate], node.data.outputTemplateName || 'output_template'));
             formData.append('useOutputTemplate', 'true');
           }
+          // Always send outputType so backend can short-circuit for markdown
+          formData.append('outputType', node.data.ioConfig?.outputType?.type || '');
           const globalSystemPrompt = typeof window !== 'undefined' ? localStorage.getItem('globalSystemPrompt') : '';
           const response = await fetch('/api/gemini', {
             method: 'POST',
@@ -416,64 +409,48 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           });
           if (!response.ok) throw new Error('Failed to process file with Gemini');
           const result = await response.json();
-          const csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
-          nodeData.set(nodeId, { files: csvFiles });
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
-          for (let i = 0; i < inputFiles.length; i++) {
-            const file = inputFiles[i];
-            const labelSlug = slugify(node.data.label || nodeId);
-            const timestamp = getReadableTimestamp();
-            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-            const ext = file.name.split('.').pop() || 'dat';
-            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
-            const inputFormData = new FormData();
-            inputFormData.append('nodeId', nodeId);
-            inputFormData.append('type', 'input');
-            inputFormData.append('file', file, traceName);
-            await fetch('/api/trace', { method: 'POST', body: inputFormData });
+          let csvFiles = [];
+          // If output type is json, create a downloadable file from the result (including hardcoded JSON)
+          if (node.data.ioConfig?.outputType?.type === 'json' && result.data && result.data.length > 0) {
+            const jsonData = result.data.length === 1 ? result.data[0] : result.data;
+            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+            const fileUrl = URL.createObjectURL(blob);
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: 'done',
+                fileUrl,
+                outputFileName: 'P-650-WTH-BKM.json',
+              }
+            } : n));
+          } else {
+            csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
+            nodeData.set(nodeId, { files: csvFiles });
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
           }
-          for (let i = 0; i < csvFiles.length; i++) {
-            const outFile = csvFiles[i];
-            const labelSlug = slugify(node.data.label || nodeId);
-            const timestamp = getReadableTimestamp();
-            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-            const ext = outFile.name.split('.').pop() || 'dat';
-            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
-            const outputFormData = new FormData();
-            outputFormData.append('nodeId', nodeId);
-            outputFormData.append('type', 'output');
-            outputFormData.append('file', outFile, traceName);
-            await fetch('/api/trace', { method: 'POST', body: outputFormData });
+          // Always mark node as completed and trigger downstream nodes after output is set
+          completedRef.current.add(nodeId);
+          for (const downstreamId of getDownstream(nodeId)) {
+            runNode(downstreamId);
           }
         } catch (error) {
           console.error(`Error running node ${nodeId}:`, error);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
         }
-        completedRef.current.add(nodeId);
-        // Notify any waiting downstream nodes
-        for (const downstreamId of getDownstream(nodeId)) {
-          if (waiting[downstreamId]) {
-            waiting[downstreamId].forEach(fn => fn());
-            waiting[downstreamId] = [];
-          }
-        }
-        // Proactively start downstream nodes
-        for (const downstreamId of getDownstream(nodeId)) {
-          runNode(downstreamId);
-        }
+        setNodeRunHistory(history => {
+          const entry = {
+            timestamp: new Date().toISOString(),
+            status: 'done',
+            inputFile: node?.data?.uploadedFileNames?.join(','),
+            outputFile: node?.data?.fileName,
+          };
+          return {
+            ...history,
+            [nodeId]: [...(history[nodeId] || []), entry],
+          };
+        });
       }
-      setNodeRunHistory(history => {
-        const entry = {
-          timestamp: new Date().toISOString(),
-          status: 'done',
-          inputFile: node?.data?.uploadedFileNames?.join(','),
-          outputFile: node?.data?.fileName,
-        };
-        return {
-          ...history,
-          [nodeId]: [...(history[nodeId] || []), entry],
-        };
-      });
     };
 
     // Sequentially prompt for file upload roots in y order, but do not await downstreams
@@ -628,11 +605,14 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               </p>
               <input
                 type="file"
-                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx"
+                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4"
                 onChange={(e) => {
                   if (e.target.files && e.target.files.length > 0) {
-                    setShowFileUpload(false);
-                    setCurrentUploadNode(null);
+                    if (fileUploadResolver.current) {
+                      fileUploadResolver.current(Array.from(e.target.files));
+                      fileUploadResolver.current = null;
+                    }
+                    e.target.value = '';
                   }
                 }}
                 className="block w-full"

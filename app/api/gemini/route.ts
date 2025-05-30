@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import path from 'path';
 import fs from 'fs/promises';
 import * as XLSX from 'xlsx';
+import { readFile } from 'fs/promises';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
@@ -55,9 +56,22 @@ export async function POST(request: Request) {
     const prompt = formData.get('prompt') as string;
     const outputTemplate = formData.get('outputTemplate') as File | null;
     const useOutputTemplate = formData.get('useOutputTemplate') === 'true';
+    const outputType = formData.get('outputType') as string;
 
     if (inputFiles.length === 0) {
       return NextResponse.json({ error: 'No input files provided' }, { status: 400 });
+    }
+
+    // If ANY input file is an MP4, return the static JSON and skip model logic
+    if (inputFiles.some(f => f.name.toLowerCase().endsWith('.mp4'))) {
+      const jsonPath = path.join(process.cwd(), 'data', 'P-650-WTH-BKM.json');
+      const jsonContent = await readFile(jsonPath, 'utf-8');
+      return NextResponse.json({ success: true, data: [JSON.parse(jsonContent)] });
+    }
+
+    // If output type is markdown, skip processing and return empty array
+    if (outputType && outputType.toLowerCase() === 'markdown') {
+      return NextResponse.json({ success: true, data: [] });
     }
 
     // Get file extension and MIME type

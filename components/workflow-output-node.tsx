@@ -3,11 +3,11 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { FileSpreadsheet, Mail, Database } from "lucide-react";
+import { FileSpreadsheet, Mail, Database, FileText } from "lucide-react";
 
 interface WorkflowOutputNodeData {
   label: string;
-  type: "excel" | "email" | "erp";
+  type: "excel" | "email" | "erp" | "doc";
 }
 
 export const WorkflowOutputNode = memo(({ data }: NodeProps<WorkflowOutputNodeData & { runState?: string; highlighted?: boolean }>) => {
@@ -31,13 +31,15 @@ export const WorkflowOutputNode = memo(({ data }: NodeProps<WorkflowOutputNodeDa
         return <Mail className="w-6 h-6" />;
       case "erp":
         return <Database className="w-6 h-6" />;
+      case "doc":
+        return <FileText className="w-6 h-6" />;
       default:
         return null;
     }
   };
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} ${data.type === 'excel' ? 'bg-green-50' : ''}`}>
+    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} ${data.type === 'excel' ? 'bg-green-50' : data.type === 'doc' ? 'bg-blue-50' : ''}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>

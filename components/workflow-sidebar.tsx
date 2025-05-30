@@ -2,7 +2,7 @@
 
 import { X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 const INTEGRATIONS = [
   { name: "Gmail", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail" className="w-7 h-7" /> },
@@ -39,6 +39,12 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
   const [xlsxTemplate, setXlsxTemplate] = useState<File | null>(null);
   const [sheetNames, setSheetNames] = useState<string[]>(node.data.sheetNames || []);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [endpoint, setEndpoint] = useState(node.data.endpoint || "");
+  const [method, setMethod] = useState(node.data.method || "POST");
+  const [statusCode, setStatusCode] = useState(node.data.statusCode || 200);
+  const [contentType, setContentType] = useState(node.data.contentType || "application/json");
+  const [aiPrompt, setAiPrompt] = useState(node.data.prompt || "");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Get number of input connections
   const inputConnections = useMemo(() => {
@@ -173,7 +179,13 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   const handleSave = async () => {
     setSaving(true);
-    if (node.type === "trigger" && node.data.type === "event") {
+    if (node.type === "httpTrigger") {
+      await onChange(node.id, { endpoint, method });
+    } else if (node.type === "httpResponse") {
+      await onChange(node.id, { statusCode, contentType });
+    } else if (node.type === "aiOperator") {
+      await onChange(node.id, { prompt: aiPrompt });
+    } else if (node.type === "trigger" && node.data.type === "event") {
       await onChange(node.id, { integration, description });
     } else if (node.type === "trigger" && node.data.type === "manual") {
       await onChange(node.id, { 
@@ -275,7 +287,90 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             </div>
           </div>
         )}
-        {node.type === "trigger" && node.data.type === "event" ? (
+        {node.type === "httpTrigger" ? (
+          <div className="space-y-6">
+            <div>
+              <div className="font-medium mb-2">HTTP Method</div>
+              <select
+                className="w-full border rounded-lg p-2 text-sm"
+                value={method}
+                onChange={(e) => setMethod(e.target.value)}
+              >
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+            </div>
+            <div>
+              <div className="font-medium mb-2">Endpoint</div>
+              <input
+                type="text"
+                className="w-full border rounded-lg p-2 text-sm"
+                placeholder="/api/webhook"
+                value={endpoint}
+                onChange={(e) => setEndpoint(e.target.value)}
+              />
+            </div>
+          </div>
+        ) : node.type === "httpResponse" ? (
+          <div className="space-y-6">
+            <div>
+              <div className="font-medium mb-2">Status Code</div>
+              <input
+                type="number"
+                className="w-full border rounded-lg p-2 text-sm"
+                value={statusCode}
+                onChange={(e) => setStatusCode(parseInt(e.target.value))}
+              />
+            </div>
+            <div>
+              <div className="font-medium mb-2">Content Type</div>
+              <select
+                className="w-full border rounded-lg p-2 text-sm"
+                value={contentType}
+                onChange={(e) => setContentType(e.target.value)}
+              >
+                <option value="application/json">application/json</option>
+                <option value="application/xml">application/xml</option>
+                <option value="text/plain">text/plain</option>
+                <option value="text/html">text/html</option>
+              </select>
+            </div>
+            {typeof node.data.responseValue !== 'undefined' && (
+              <div className="p-4 bg-green-50 border rounded-lg flex flex-col items-start gap-2">
+                <div className="font-medium text-sm">HTTP Response</div>
+                <div className="text-xs text-gray-700">Status: <span className="font-semibold">{node.data.responseStatus}</span></div>
+                <div className="text-xs text-gray-700">Value: <span className="font-semibold">{node.data.responseValue}</span></div>
+              </div>
+            )}
+          </div>
+        ) : node.type === "aiOperator" ? (
+          <div className="space-y-6">
+            <div>
+              <div className="font-medium mb-2">AI Prompt</div>
+              <textarea
+                className="w-full min-h-[120px] border rounded-lg p-2 text-sm"
+                placeholder="Describe what the AI should do on the GUI..."
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+              />
+            </div>
+            {node.data.runState === "running" && (
+              <div>
+                <div className="font-medium mb-2">GUI Preview</div>
+                <video
+                  ref={videoRef}
+                  className="w-full rounded-lg"
+                  src="/ignition_operation.mp4"
+                  controls
+                  autoPlay
+                  onEnded={() => onChange(node.id, { runState: "done" })}
+                />
+              </div>
+            )}
+          </div>
+        ) : node.type === "trigger" && node.data.type === "event" ? (
           <>
             <div className="mb-6">
               <div className="font-medium mb-2">Integration</div>

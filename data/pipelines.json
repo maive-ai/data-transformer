@@ -1,0 +1,384 @@
+{
+  "pipeline-1748049938228": {
+    "id": "pipeline-1748049938228",
+    "name": "Inspection Defects",
+    "description": "",
+    "createdAt": "2025-05-24T01:25:38.228Z",
+    "updatedAt": "2025-05-27T04:24:13.332Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "action-1748050836118",
+          "type": "action",
+          "position": {
+            "x": 454.33709869879715,
+            "y": 248.81050638804635
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "outputTemplateUrl": "/templates/46146926-6a1a-4501-b79c-e1b8d6dd9426-Product C Inspection Template.csv",
+            "outputTemplateName": "Product C Inspection Template.csv",
+            "prompt": "Please read the inspection report and enter the data from the report into the output template. If a defect wasn't reported for a given column in the output template, then enter a zero (\"0\") for the entry under that column. Otherwise, please identify which defect to log based on the description in the document and log its quantity (Qty) associated with that defect into the spreadsheet.\n\nSome descriptions may occupy two rows. This is indicated by the data on one of its rows being marked with N/A or null data. Please don't delete any of the columns in the template. Please make sure that the total of the numbers in the Qty column in the document + the total quantity expected sum to the same sum of the data in the row entered into CSV's (excluding the lot number). Make sure every column in the row that's inserted has a value in it.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "done"
+          },
+          "width": 116,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 454.33709869879715,
+            "y": 248.81050638804635
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748050843259",
+          "type": "output",
+          "position": {
+            "x": 725.7889979428732,
+            "y": 248.82642293513214
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel",
+            "fileName": "inspection_data.xlsx",
+            "sheetNames": [
+              "5 mL Reject Data"
+            ],
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "excel"
+              }
+            },
+            "runState": "done",
+            "fileUrl": "blob:http://localhost:3000/55dcd276-bd8f-4575-8563-c5ac01ba215f",
+            "outputFileName": "inspection_data.xlsx"
+          },
+          "width": 115,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 725.7889979428732,
+            "y": 248.82642293513214
+          },
+          "dragging": false
+        },
+        {
+          "id": "trigger-1748299658367",
+          "type": "trigger",
+          "position": {
+            "x": 128.33066971114675,
+            "y": 248.52138969783016
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "Product C Inspection Summary - dummy copy for Maive.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 128.33066971114675,
+            "y": 248.52138969783016
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "action-1748050836118",
+          "sourceHandle": null,
+          "target": "output-1748050843259",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748050836118-output-1748050843259",
+          "selected": false
+        },
+        {
+          "source": "trigger-1748299658367",
+          "sourceHandle": null,
+          "target": "action-1748050836118",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748299658367-action-1748050836118"
+        }
+      ]
+    }
+  },
+  "pipeline-1748049938229": {
+    "id": "pipeline-1748049938229",
+    "name": "Overwrapping and Vial Washing",
+    "description": "",
+    "createdAt": "2025-05-24T01:25:38.229Z",
+    "updatedAt": "2025-05-27T00:14:05.250Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1748050647625",
+          "type": "trigger",
+          "position": {
+            "x": -87,
+            "y": -37.5
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "overwrap_data.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -87,
+            "y": -37.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748050649642",
+          "type": "action",
+          "position": {
+            "x": 189.5,
+            "y": -37.5
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "outputTemplateUrl": "/templates/839b1752-241b-4be8-909a-71b1374051b9-overwrap_template.csv",
+            "outputTemplateName": "overwrap_template.csv",
+            "prompt": "Pull the following information from the form and input it in the Excel file.\nTime first operator went in.\nTime last operator came out.\nNumber of Overwraps / Item\nNumber of Overwrapped Components completed\nNumber of rejects\nPrimary Recipe Number\nNumber of plates used during primary OW\nSecondary Recipe Number\nNumber of plates used during secondary OW\nFrom this data, I want to see if it can determine the target # for overwrapped components. (# of OW completed + rejects)\n\nSometimes there may be a number in a table cell with a footnote added above and to the right of it. Consider this a demarcation for a footnote. It is not part of the number. For any time in / time out data points where you have multiple options to choose from, please select the earliest time for time in and latest time for time out.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "done"
+          },
+          "width": 116,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 189.5,
+            "y": -37.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748050652265",
+          "type": "output",
+          "position": {
+            "x": 448.4,
+            "y": 58.5
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel",
+            "fileName": "",
+            "sheetNames": [
+              "OW Data",
+              "VW Data"
+            ],
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "excel"
+              }
+            },
+            "runState": "done",
+            "fileUrl": "blob:http://localhost:3000/c1dad12f-c9dc-43ac-9eec-31792175f4a7",
+            "outputFileName": "merged_output.xlsx"
+          },
+          "width": 115,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 448.4,
+            "y": 58.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748050654987",
+          "type": "action",
+          "position": {
+            "x": 193.5,
+            "y": 169.5
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "outputTemplateUrl": "/templates/e3a99a62-f09d-4f86-a87a-5dd918daeffa-vial_template.csv",
+            "outputTemplateName": "vial_template.csv",
+            "prompt": "Pull the following data from Vial Washing batch record steps and input it in the Excel file.\nVial Configuration\nService Order\nNumber of vials processed per day\nNumber of vials rejected\nI also want it to calculate the vial reconciliation found on 14. To do that you need to calculate E which is A +B+C+D and then you need to read F. Finally calculate the vial reconciliation as E/F.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "done"
+          },
+          "width": 116,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 193.5,
+            "y": 169.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "trigger-1748050659461",
+          "type": "trigger",
+          "position": {
+            "x": -84,
+            "y": 170
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "vial_washing_data.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -84,
+            "y": 170
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "trigger-1748050659461",
+          "sourceHandle": null,
+          "target": "action-1748050654987",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748050659461-action-1748050654987"
+        },
+        {
+          "source": "action-1748050654987",
+          "sourceHandle": null,
+          "target": "output-1748050652265",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748050654987-output-1748050652265"
+        },
+        {
+          "source": "action-1748050649642",
+          "sourceHandle": null,
+          "target": "output-1748050652265",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748050649642-output-1748050652265"
+        },
+        {
+          "source": "trigger-1748050647625",
+          "sourceHandle": null,
+          "target": "action-1748050649642",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748050647625-action-1748050649642"
+        }
+      ]
+    }
+  }
+}

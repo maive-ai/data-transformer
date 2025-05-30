@@ -65,7 +65,6 @@ ipython_config.py
 *.pickle
 *.npy
 *.npz
-data/
 datasets/
 raw_data/
 processed_data/

@@ -327,8 +327,22 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const wb = XLSX.utils.book_new();
           let sheetCount = 1;
           const sheetNamesFromNode = Array.isArray(node.data.sheetNames) ? node.data.sheetNames : [];
-          for (let i = 0; i < inputFiles.length; i++) {
-            const file = inputFiles[i];
+          
+          // Sort input files based on their source node's y-position
+          const sortedInputFiles = inputFiles.map(file => {
+            // Find the source node that produced this file
+            const sourceNode = nodes.find(n => {
+              const data = nodeData.get(n.id);
+              return data?.files?.includes(file) || data?.file === file;
+            });
+            return {
+              file,
+              yPosition: sourceNode?.position.y || 0
+            };
+          }).sort((a, b) => a.yPosition - b.yPosition);
+
+          for (let i = 0; i < sortedInputFiles.length; i++) {
+            const { file } = sortedInputFiles[i];
             if (file.type === 'text/csv') {
               const csvContent = await file.text();
               const rows = csvContent.split('\n').map(row => row.split(','));

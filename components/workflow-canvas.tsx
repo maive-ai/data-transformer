@@ -418,8 +418,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       } else if (node.type === 'aiOperator') {
         try {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
-          // Simulate AI processing delay
-          await new Promise(res => setTimeout(res, 4000));
+          // Store a promise resolver that the sidebar can call when video ends
+          const videoCompletionPromise = new Promise<void>((resolve) => {
+            // Store the resolver so sidebar can access it
+            (window as any).__aiOperatorResolvers = (window as any).__aiOperatorResolvers || {};
+            (window as any).__aiOperatorResolvers[nodeId] = resolve;
+          });
+          
+          // Wait for video to complete
+          await videoCompletionPromise;
+          
           // Mark as done
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
           // Mark as completed
@@ -428,6 +436,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           for (const downstreamId of getDownstream(nodeId)) {
             await runNode(downstreamId);
           }
+          
+          // Clean up resolver
+          delete (window as any).__aiOperatorResolvers?.[nodeId];
         } catch (err) {
           console.error('Error in AI Operator node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));

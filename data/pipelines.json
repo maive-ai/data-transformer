@@ -412,7 +412,7 @@
     "name": "AI Operator Endpoint",
     "description": "",
     "createdAt": "2025-05-30T16:41:41.886Z",
-    "updatedAt": "2025-05-30T18:58:17.499Z",
+    "updatedAt": "2025-05-30T19:07:00.984Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -444,8 +444,8 @@
           "id": "aiOperator-1748623488050",
           "type": "aiOperator",
           "position": {
-            "x": 299.49706470178467,
-            "y": 217.59316661167907
+            "x": 298.55414523273953,
+            "y": 218.53608608072415
           },
           "data": {
             "label": "AI Operator",
@@ -455,10 +455,10 @@
           },
           "width": 192,
           "height": 128,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
-            "x": 299.49706470178467,
-            "y": 217.59316661167907
+            "x": 298.55414523273953,
+            "y": 218.53608608072415
           },
           "dragging": false
         },

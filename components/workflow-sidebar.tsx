@@ -365,7 +365,13 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                   src="/ignition_operation.mp4"
                   controls
                   autoPlay
-                  onEnded={() => onChange(node.id, { runState: "done" })}
+                  onEnded={() => {
+                    onChange(node.id, { runState: "done" });
+                    // Notify the workflow canvas that the video has completed
+                    if ((window as any).__aiOperatorResolvers?.[node.id]) {
+                      (window as any).__aiOperatorResolvers[node.id]();
+                    }
+                  }}
                 />
               </div>
             )}

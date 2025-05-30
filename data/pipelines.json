@@ -267,7 +267,7 @@
     "name": "SOP from Video",
     "description": "",
     "createdAt": "2025-05-30T07:43:14.781Z",
-    "updatedAt": "2025-05-30T08:36:39.081Z",
+    "updatedAt": "2025-05-30T18:23:31.195Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -325,12 +325,14 @@
               "_store": {}
             },
             "prompt": "Problem Statement:\nAnalyze the provided video and generate a sequential list of manufacturing assembly steps based solely on a visual analysis of the frames (incorporate any on-screen text if available). Create clear, user-centric instructions that enable a novice to replicate the process. For each step, follow these guidelines:\n•\tWrite the instruction in an imperative tone, starting with an action verb (e.g., ‘Align’, ‘Secure’, ‘Insert’).\n•\tEnsure that each step is detailed and logically sequenced.\n•\tInclude a timestamp field called t_end that indicates, in seconds from the start of the video, when the step is completed.\n•\tInclude a field called tools_used that lists the tools used in the step.",
-            "outputFileName": "P-650-WTH-BKM.json",
-            "useOutputTemplate": true,
+            "useOutputTemplate": false,
             "ioConfig": {
               "inputTypes": [
                 {
                   "type": "mp4"
+                },
+                {
+                  "type": "pdf"
                 }
               ],
               "outputType": {
@@ -340,7 +342,8 @@
             "outputTemplateUrl": "/data/P-650-WTH-BKM.json",
             "outputTemplateName": "P-650-WTH-BKM.json",
             "runState": "done",
-            "fileUrl": "blob:http://localhost:3001/938c56b2-c855-4cc1-841e-18aa0df61cef"
+            "fileUrl": "blob:http://localhost:3001/57132370-7c1b-4435-b815-1aaa479c2678",
+            "outputFileName": "P-650-WTH-BKM.json"
           },
           "width": 116,
           "height": 88,
@@ -371,7 +374,7 @@
               "_store": {}
             },
             "prompt": "Your job is to create a Standard Operating Procedure document for this Toothbrush holder manufacturing assembly process. You have been provided:\nA list of assembly steps and their description\n\nThe output should be a document for the standard operating procedure following the template provided.",
-            "outputFileName": "",
+            "outputFileName": "output.md",
             "useOutputTemplate": true,
             "ioConfig": {
               "inputTypes": [
@@ -383,12 +386,13 @@
                 "type": "markdown"
               }
             },
-            "runState": "error",
+            "runState": "done",
             "outputTemplateUrl": "/templates/1c1c3dae-fc69-4642-a659-6fec1f2ea6af-SOP Template 09.15.2022 - on website.docx",
-            "outputTemplateName": "SOP Template 09.15.2022 - on website.docx"
+            "outputTemplateName": "SOP Template 09.15.2022 - on website.docx",
+            "fileUrl": "blob:http://localhost:3001/436423fe-1454-4624-847c-1d56e2b9823d"
           },
-          "width": 113,
-          "height": 85,
+          "width": 116,
+          "height": 88,
           "selected": true,
           "positionAbsolute": {
             "x": 399.6122087458402,
@@ -406,17 +410,19 @@
           "data": {
             "label": "Doc Export",
             "type": "doc",
-            "runState": "idle",
+            "runState": "done",
             "fileName": "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
             "ioConfig": {
               "inputTypes": [],
               "outputType": {
                 "type": "doc"
               }
-            }
+            },
+            "fileUrl": "/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
+            "outputFileName": "Standard Operating Procedure_ Toothbrush Holder Assembly.docx"
           },
-          "width": 102,
-          "height": 85,
+          "width": 105,
+          "height": 88,
           "selected": true,
           "positionAbsolute": {
             "x": 558.3999999999999,

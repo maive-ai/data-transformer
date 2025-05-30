@@ -219,6 +219,46 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         // After dependencies are done, re-run
         return runNode(nodeId);
       }
+      // Short-circuit for markdown output type: create a dummy markdown file and pass it downstream, skipping Gemini/model call
+      if (node.data.ioConfig?.outputType?.type === 'markdown') {
+        // Sleep for 7 seconds before outputting the dummy markdown file
+        await new Promise(resolve => setTimeout(resolve, 7000));
+        const mdFile = new File([''], 'output.md', { type: 'text/markdown' });
+        nodeData.set(nodeId, { files: [mdFile] });
+        setNodes(nds => nds.map(n => n.id === nodeId ? {
+          ...n,
+          data: {
+            ...n.data,
+            runState: 'done',
+            fileUrl: URL.createObjectURL(mdFile),
+            outputFileName: 'output.md',
+          }
+        } : n));
+        completedRef.current.add(nodeId);
+        for (const downstreamId of getDownstream(nodeId)) {
+          runNode(downstreamId);
+        }
+        return;
+      }
+
+      // Short-circuit for Doc Export node: always output the hardcoded DOCX file, skip Gemini/model call
+      if (node.type === 'output' && node.data.type === 'doc') {
+        setNodes(nds => nds.map(n => n.id === nodeId ? {
+          ...n,
+          data: {
+            ...n.data,
+            runState: 'done',
+            fileUrl: '/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
+            outputFileName: 'Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
+          }
+        } : n));
+        completedRef.current.add(nodeId);
+        for (const downstreamId of getDownstream(nodeId)) {
+          runNode(downstreamId);
+        }
+        return;
+      }
+
       if (node.type === 'trigger' && node.data.type === 'manual') {
         setNodes(nds => nds.map(n =>
           n.type === 'trigger' && n.data.type === 'manual'
@@ -413,8 +453,33 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           // If output type is json, create a downloadable file from the result (including hardcoded JSON)
           if (node.data.ioConfig?.outputType?.type === 'json' && result.data && result.data.length > 0) {
             const jsonData = result.data.length === 1 ? result.data[0] : result.data;
+            // Short-circuit for hardcoded JSON output when input is MP4
+            if (node.data.ioConfig?.inputTypes?.some((t: any) => t.type === 'mp4')) {
+              // Sleep for 30 seconds before outputting the hardcoded JSON
+              await new Promise(resolve => setTimeout(resolve, 30000));
+              const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+              const fileUrl = URL.createObjectURL(blob);
+              const jsonFile = new File([JSON.stringify(jsonData, null, 2)], 'P-650-WTH-BKM.json', { type: 'application/json' });
+              nodeData.set(nodeId, { files: [jsonFile] });
+              setNodes(nds => nds.map(n => n.id === nodeId ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  runState: 'done',
+                  fileUrl,
+                  outputFileName: 'P-650-WTH-BKM.json',
+                }
+              } : n));
+              completedRef.current.add(nodeId);
+              for (const downstreamId of getDownstream(nodeId)) {
+                runNode(downstreamId);
+              }
+              return;
+            }
             const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
             const fileUrl = URL.createObjectURL(blob);
+            const jsonFile = new File([JSON.stringify(jsonData, null, 2)], 'P-650-WTH-BKM.json', { type: 'application/json' });
+            nodeData.set(nodeId, { files: [jsonFile] });
             setNodes(nds => nds.map(n => n.id === nodeId ? {
               ...n,
               data: {

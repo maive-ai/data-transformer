@@ -614,20 +614,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) || null;
 
-  // Keyboard shortcut: Cmd+R (Mac) or Ctrl+R (Win/Linux) to run pipeline
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const isRunShortcut = (isMac && e.metaKey && e.key === 'r') || (!isMac && e.ctrlKey && e.key === 'r');
-      if (isRunShortcut) {
-        e.preventDefault();
-        if (!running) runPipeline();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [running]);
-
+  // Remove keyboard shortcut effect
   const stopPipeline = useCallback(() => {
     setRunning(false);
     setNodes(nds => nds.map(n => ({

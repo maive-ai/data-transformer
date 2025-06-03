@@ -22,6 +22,9 @@ import { WorkflowToolbar } from "./workflow-toolbar";
 import { convertCsvToExcel } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import { WorkflowOutputNode } from './workflow-output-node';
+import { WorkflowHttpTriggerNode } from './workflow-http-trigger-node';
+import { WorkflowHttpResponseNode } from './workflow-http-response-node';
+import { WorkflowAiOperatorNode } from './workflow-ai-operator-node';
 
 // Add File System Access API type declarations
 declare global {
@@ -43,6 +46,9 @@ const nodeTypes = {
   trigger: WorkflowTriggerNode,
   action: WorkflowNode,
   output: WorkflowOutputNode,
+  httpTrigger: WorkflowHttpTriggerNode,
+  httpResponse: WorkflowHttpResponseNode,
+  aiOperator: WorkflowAiOperatorNode,
 };
 
 interface WorkflowCanvasProps {
@@ -259,6 +265,35 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return;
       }
 
+      // MOCKED HTTP TRIGGER/RESPONSE FLOW
+      if (node.type === 'httpTrigger') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          await new Promise(res => setTimeout(res, 800)); // Simulate network delay
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          completedRef.current.add(nodeId);
+          // Trigger downstream nodes AFTER marking as done
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
+        } catch (err) {
+          console.error('Error in HTTP Trigger node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
+      }
+      if (node.type === 'httpResponse') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          await new Promise(res => setTimeout(res, 800)); // Simulate processing delay
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', responseValue: 81.72, responseStatus: 200 } } : n));
+          completedRef.current.add(nodeId);
+        } catch (err) {
+          console.error('Error in HTTP Response node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
+      }
       if (node.type === 'trigger' && node.data.type === 'manual') {
         setNodes(nds => nds.map(n =>
           n.type === 'trigger' && n.data.type === 'manual'
@@ -420,6 +455,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         for (const downstreamId of getDownstream(nodeId)) {
           runNode(downstreamId);
         }
+      } else if (node.type === 'aiOperator') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          // Do not mark as done here; let the sidebar video onEnded handler do it
+          // Do not call any backend or set a timeout
+        } catch (err) {
+          console.error('Error in AI Operator node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
       } else {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
         try {
@@ -430,7 +475,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             if (upstreamData?.files) inputFiles.push(...upstreamData.files);
             else if (upstreamData?.file) inputFiles.push(upstreamData.file);
           }
-          if (!inputFiles.length) throw new Error('No input files available');
+          if (!inputFiles.length && node.type !== 'aiOperator') throw new Error('No input files available');
           const formData = new FormData();
           formData.append('inputFile', inputFiles[0]);
           if (node.data.prompt) formData.append('prompt', node.data.prompt);
@@ -626,8 +671,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             let isHighlighted = false;
             if (n.type === 'trigger' && n.data.type === 'manual') {
               isHighlighted = n.id === currentUploadNode;
-            } else {
-              isHighlighted = n.data.runState === 'running';
+            } else if (n.data.runState === 'running') {
+              isHighlighted = true;
             }
             return {
               ...n,

@@ -39,14 +39,24 @@ export function DashboardSidebar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
 
-  // Load system prompt from localStorage on mount
+  // Load system prompt from backend on mount
   useEffect(() => {
-    const savedPrompt = localStorage.getItem('globalSystemPrompt');
-    if (savedPrompt) setSystemPrompt(savedPrompt);
+    async function fetchPrompt() {
+      const res = await fetch('/api/pipelines/system-prompt');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.systemPrompt) setSystemPrompt(data.systemPrompt);
+      }
+    }
+    fetchPrompt();
   }, []);
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('globalSystemPrompt', systemPrompt);
+  const handleSaveSettings = async () => {
+    await fetch('/api/pipelines/system-prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ systemPrompt }),
+    });
     toast({
       title: "System Prompt Saved",
       description: "Your global system prompt has been updated and will be used for all workflows.",

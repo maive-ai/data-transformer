@@ -469,5 +469,129 @@
         }
       ]
     }
+  },
+  "pipeline-1748913667240": {
+    "id": "pipeline-1748913667240",
+    "name": "Electrical BOM to CSV",
+    "description": "",
+    "createdAt": "2025-06-03T01:21:07.240Z",
+    "updatedAt": "2025-06-03T01:35:14.461Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1748913730957",
+          "type": "trigger",
+          "position": {
+            "x": -13.993508972772531,
+            "y": 97
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            }
+          },
+          "width": 192,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -13.993508972772531,
+            "y": 97
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748913776937",
+          "type": "action",
+          "position": {
+            "x": 297.22631320721035,
+            "y": 95.57982872171661
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            }
+          },
+          "width": 114,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 297.22631320721035,
+            "y": 95.57982872171661
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748913785123",
+          "type": "output",
+          "position": {
+            "x": 525.1436753447555,
+            "y": 95.25053182461784
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel",
+            "fileName": "",
+            "sheetNames": [
+              "ERP BOM"
+            ],
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "excel"
+              }
+            }
+          },
+          "width": 113,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 525.1436753447555,
+            "y": 95.25053182461784
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "action-1748913776937",
+          "sourceHandle": null,
+          "target": "output-1748913785123",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748913776937-output-1748913785123"
+        },
+        {
+          "source": "trigger-1748913730957",
+          "sourceHandle": null,
+          "target": "action-1748913776937",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748913730957-action-1748913776937"
+        }
+      ]
+    }
+  },
+  "undefined": {
+    "systemPrompt": "<agent_role>\n  You are a highly skilled manufacturing engineering manager AI agent. Your primary responsibility is to assist in transforming manufacturing data reliably and repeatably, based on the information provided by the user.\n</agent_role>\n\n<task_description>\n  Transform the provided manufacturing data according to the specified instructions. Ensure the transformation is accurate, consistent, and suitable for engineering analysis.\n</task_description>\n\n<instructions>\n  1. If you are uncertain about any aspect of the task or lack sufficient information, do not attempt to infer or guess. Instead, clearly state your uncertainty.\n  2. If the user's input is incomplete, ambiguous, or lacks necessary details, include a <debug_info> section in your response, outlining the specific issues or missing information.\n  3. Always provide transformed data in a structured format, using appropriate tags to delineate different sections.\n</instructions>"
   }
 }

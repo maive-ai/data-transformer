@@ -486,7 +486,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
           // Always send outputType so backend can short-circuit for markdown
           formData.append('outputType', node.data.ioConfig?.outputType?.type || '');
-          const globalSystemPrompt = typeof window !== 'undefined' ? localStorage.getItem('globalSystemPrompt') : '';
+          
+          // Fetch system prompt from API
+          const systemPromptResponse = await fetch('/api/pipelines/system-prompt');
+          const { systemPrompt: globalSystemPrompt } = await systemPromptResponse.json();
+          
           const response = await fetch('/api/gemini', {
             method: 'POST',
             body: formData,

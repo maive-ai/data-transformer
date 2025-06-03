@@ -241,7 +241,7 @@
     "name": "SOP from Video",
     "description": "",
     "createdAt": "2025-05-30T07:43:14.781Z",
-    "updatedAt": "2025-05-30T18:44:35.656Z",
+    "updatedAt": "2025-06-03T02:41:53.171Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -265,7 +265,7 @@
               "_owner": null,
               "_store": {}
             },
-            "runState": "done",
+            "runState": "prompt",
             "uploadedFileNames": [
               "2025-02-05_15-19-57_421496_P-650-WTH-BKM-converted-moved.mp4"
             ]
@@ -315,12 +315,12 @@
             },
             "outputTemplateUrl": "/data/P-650-WTH-BKM.json",
             "outputTemplateName": "P-650-WTH-BKM.json",
-            "runState": "done",
+            "runState": "idle",
             "fileUrl": "blob:http://localhost:3001/b0338cc4-4eb7-4d6b-b83a-df442572ae9a",
             "outputFileName": "P-650-WTH-BKM.json"
           },
-          "width": 116,
-          "height": 88,
+          "width": 114,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
             "x": 224.67999999999995,
@@ -360,13 +360,13 @@
                 "type": "markdown"
               }
             },
-            "runState": "done",
+            "runState": "idle",
             "outputTemplateUrl": "/templates/1c1c3dae-fc69-4642-a659-6fec1f2ea6af-SOP Template 09.15.2022 - on website.docx",
             "outputTemplateName": "SOP Template 09.15.2022 - on website.docx",
             "fileUrl": "blob:http://localhost:3001/73bfef77-0af9-4302-9d38-cbd085d2dfd9"
           },
-          "width": 116,
-          "height": 88,
+          "width": 114,
+          "height": 86,
           "selected": false,
           "positionAbsolute": {
             "x": 399.6122087458402,
@@ -384,7 +384,7 @@
           "data": {
             "label": "Doc Export",
             "type": "doc",
-            "runState": "done",
+            "runState": "idle",
             "fileName": "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
             "ioConfig": {
               "inputTypes": [],
@@ -395,8 +395,8 @@
             "fileUrl": "/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
             "outputFileName": "Standard Operating Procedure_ Toothbrush Holder Assembly.docx"
           },
-          "width": 105,
-          "height": 88,
+          "width": 103,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
             "x": 558.3999999999999,
@@ -423,13 +423,13 @@
               "_owner": null,
               "_store": {}
             },
-            "runState": "done",
+            "runState": "idle",
             "uploadedFileNames": [
               "P650WTH-Specification.pdf"
             ]
           },
           "width": 192,
-          "height": 88,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
             "x": -17.919999999999987,
@@ -620,7 +620,7 @@
     "name": "Overwrapping and Vial Washing",
     "description": "",
     "createdAt": "2025-05-24T01:25:38.229Z",
-    "updatedAt": "2025-05-27T00:14:05.250Z",
+    "updatedAt": "2025-06-03T03:00:53.364Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -692,11 +692,11 @@
                 "type": "csv"
               }
             },
-            "runState": "done"
+            "runState": "error"
           },
-          "width": 116,
-          "height": 88,
-          "selected": true,
+          "width": 114,
+          "height": 86,
+          "selected": false,
           "positionAbsolute": {
             "x": 189.5,
             "y": -37.5
@@ -728,12 +728,12 @@
                 "type": "excel"
               }
             },
-            "runState": "done",
+            "runState": "idle",
             "fileUrl": "blob:http://localhost:3000/c1dad12f-c9dc-43ac-9eec-31792175f4a7",
             "outputFileName": "merged_output.xlsx"
           },
-          "width": 115,
-          "height": 88,
+          "width": 113,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
             "x": 448.4,
@@ -775,11 +775,11 @@
                 "type": "csv"
               }
             },
-            "runState": "done"
+            "runState": "error"
           },
-          "width": 116,
-          "height": 88,
-          "selected": true,
+          "width": 114,
+          "height": 86,
+          "selected": false,
           "positionAbsolute": {
             "x": 193.5,
             "y": 169.5
@@ -812,7 +812,7 @@
           },
           "width": 192,
           "height": 88,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
             "x": -84,
             "y": 170
@@ -945,6 +945,108 @@
           "target": "httpResponse-1748623496432",
           "targetHandle": null,
           "id": "reactflow__edge-aiOperator-1748623488050-httpResponse-1748623496432"
+        }
+      ]
+    }
+  },
+  "pipeline-1748919214360": {
+    "id": "pipeline-1748919214360",
+    "name": "Electronic BOM to CSV",
+    "description": "",
+    "createdAt": "2025-06-03T02:53:34.360Z",
+    "updatedAt": "2025-06-03T03:00:43.363Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1748919226147",
+          "type": "trigger",
+          "position": {
+            "x": -70.5,
+            "y": 98.5
+          },
+          "data": {
+            "label": "Manual Upload",
+            "type": "manual"
+          },
+          "width": 192,
+          "height": 86,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -70.5,
+            "y": 98.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748919230696",
+          "type": "action",
+          "position": {
+            "x": 217.5,
+            "y": 99.04307453399846
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "prompt": "Please extract the BOM from the purchase order and reformat it according to the attached CSV output template.",
+            "outputFileName": "",
+            "useOutputTemplate": false,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": ""
+                }
+              ],
+              "outputType": {
+                "type": ""
+              }
+            }
+          },
+          "width": 114,
+          "height": 86,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 217.5,
+            "y": 99.04307453399846
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748919235811",
+          "type": "output",
+          "position": {
+            "x": 434.1238563928212,
+            "y": 102.10763022442259
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel"
+          },
+          "width": 113,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 434.1238563928212,
+            "y": 102.10763022442259
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "trigger-1748919226147",
+          "sourceHandle": null,
+          "target": "action-1748919230696",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748919226147-action-1748919230696"
+        },
+        {
+          "source": "action-1748919230696",
+          "sourceHandle": null,
+          "target": "output-1748919235811",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748919230696-output-1748919235811"
         }
       ]
     }

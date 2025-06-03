@@ -852,32 +852,6 @@
       ]
     }
   },
-  "pipeline-1748616394206": {
-    "id": "pipeline-1748616394206",
-    "name": "Untitled Pipeline",
-    "description": "",
-    "createdAt": "2025-05-30T14:46:34.206Z",
-    "updatedAt": "2025-05-30T14:46:34.206Z",
-    "steps": [],
-    "runs": [],
-    "workflow": {
-      "nodes": [],
-      "edges": []
-    }
-  },
-  "pipeline-1748623301887": {
-    "id": "pipeline-1748623301887",
-    "name": "Untitled Pipeline",
-    "description": "",
-    "createdAt": "2025-05-30T16:41:41.887Z",
-    "updatedAt": "2025-05-30T16:41:41.887Z",
-    "steps": [],
-    "runs": [],
-    "workflow": {
-      "nodes": [],
-      "edges": []
-    }
-  },
   "pipeline-1748623301886": {
     "id": "pipeline-1748623301886",
     "name": "AI Operator Endpoint",

@@ -98,7 +98,11 @@ export async function POST(request: Request) {
     // Read global system prompt from custom header
     let globalSystemPrompt = '';
     if (request.headers.has('x-global-system-prompt')) {
-      globalSystemPrompt = request.headers.get('x-global-system-prompt') || '';
+      try {
+        globalSystemPrompt = decodeURIComponent(request.headers.get('x-global-system-prompt') || '');
+      } catch {
+        globalSystemPrompt = request.headers.get('x-global-system-prompt') || '';
+      }
     }
 
     const systemPrompt =

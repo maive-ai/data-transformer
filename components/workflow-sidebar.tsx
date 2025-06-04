@@ -458,7 +458,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             <input
               type="file"
               className="hidden"
-              accept=".csv,.xlsx,.pdf,.doc,.docx,.mp4"
+              accept=".csv,.xlsx,.pdf,.doc,.docx,.mp4,.txt,text/plain,text/*"
               onChange={handleFileUpload}
             />
           </>
@@ -521,7 +521,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
                     className="w-full border rounded-lg p-2 text-sm"
                   >
                     <option value="">Select input type</option>
-                    {["csv", "excel", "json", "xml", "pdf", "doc", "docx", "mp4"].map((type) => (
+                    {["csv", "excel", "json", "xml", "pdf", "doc", "docx", "mp4", "txt"].map((type) => (
                       <option key={type} value={type}>
                         {type.toUpperCase()}
                       </option>

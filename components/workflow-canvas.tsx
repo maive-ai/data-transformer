@@ -491,10 +491,15 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const systemPromptResponse = await fetch('/api/pipelines/system-prompt');
           const { systemPrompt: globalSystemPrompt } = await systemPromptResponse.json();
           
+          // Sanitize system prompt to ensure header value contains no newline or invalid characters
+          const headers: Record<string, string> | undefined = globalSystemPrompt && globalSystemPrompt.length > 0
+            ? { 'x-global-system-prompt': encodeURIComponent(globalSystemPrompt) }
+            : undefined;
+
           const response = await fetch('/api/gemini', {
             method: 'POST',
             body: formData,
-            headers: globalSystemPrompt ? { 'x-global-system-prompt': globalSystemPrompt } : undefined
+            headers,
           });
           if (!response.ok) throw new Error('Failed to process file with Gemini');
           const result = await response.json();
@@ -706,7 +711,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               </p>
               <input
                 type="file"
-                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4"
+                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4,.txt"
                 onChange={(e) => {
                   if (e.target.files && e.target.files.length > 0) {
                     if (fileUploadResolver.current) {

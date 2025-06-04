@@ -951,10 +951,10 @@
   },
   "pipeline-1748919214360": {
     "id": "pipeline-1748919214360",
-    "name": "Electronic BOM to CSV",
+    "name": "BOM to CSV",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-04T03:19:40.127Z",
+    "updatedAt": "2025-06-04T03:24:42.534Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1042,7 +1042,7 @@
           },
           "width": 115,
           "height": 88,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 434.1238563928212,
             "y": 101.26471925415944
@@ -1066,6 +1066,60 @@
           "id": "reactflow__edge-action-1748919230696-output-1748919235811"
         }
       ]
+    }
+  },
+  "pipeline-1749007485678": {
+    "id": "pipeline-1749007485678",
+    "name": "BOM to CSV with ERP Lookup",
+    "description": "",
+    "createdAt": "2025-06-04T03:24:45.678Z",
+    "updatedAt": "2025-06-04T03:25:15.639Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1749007497185",
+          "type": "trigger",
+          "position": {
+            "x": -92.5,
+            "y": 96.5
+          },
+          "data": {
+            "label": "Manual Upload",
+            "type": "manual"
+          },
+          "width": 192,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -92.5,
+            "y": 96.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1749007503301",
+          "type": "action",
+          "position": {
+            "x": 182.90654134399784,
+            "y": 97.09345865600218
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action"
+          },
+          "width": 114,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 182.90654134399784,
+            "y": 97.09345865600218
+          },
+          "dragging": false
+        }
+      ],
+      "edges": []
     }
   }
 }

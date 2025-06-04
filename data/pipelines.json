@@ -954,7 +954,7 @@
     "name": "Electronic BOM to CSV",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-03T03:00:43.363Z",
+    "updatedAt": "2025-06-04T03:19:40.127Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -968,11 +968,22 @@
           },
           "data": {
             "label": "Manual Upload",
-            "type": "manual"
+            "type": "manual",
+            "runState": "done",
+            "uploadedFileName": "",
+            "ioConfig": {
+              "inputTypes": [],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "uploadedFileNames": [
+              "space-delimited-bom.txt"
+            ]
           },
           "width": 192,
-          "height": 86,
-          "selected": false,
+          "height": 88,
+          "selected": true,
           "positionAbsolute": {
             "x": -70.5,
             "y": 98.5
@@ -983,31 +994,34 @@
           "id": "action-1748919230696",
           "type": "action",
           "position": {
-            "x": 217.5,
+            "x": 216.9569254660015,
             "y": 99.04307453399846
           },
           "data": {
             "label": "AI Transform",
             "type": "action",
-            "prompt": "Please extract the BOM from the purchase order and reformat it according to the attached CSV output template.",
+            "prompt": "Please extract the bill of materials (BOM) and reformat it according to the attached CSV output template.\n\nAny or all of the items in the BOM may not contain the necessary data to fill in every column in the CSV template. That's ok. Please leave the data in that column blank for those items.",
             "outputFileName": "",
-            "useOutputTemplate": false,
+            "useOutputTemplate": true,
             "ioConfig": {
               "inputTypes": [
                 {
-                  "type": ""
+                  "type": "txt"
                 }
               ],
               "outputType": {
-                "type": ""
+                "type": "csv"
               }
-            }
+            },
+            "outputTemplateUrl": "/templates/c88b24be-a7d0-4c0a-a4aa-cf6f39991544-bom-import-template.csv",
+            "outputTemplateName": "bom-import-template.csv",
+            "runState": "done"
           },
-          "width": 114,
-          "height": 86,
-          "selected": false,
+          "width": 116,
+          "height": 88,
+          "selected": true,
           "positionAbsolute": {
-            "x": 217.5,
+            "x": 216.9569254660015,
             "y": 99.04307453399846
           },
           "dragging": false
@@ -1017,18 +1031,21 @@
           "type": "output",
           "position": {
             "x": 434.1238563928212,
-            "y": 102.10763022442259
+            "y": 101.26471925415944
           },
           "data": {
             "label": "Excel Export",
-            "type": "excel"
+            "type": "excel",
+            "runState": "done",
+            "fileUrl": "blob:http://localhost:3000/2436aa88-b320-4c51-9fff-72c0bb960996",
+            "outputFileName": "merged_output.xlsx"
           },
-          "width": 113,
-          "height": 86,
+          "width": 115,
+          "height": 88,
           "selected": true,
           "positionAbsolute": {
             "x": 434.1238563928212,
-            "y": 102.10763022442259
+            "y": 101.26471925415944
           },
           "dragging": false
         }

@@ -1,0 +1,6 @@
+RefDes   MPN                   Manufacturer     Qty   Description
+R1       CRG0603F10K           TE_Connectivity  1     10kΩ 0603 1% Resistor
+R2       CRG0603F10K           TE_Connectivity  1     10kΩ 0603 1% Resistor
+C1       C0805C103K1RACTU      KEMET            1     10nF 50V X7R 0805 Capacitor
+U1       AS1115-BSST           ams              1     LED Driver 24-QSOP
+D1       1N4148-T              Diodes_Inc       1     Switching Diode

@@ -65,10 +65,8 @@ ipython_config.py
 *.pickle
 *.npy
 *.npz
-datasets/
-raw_data/
-processed_data/
-temp_data/
+
+data/templates/*
 
 # Testing/Coverage
 htmlcov/

@@ -22,6 +22,9 @@ import { WorkflowToolbar } from "./workflow-toolbar";
 import { convertCsvToExcel } from "@/lib/utils";
 import * as XLSX from "xlsx";
 import { WorkflowOutputNode } from './workflow-output-node';
+import { WorkflowHttpTriggerNode } from './workflow-http-trigger-node';
+import { WorkflowHttpResponseNode } from './workflow-http-response-node';
+import { WorkflowAiOperatorNode } from './workflow-ai-operator-node';
 
 // Add File System Access API type declarations
 declare global {
@@ -43,6 +46,9 @@ const nodeTypes = {
   trigger: WorkflowTriggerNode,
   action: WorkflowNode,
   output: WorkflowOutputNode,
+  httpTrigger: WorkflowHttpTriggerNode,
+  httpResponse: WorkflowHttpResponseNode,
+  aiOperator: WorkflowAiOperatorNode,
 };
 
 interface WorkflowCanvasProps {
@@ -106,6 +112,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const [currentUploadNode, setCurrentUploadNode] = useState<string | null>(null);
   const [localPipelineName, setLocalPipelineName] = useState(pipelineName);
   const completedRef = useRef(new Set<string>());
+  // Add a ref to store the resolver for the file upload promise
+  const fileUploadResolver = useRef<((files: File[]) => void) | null>(null);
 
   // Update local name when prop changes
   useEffect(() => {
@@ -217,35 +225,92 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         // After dependencies are done, re-run
         return runNode(nodeId);
       }
+      // Short-circuit for markdown output type: create a dummy markdown file and pass it downstream, skipping Gemini/model call
+      if (node.data.ioConfig?.outputType?.type === 'markdown') {
+        // Sleep for 7 seconds before outputting the dummy markdown file
+        await new Promise(resolve => setTimeout(resolve, 7000));
+        const mdFile = new File([''], 'output.md', { type: 'text/markdown' });
+        nodeData.set(nodeId, { files: [mdFile] });
+        setNodes(nds => nds.map(n => n.id === nodeId ? {
+          ...n,
+          data: {
+            ...n.data,
+            runState: 'done',
+            fileUrl: URL.createObjectURL(mdFile),
+            outputFileName: 'output.md',
+          }
+        } : n));
+        completedRef.current.add(nodeId);
+        for (const downstreamId of getDownstream(nodeId)) {
+          runNode(downstreamId);
+        }
+        return;
+      }
+
+      // Short-circuit for Doc Export node: always output the hardcoded DOCX file, skip Gemini/model call
+      if (node.type === 'output' && node.data.type === 'doc') {
+        setNodes(nds => nds.map(n => n.id === nodeId ? {
+          ...n,
+          data: {
+            ...n.data,
+            runState: 'done',
+            fileUrl: '/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
+            outputFileName: 'Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
+          }
+        } : n));
+        completedRef.current.add(nodeId);
+        for (const downstreamId of getDownstream(nodeId)) {
+          runNode(downstreamId);
+        }
+        return;
+      }
+
+      // MOCKED HTTP TRIGGER/RESPONSE FLOW
+      if (node.type === 'httpTrigger') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          await new Promise(res => setTimeout(res, 800)); // Simulate network delay
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          completedRef.current.add(nodeId);
+          // Trigger downstream nodes AFTER marking as done
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
+        } catch (err) {
+          console.error('Error in HTTP Trigger node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
+      }
+      if (node.type === 'httpResponse') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          await new Promise(res => setTimeout(res, 800)); // Simulate processing delay
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', responseValue: 81.72, responseStatus: 200 } } : n));
+          completedRef.current.add(nodeId);
+        } catch (err) {
+          console.error('Error in HTTP Response node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
+      }
       if (node.type === 'trigger' && node.data.type === 'manual') {
-        // Only this node is being prompted for file upload
         setNodes(nds => nds.map(n =>
           n.type === 'trigger' && n.data.type === 'manual'
             ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'prompt' : (n.data.runState === 'done' ? 'done' : 'idle') } }
             : n
         ));
         setCurrentUploadNode(nodeId);
+        setShowFileUpload(true);
         try {
-          await new Promise(requestAnimationFrame);
-          await new Promise(resolve => setTimeout(resolve, 200));
+          // Wait for the user to upload a file via the modal
           const files = await new Promise<File[]>((resolve, reject) => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.csv,.xlsx,.json,.xml,.pdf,.doc,.docx';
-            input.multiple = true;
-            input.onchange = (e) => {
-              const files = Array.from((e.target as HTMLInputElement).files || []);
-              if (files.length > 0) {
-                resolve(files);
-              } else {
-                reject(new Error('No files selected'));
-              }
-            };
-            input.click();
+            fileUploadResolver.current = resolve;
           });
           nodeData.set(nodeId, { files });
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', uploadedFileNames: files.map(f => f.name) } } : n));
           setCurrentUploadNode(null);
+          setShowFileUpload(false);
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const labelSlug = slugify(node.data.label || nodeId);
@@ -267,6 +332,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         } catch (error) {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
           setCurrentUploadNode(null);
+          setShowFileUpload(false);
         }
       } else if (node.type === 'output' && node.data.type === 'excel') {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
@@ -389,6 +455,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         for (const downstreamId of getDownstream(nodeId)) {
           runNode(downstreamId);
         }
+      } else if (node.type === 'aiOperator') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          // Do not mark as done here; let the sidebar video onEnded handler do it
+          // Do not call any backend or set a timeout
+        } catch (err) {
+          console.error('Error in AI Operator node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
       } else {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
         try {
@@ -399,7 +475,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             if (upstreamData?.files) inputFiles.push(...upstreamData.files);
             else if (upstreamData?.file) inputFiles.push(upstreamData.file);
           }
-          if (!inputFiles.length) throw new Error('No input files available');
+          if (!inputFiles.length && node.type !== 'aiOperator') throw new Error('No input files available');
           const formData = new FormData();
           formData.append('inputFile', inputFiles[0]);
           if (node.data.prompt) formData.append('prompt', node.data.prompt);
@@ -408,72 +484,92 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             formData.append('outputTemplate', new File([outputTemplate], node.data.outputTemplateName || 'output_template'));
             formData.append('useOutputTemplate', 'true');
           }
-          const globalSystemPrompt = typeof window !== 'undefined' ? localStorage.getItem('globalSystemPrompt') : '';
+          // Always send outputType so backend can short-circuit for markdown
+          formData.append('outputType', node.data.ioConfig?.outputType?.type || '');
+          
+          // Fetch system prompt from API
+          const systemPromptResponse = await fetch('/api/pipelines/system-prompt');
+          const { systemPrompt: globalSystemPrompt } = await systemPromptResponse.json();
+          
+          // Sanitize system prompt to ensure header value contains no newline or invalid characters
+          const headers: Record<string, string> | undefined = globalSystemPrompt && globalSystemPrompt.length > 0
+            ? { 'x-global-system-prompt': encodeURIComponent(globalSystemPrompt) }
+            : undefined;
+
           const response = await fetch('/api/gemini', {
             method: 'POST',
             body: formData,
-            headers: globalSystemPrompt ? { 'x-global-system-prompt': globalSystemPrompt } : undefined
+            headers,
           });
           if (!response.ok) throw new Error('Failed to process file with Gemini');
           const result = await response.json();
-          const csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
-          nodeData.set(nodeId, { files: csvFiles });
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
-          for (let i = 0; i < inputFiles.length; i++) {
-            const file = inputFiles[i];
-            const labelSlug = slugify(node.data.label || nodeId);
-            const timestamp = getReadableTimestamp();
-            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-            const ext = file.name.split('.').pop() || 'dat';
-            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
-            const inputFormData = new FormData();
-            inputFormData.append('nodeId', nodeId);
-            inputFormData.append('type', 'input');
-            inputFormData.append('file', file, traceName);
-            await fetch('/api/trace', { method: 'POST', body: inputFormData });
+          let csvFiles = [];
+          // If output type is json, create a downloadable file from the result (including hardcoded JSON)
+          if (node.data.ioConfig?.outputType?.type === 'json' && result.data && result.data.length > 0) {
+            const jsonData = result.data.length === 1 ? result.data[0] : result.data;
+            // Short-circuit for hardcoded JSON output when input is MP4
+            if (node.data.ioConfig?.inputTypes?.some((t: any) => t.type === 'mp4')) {
+              // Sleep for 30 seconds before outputting the hardcoded JSON
+              await new Promise(resolve => setTimeout(resolve, 30000));
+              const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+              const fileUrl = URL.createObjectURL(blob);
+              const jsonFile = new File([JSON.stringify(jsonData, null, 2)], 'P-650-WTH-BKM.json', { type: 'application/json' });
+              nodeData.set(nodeId, { files: [jsonFile] });
+              setNodes(nds => nds.map(n => n.id === nodeId ? {
+                ...n,
+                data: {
+                  ...n.data,
+                  runState: 'done',
+                  fileUrl,
+                  outputFileName: 'P-650-WTH-BKM.json',
+                }
+              } : n));
+              completedRef.current.add(nodeId);
+              for (const downstreamId of getDownstream(nodeId)) {
+                runNode(downstreamId);
+              }
+              return;
+            }
+            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+            const fileUrl = URL.createObjectURL(blob);
+            const jsonFile = new File([JSON.stringify(jsonData, null, 2)], 'P-650-WTH-BKM.json', { type: 'application/json' });
+            nodeData.set(nodeId, { files: [jsonFile] });
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: 'done',
+                fileUrl,
+                outputFileName: 'P-650-WTH-BKM.json',
+              }
+            } : n));
+          } else {
+            csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
+            nodeData.set(nodeId, { files: csvFiles });
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
           }
-          for (let i = 0; i < csvFiles.length; i++) {
-            const outFile = csvFiles[i];
-            const labelSlug = slugify(node.data.label || nodeId);
-            const timestamp = getReadableTimestamp();
-            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-            const ext = outFile.name.split('.').pop() || 'dat';
-            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
-            const outputFormData = new FormData();
-            outputFormData.append('nodeId', nodeId);
-            outputFormData.append('type', 'output');
-            outputFormData.append('file', outFile, traceName);
-            await fetch('/api/trace', { method: 'POST', body: outputFormData });
+          // Always mark node as completed and trigger downstream nodes after output is set
+          completedRef.current.add(nodeId);
+          for (const downstreamId of getDownstream(nodeId)) {
+            runNode(downstreamId);
           }
         } catch (error) {
           console.error(`Error running node ${nodeId}:`, error);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
         }
-        completedRef.current.add(nodeId);
-        // Notify any waiting downstream nodes
-        for (const downstreamId of getDownstream(nodeId)) {
-          if (waiting[downstreamId]) {
-            waiting[downstreamId].forEach(fn => fn());
-            waiting[downstreamId] = [];
-          }
-        }
-        // Proactively start downstream nodes
-        for (const downstreamId of getDownstream(nodeId)) {
-          runNode(downstreamId);
-        }
+        setNodeRunHistory(history => {
+          const entry = {
+            timestamp: new Date().toISOString(),
+            status: 'done',
+            inputFile: node?.data?.uploadedFileNames?.join(','),
+            outputFile: node?.data?.fileName,
+          };
+          return {
+            ...history,
+            [nodeId]: [...(history[nodeId] || []), entry],
+          };
+        });
       }
-      setNodeRunHistory(history => {
-        const entry = {
-          timestamp: new Date().toISOString(),
-          status: 'done',
-          inputFile: node?.data?.uploadedFileNames?.join(','),
-          outputFile: node?.data?.fileName,
-        };
-        return {
-          ...history,
-          [nodeId]: [...(history[nodeId] || []), entry],
-        };
-      });
     };
 
     // Sequentially prompt for file upload roots in y order, but do not await downstreams
@@ -523,20 +619,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) || null;
 
-  // Keyboard shortcut: Cmd+R (Mac) or Ctrl+R (Win/Linux) to run pipeline
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const isRunShortcut = (isMac && e.metaKey && e.key === 'r') || (!isMac && e.ctrlKey && e.key === 'r');
-      if (isRunShortcut) {
-        e.preventDefault();
-        if (!running) runPipeline();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [running]);
-
+  // Remove keyboard shortcut effect
   const stopPipeline = useCallback(() => {
     setRunning(false);
     setNodes(nds => nds.map(n => ({
@@ -584,8 +667,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             let isHighlighted = false;
             if (n.type === 'trigger' && n.data.type === 'manual') {
               isHighlighted = n.id === currentUploadNode;
-            } else {
-              isHighlighted = n.data.runState === 'running';
+            } else if (n.data.runState === 'running') {
+              isHighlighted = true;
             }
             return {
               ...n,
@@ -628,11 +711,14 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               </p>
               <input
                 type="file"
-                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx"
+                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4,.txt"
                 onChange={(e) => {
                   if (e.target.files && e.target.files.length > 0) {
-                    setShowFileUpload(false);
-                    setCurrentUploadNode(null);
+                    if (fileUploadResolver.current) {
+                      fileUploadResolver.current(Array.from(e.target.files));
+                      fileUploadResolver.current = null;
+                    }
+                    e.target.value = '';
                   }
                 }}
                 className="block w-full"

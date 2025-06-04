@@ -39,19 +39,58 @@ export function DashboardSidebar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
 
-  // Load system prompt from localStorage on mount
+  // Load system prompt from file on mount
   useEffect(() => {
-    const savedPrompt = localStorage.getItem('globalSystemPrompt');
-    if (savedPrompt) setSystemPrompt(savedPrompt);
+    const fetchSystemPrompt = async () => {
+      try {
+        const response = await fetch('/api/pipelines/system-prompt');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Fetched system prompt:', data); // Debug log
+        if (data.systemPrompt) {
+          setSystemPrompt(data.systemPrompt);
+        } else {
+          console.warn('No system prompt found in response');
+        }
+      } catch (error) {
+        console.error('Failed to fetch system prompt:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load system prompt. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchSystemPrompt();
   }, []);
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('globalSystemPrompt', systemPrompt);
-    toast({
-      title: "System Prompt Saved",
-      description: "Your global system prompt has been updated and will be used for all workflows.",
-    });
-    setIsSettingsOpen(false);
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch('/api/pipelines/system-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ systemPrompt }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to save system prompt');
+      
+      toast({
+        title: "System Prompt Saved",
+        description: "Your global system prompt has been updated and will be used for all workflows.",
+      });
+      setIsSettingsOpen(false);
+    } catch (error) {
+      console.error('Failed to save system prompt:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save system prompt. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

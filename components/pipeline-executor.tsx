@@ -63,30 +63,41 @@ export function PipelineExecutor({ pipeline }: PipelineExecutorProps) {
         outputFile: outputFileName,
       };
 
-      // Update pipeline runs in localStorage
-      const pipelines = JSON.parse(localStorage.getItem("pipelines") || "[]");
-      const pipelineIndex = pipelines.findIndex(
-        (p: Pipeline) => p.id === pipeline.id,
-      );
+      // Save run history through API
+      const response = await fetch(`/api/run-history/${pipeline.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ run: newRun }),
+      });
 
-      if (pipelineIndex !== -1) {
-        pipelines[pipelineIndex] = {
-          ...pipelines[pipelineIndex],
-          runs: [...(pipelines[pipelineIndex].runs || []), newRun],
-          updatedAt: new Date().toISOString(),
-        };
-
-        localStorage.setItem("pipelines", JSON.stringify(pipelines));
+      if (!response.ok) {
+        throw new Error('Failed to save pipeline run');
       }
+
+      // Update pipeline in storage
+      const updatedPipeline = {
+        ...pipeline,
+        updatedAt: new Date().toISOString(),
+      };
+      await fetch(`/api/pipelines/${pipeline.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedPipeline),
+      });
 
       toast({
         title: "Success",
         description: "Pipeline executed successfully",
       });
     } catch (error) {
+      console.error("Failed to execute pipeline:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to execute pipeline",
+        description: "Failed to execute pipeline",
         variant: "destructive",
       });
     } finally {

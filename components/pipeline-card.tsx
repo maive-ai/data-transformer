@@ -59,9 +59,6 @@ export function PipelineCard({ pipeline, onDelete }: PipelineCardProps) {
           <CardTitle className="text-lg" data-oid="-37wxpq">
             {pipeline.name}
           </CardTitle>
-          <CardDescription className="line-clamp-2" data-oid="1lvg2sj">
-            {pipeline.description || "No description provided"}
-          </CardDescription>
         </div>
         <DropdownMenu data-oid="::u5u26">
           <DropdownMenuTrigger asChild data-oid="hpv4.0i">

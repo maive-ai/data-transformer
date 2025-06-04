@@ -21,21 +21,20 @@ export function PipelineHistory({ pipelineId }: PipelineHistoryProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const loadPipelineRuns = () => {
+    const loadPipelineRuns = async () => {
       try {
-        const pipelines = JSON.parse(localStorage.getItem("pipelines") || "[]");
-        const pipeline = pipelines.find((p: Pipeline) => p.id === pipelineId);
-
-        if (pipeline && pipeline.runs) {
-          setRuns(
-            pipeline.runs.sort(
-              (a: PipelineRun, b: PipelineRun) =>
-                new Date(b.timestamp).getTime() -
-                new Date(a.timestamp).getTime(),
-            ),
-          );
+        const response = await fetch(`/api/run-history/${pipelineId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch pipeline runs');
         }
+        const data = await response.json();
+        setRuns(
+          data.runs.sort(
+            (a: PipelineRun, b: PipelineRun) =>
+              new Date(b.timestamp).getTime() -
+              new Date(a.timestamp).getTime(),
+          ),
+        );
       } catch (error) {
         console.error("Failed to load pipeline runs:", error);
       } finally {

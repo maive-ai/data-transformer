@@ -1,0 +1,1125 @@
+{
+  "pipeline-1748047052757": {
+    "id": "pipeline-1748047052757",
+    "name": "Vial Wash data to Excel",
+    "description": "",
+    "createdAt": "2025-05-24T00:37:32.757Z",
+    "updatedAt": "2025-05-30T18:39:21.516Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1748047056298",
+          "type": "trigger",
+          "position": {
+            "x": -20.5,
+            "y": -44.07697315692536
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "Overwrap data for Maive.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -20.5,
+            "y": -44.07697315692536
+          },
+          "dragging": false
+        },
+        {
+          "id": "trigger-1748047059125",
+          "type": "trigger",
+          "position": {
+            "x": -18.5,
+            "y": 147.5
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "Vial Wash data for Maive.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -18.5,
+            "y": 147.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748047062410",
+          "type": "action",
+          "position": {
+            "x": 229.92302684307464,
+            "y": -45.42302684307464
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "prompt": "Pull the following information from the form and input it in the Excel file.\nTime first operator went in.\nTime last operator came out.\nNumber of Overwraps / Item\nNumber of Overwrapped Components completed\nNumber of rejects\nPrimary Recipe Number\nNumber of plates used during primary OW\nSecondary Recipe Number\nNumber of plates used during secondary OW\nFrom this data, I want to see if it can determine the target # for overwrapped components. (# of OW completed + rejects)\n\nSometimes there may be a number in a table cell with a footnote added above and to the right of it. Consider this a demarcation for a footnote. It is not part of the number. For any time in / time out data points where you have multiple options to choose from, please select the earliest time for time in and latest time for time out.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "outputTemplateUrl": "/templates/8556394b-86c2-4ceb-a323-561a4ebe2ba7-overwrap_template.csv",
+            "outputTemplateName": "overwrap_template.csv",
+            "runState": "done"
+          },
+          "width": 116,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 229.92302684307464,
+            "y": -45.42302684307464
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748047067946",
+          "type": "action",
+          "position": {
+            "x": 231.5,
+            "y": 148.5
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "prompt": "Pull the following data from Vial Washing batch record steps and input it in the Excel file.\nVial Configuration\nService Order\nNumber of vials processed per day\nNumber of vials rejected\nI also want it to calculate the vial reconciliation found on 14. To do that you need to calculate E which is A +B+C+D and then you need to read F. Finally calculate the vial reconciliation as E/F.\n",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "outputTemplateUrl": "/templates/73930083-608a-44ff-a55e-4113abd113e0-vial_template.csv",
+            "outputTemplateName": "vial_template.csv",
+            "runState": "done"
+          },
+          "width": 116,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 231.5,
+            "y": 148.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748047152444",
+          "type": "output",
+          "position": {
+            "x": 535.6147334786485,
+            "y": 36.532952738210156
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel",
+            "fileName": "",
+            "sheetNames": [
+              "OW Data",
+              "VW Data"
+            ],
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "excel"
+              }
+            },
+            "runState": "done",
+            "fileUrl": "blob:http://localhost:3001/00e88ec8-4411-46b7-86a7-c1dfaa10c1e7",
+            "outputFileName": "merged_output.xlsx"
+          },
+          "width": 114,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 535.6147334786485,
+            "y": 36.532952738210156
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "trigger-1748047056298",
+          "sourceHandle": null,
+          "target": "action-1748047062410",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748047056298-action-1748047062410"
+        },
+        {
+          "source": "trigger-1748047059125",
+          "sourceHandle": null,
+          "target": "action-1748047067946",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748047059125-action-1748047067946"
+        },
+        {
+          "source": "action-1748047062410",
+          "sourceHandle": null,
+          "target": "output-1748047152444",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748047062410-output-1748047152444"
+        },
+        {
+          "source": "action-1748047067946",
+          "sourceHandle": null,
+          "target": "output-1748047152444",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748047067946-output-1748047152444"
+        }
+      ]
+    }
+  },
+  "pipeline-1748590994781": {
+    "id": "pipeline-1748590994781",
+    "name": "SOP from Video",
+    "description": "",
+    "createdAt": "2025-05-30T07:43:14.781Z",
+    "updatedAt": "2025-06-03T02:41:53.171Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1748591004252",
+          "type": "trigger",
+          "position": {
+            "x": -23.5,
+            "y": 77
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "prompt",
+            "uploadedFileNames": [
+              "2025-02-05_15-19-57_421496_P-650-WTH-BKM-converted-moved.mp4"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -23.5,
+            "y": 77
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748591006416",
+          "type": "action",
+          "position": {
+            "x": 224.67999999999995,
+            "y": 80.58000000000001
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "prompt": "Problem Statement:\nAnalyze the provided video and generate a sequential list of manufacturing assembly steps based solely on a visual analysis of the frames (incorporate any on-screen text if available). Create clear, user-centric instructions that enable a novice to replicate the process. For each step, follow these guidelines:\n•\tWrite the instruction in an imperative tone, starting with an action verb (e.g., ‘Align’, ‘Secure’, ‘Insert’).\n•\tEnsure that each step is detailed and logically sequenced.\n•\tInclude a timestamp field called t_end that indicates, in seconds from the start of the video, when the step is completed.\n•\tInclude a field called tools_used that lists the tools used in the step.",
+            "useOutputTemplate": false,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "mp4"
+                },
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "json"
+              }
+            },
+            "outputTemplateUrl": "/data/P-650-WTH-BKM.json",
+            "outputTemplateName": "P-650-WTH-BKM.json",
+            "runState": "idle",
+            "fileUrl": "blob:http://localhost:3001/b0338cc4-4eb7-4d6b-b83a-df442572ae9a",
+            "outputFileName": "P-650-WTH-BKM.json"
+          },
+          "width": 114,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 224.67999999999995,
+            "y": 80.58000000000001
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748591017985",
+          "type": "action",
+          "position": {
+            "x": 399.6122087458402,
+            "y": 76.01555697412212
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "prompt": "Your job is to create a Standard Operating Procedure document for this Toothbrush holder manufacturing assembly process. You have been provided:\nA list of assembly steps and their description\n\nThe output should be a document for the standard operating procedure following the template provided.",
+            "outputFileName": "output.md",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "json"
+                }
+              ],
+              "outputType": {
+                "type": "markdown"
+              }
+            },
+            "runState": "idle",
+            "outputTemplateUrl": "/templates/1c1c3dae-fc69-4642-a659-6fec1f2ea6af-SOP Template 09.15.2022 - on website.docx",
+            "outputTemplateName": "SOP Template 09.15.2022 - on website.docx",
+            "fileUrl": "blob:http://localhost:3001/73bfef77-0af9-4302-9d38-cbd085d2dfd9"
+          },
+          "width": 114,
+          "height": 86,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 399.6122087458402,
+            "y": 76.01555697412212
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748591025822",
+          "type": "output",
+          "position": {
+            "x": 558.3999999999999,
+            "y": 70.17337184719204
+          },
+          "data": {
+            "label": "Doc Export",
+            "type": "doc",
+            "runState": "idle",
+            "fileName": "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
+            "ioConfig": {
+              "inputTypes": [],
+              "outputType": {
+                "type": "doc"
+              }
+            },
+            "fileUrl": "/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
+            "outputFileName": "Standard Operating Procedure_ Toothbrush Holder Assembly.docx"
+          },
+          "width": 103,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 558.3999999999999,
+            "y": 70.17337184719204
+          },
+          "dragging": false
+        },
+        {
+          "id": "trigger-1748591160735",
+          "type": "trigger",
+          "position": {
+            "x": -17.919999999999987,
+            "y": 211.76000000000005
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "idle",
+            "uploadedFileNames": [
+              "P650WTH-Specification.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -17.919999999999987,
+            "y": 211.76000000000005
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "trigger-1748591004252",
+          "sourceHandle": null,
+          "target": "action-1748591006416",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748591004252-action-1748591006416"
+        },
+        {
+          "source": "action-1748591006416",
+          "sourceHandle": null,
+          "target": "action-1748591017985",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748591006416-action-1748591017985"
+        },
+        {
+          "source": "action-1748591017985",
+          "sourceHandle": null,
+          "target": "output-1748591025822",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748591017985-output-1748591025822"
+        },
+        {
+          "source": "trigger-1748591160735",
+          "sourceHandle": null,
+          "target": "action-1748591006416",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748591160735-action-1748591006416"
+        }
+      ]
+    }
+  },
+  "pipeline-1748049938228": {
+    "id": "pipeline-1748049938228",
+    "name": "Inspection Defects",
+    "description": "",
+    "createdAt": "2025-05-24T01:25:38.228Z",
+    "updatedAt": "2025-05-30T18:42:54.429Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "action-1748050836118",
+          "type": "action",
+          "position": {
+            "x": 454.33709869879715,
+            "y": 248.81050638804635
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "outputTemplateUrl": "/templates/46146926-6a1a-4501-b79c-e1b8d6dd9426-Product C Inspection Template.csv",
+            "outputTemplateName": "Product C Inspection Template.csv",
+            "prompt": "Please read the inspection report and enter the data from the report into the output template. If a defect wasn't reported for a given column in the output template, then enter a zero (\"0\") for the entry under that column. Otherwise, please identify which defect to log based on the description in the document and log its quantity (Qty) associated with that defect into the spreadsheet.\n\nSome descriptions may occupy two rows. This is indicated by the data on one of its rows being marked with N/A or null data. Please don't delete any of the columns in the template. Please make sure that the total of the numbers in the Qty column in the document + the total quantity expected sum to the same sum of the data in the row entered into CSV's (excluding the lot number). Make sure every column in the row that's inserted has a value in it.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "done"
+          },
+          "width": 116,
+          "height": 88,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 454.33709869879715,
+            "y": 248.81050638804635
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748050843259",
+          "type": "output",
+          "position": {
+            "x": 725.7889979428732,
+            "y": 248.82642293513214
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel",
+            "fileName": "inspection_data.xlsx",
+            "sheetNames": [
+              "5 mL Reject Data"
+            ],
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "excel"
+              }
+            },
+            "runState": "done",
+            "fileUrl": "blob:http://localhost:3000/5ead01ef-e0e7-4ba9-ad2b-2592fdd1e04c",
+            "outputFileName": "inspection_data.xlsx"
+          },
+          "width": 115,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 725.7889979428732,
+            "y": 248.82642293513214
+          },
+          "dragging": false
+        },
+        {
+          "id": "trigger-1748299658367",
+          "type": "trigger",
+          "position": {
+            "x": 128.33066971114675,
+            "y": 248.52138969783016
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "Product C Inspection Summary - dummy copy for Maive.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 128.33066971114675,
+            "y": 248.52138969783016
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "action-1748050836118",
+          "sourceHandle": null,
+          "target": "output-1748050843259",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748050836118-output-1748050843259",
+          "selected": false
+        },
+        {
+          "source": "trigger-1748299658367",
+          "sourceHandle": null,
+          "target": "action-1748050836118",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748299658367-action-1748050836118"
+        }
+      ]
+    }
+  },
+  "pipeline-1748049938229": {
+    "id": "pipeline-1748049938229",
+    "name": "Overwrapping and Vial Washing",
+    "description": "",
+    "createdAt": "2025-05-24T01:25:38.229Z",
+    "updatedAt": "2025-06-03T03:00:53.364Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1748050647625",
+          "type": "trigger",
+          "position": {
+            "x": -87,
+            "y": -37.5
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "overwrap_data.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": false,
+          "positionAbsolute": {
+            "x": -87,
+            "y": -37.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748050649642",
+          "type": "action",
+          "position": {
+            "x": 189.5,
+            "y": -37.5
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "outputTemplateUrl": "/templates/839b1752-241b-4be8-909a-71b1374051b9-overwrap_template.csv",
+            "outputTemplateName": "overwrap_template.csv",
+            "prompt": "Pull the following information from the form and input it in the Excel file.\nTime first operator went in.\nTime last operator came out.\nNumber of Overwraps / Item\nNumber of Overwrapped Components completed\nNumber of rejects\nPrimary Recipe Number\nNumber of plates used during primary OW\nSecondary Recipe Number\nNumber of plates used during secondary OW\nFrom this data, I want to see if it can determine the target # for overwrapped components. (# of OW completed + rejects)\n\nSometimes there may be a number in a table cell with a footnote added above and to the right of it. Consider this a demarcation for a footnote. It is not part of the number. For any time in / time out data points where you have multiple options to choose from, please select the earliest time for time in and latest time for time out.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "error"
+          },
+          "width": 114,
+          "height": 86,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 189.5,
+            "y": -37.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748050652265",
+          "type": "output",
+          "position": {
+            "x": 448.4,
+            "y": 58.5
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel",
+            "fileName": "",
+            "sheetNames": [
+              "OW Data",
+              "VW Data"
+            ],
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "excel"
+              }
+            },
+            "runState": "idle",
+            "fileUrl": "blob:http://localhost:3000/c1dad12f-c9dc-43ac-9eec-31792175f4a7",
+            "outputFileName": "merged_output.xlsx"
+          },
+          "width": 113,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 448.4,
+            "y": 58.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748050654987",
+          "type": "action",
+          "position": {
+            "x": 193.5,
+            "y": 169.5
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "outputTemplateUrl": "/templates/e3a99a62-f09d-4f86-a87a-5dd918daeffa-vial_template.csv",
+            "outputTemplateName": "vial_template.csv",
+            "prompt": "Pull the following data from Vial Washing batch record steps and input it in the Excel file.\nVial Configuration\nService Order\nNumber of vials processed per day\nNumber of vials rejected\nI also want it to calculate the vial reconciliation found on 14. To do that you need to calculate E which is A +B+C+D and then you need to read F. Finally calculate the vial reconciliation as E/F.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "pdf"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "error"
+          },
+          "width": 114,
+          "height": 86,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 193.5,
+            "y": 169.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "trigger-1748050659461",
+          "type": "trigger",
+          "position": {
+            "x": -84,
+            "y": 170
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual",
+            "icon": {
+              "type": {},
+              "key": null,
+              "props": {
+                "className": "w-6 h-6"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "runState": "done",
+            "uploadedFileNames": [
+              "vial_washing_data.pdf"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -84,
+            "y": 170
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "trigger-1748050659461",
+          "sourceHandle": null,
+          "target": "action-1748050654987",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748050659461-action-1748050654987"
+        },
+        {
+          "source": "action-1748050654987",
+          "sourceHandle": null,
+          "target": "output-1748050652265",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748050654987-output-1748050652265"
+        },
+        {
+          "source": "action-1748050649642",
+          "sourceHandle": null,
+          "target": "output-1748050652265",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748050649642-output-1748050652265"
+        },
+        {
+          "source": "trigger-1748050647625",
+          "sourceHandle": null,
+          "target": "action-1748050649642",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748050647625-action-1748050649642"
+        }
+      ]
+    }
+  },
+  "pipeline-1748623301886": {
+    "id": "pipeline-1748623301886",
+    "name": "AI Operator Endpoint",
+    "description": "",
+    "createdAt": "2025-05-30T16:41:41.886Z",
+    "updatedAt": "2025-05-30T18:56:58.020Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "httpTrigger-1748623480300",
+          "type": "httpTrigger",
+          "position": {
+            "x": 5.5,
+            "y": 69.5
+          },
+          "data": {
+            "label": "HTTP Endpoint",
+            "type": "http",
+            "method": "GET",
+            "endpoint": "/api/get/fan_temp",
+            "runState": "done"
+          },
+          "width": 192,
+          "height": 112,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 5.5,
+            "y": 69.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "aiOperator-1748623488050",
+          "type": "aiOperator",
+          "position": {
+            "x": 299.49706470178467,
+            "y": 217.59316661167907
+          },
+          "data": {
+            "label": "AI Operator",
+            "type": "action",
+            "prompt": "Please use Ignition, read the discharge temperature from the fan, and return it.",
+            "runState": "running"
+          },
+          "width": 192,
+          "height": 125,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 299.49706470178467,
+            "y": 217.59316661167907
+          },
+          "dragging": false
+        },
+        {
+          "id": "httpResponse-1748623496432",
+          "type": "httpResponse",
+          "position": {
+            "x": 625.5963788850084,
+            "y": 329.1513091535609
+          },
+          "data": {
+            "label": "HTTP Response",
+            "type": "http",
+            "statusCode": 200,
+            "contentType": "application/json",
+            "runState": "idle"
+          },
+          "width": 146,
+          "height": 110,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 625.5963788850084,
+            "y": 329.1513091535609
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "httpTrigger-1748623480300",
+          "sourceHandle": null,
+          "target": "aiOperator-1748623488050",
+          "targetHandle": null,
+          "id": "reactflow__edge-httpTrigger-1748623480300-aiOperator-1748623488050"
+        },
+        {
+          "source": "aiOperator-1748623488050",
+          "sourceHandle": null,
+          "target": "httpResponse-1748623496432",
+          "targetHandle": null,
+          "id": "reactflow__edge-aiOperator-1748623488050-httpResponse-1748623496432"
+        }
+      ]
+    }
+  },
+  "pipeline-1748919214360": {
+    "id": "pipeline-1748919214360",
+    "name": "BOM to CSV",
+    "description": "",
+    "createdAt": "2025-06-03T02:53:34.360Z",
+    "updatedAt": "2025-06-04T03:24:42.534Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1748919226147",
+          "type": "trigger",
+          "position": {
+            "x": -70.5,
+            "y": 98.5
+          },
+          "data": {
+            "label": "Manual Upload",
+            "type": "manual",
+            "runState": "done",
+            "uploadedFileName": "",
+            "ioConfig": {
+              "inputTypes": [],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "uploadedFileNames": [
+              "space-delimited-bom.txt"
+            ]
+          },
+          "width": 192,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -70.5,
+            "y": 98.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1748919230696",
+          "type": "action",
+          "position": {
+            "x": 216.9569254660015,
+            "y": 99.04307453399846
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action",
+            "prompt": "Please extract the bill of materials (BOM) and reformat it according to the attached CSV output template.\n\nAny or all of the items in the BOM may not contain the necessary data to fill in every column in the CSV template. That's ok. Please leave the data in that column blank for those items.",
+            "outputFileName": "",
+            "useOutputTemplate": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "txt"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "outputTemplateUrl": "/templates/c88b24be-a7d0-4c0a-a4aa-cf6f39991544-bom-import-template.csv",
+            "outputTemplateName": "bom-import-template.csv",
+            "runState": "done"
+          },
+          "width": 116,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 216.9569254660015,
+            "y": 99.04307453399846
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1748919235811",
+          "type": "output",
+          "position": {
+            "x": 434.1238563928212,
+            "y": 101.26471925415944
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel",
+            "runState": "done",
+            "fileUrl": "blob:http://localhost:3000/2436aa88-b320-4c51-9fff-72c0bb960996",
+            "outputFileName": "merged_output.xlsx"
+          },
+          "width": 115,
+          "height": 88,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 434.1238563928212,
+            "y": 101.26471925415944
+          },
+          "dragging": false
+        }
+      ],
+      "edges": [
+        {
+          "source": "trigger-1748919226147",
+          "sourceHandle": null,
+          "target": "action-1748919230696",
+          "targetHandle": null,
+          "id": "reactflow__edge-trigger-1748919226147-action-1748919230696"
+        },
+        {
+          "source": "action-1748919230696",
+          "sourceHandle": null,
+          "target": "output-1748919235811",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1748919230696-output-1748919235811"
+        }
+      ]
+    }
+  },
+  "pipeline-1749007485678": {
+    "id": "pipeline-1749007485678",
+    "name": "BOM to CSV with ERP Lookup",
+    "description": "",
+    "createdAt": "2025-06-04T03:24:45.678Z",
+    "updatedAt": "2025-06-04T03:25:15.639Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [
+        {
+          "id": "trigger-1749007497185",
+          "type": "trigger",
+          "position": {
+            "x": -92.5,
+            "y": 96.5
+          },
+          "data": {
+            "label": "Manual Upload",
+            "type": "manual"
+          },
+          "width": 192,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -92.5,
+            "y": 96.5
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1749007503301",
+          "type": "action",
+          "position": {
+            "x": 182.90654134399784,
+            "y": 97.09345865600218
+          },
+          "data": {
+            "label": "AI Transform",
+            "type": "action"
+          },
+          "width": 114,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 182.90654134399784,
+            "y": 97.09345865600218
+          },
+          "dragging": false
+        }
+      ],
+      "edges": []
+    }
+  }
+}

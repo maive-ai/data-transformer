@@ -1,0 +1,82 @@
+---
+description: Access this guideline when making a decision around performance or using code that will be computationally expensive.
+globs: 
+alwaysApply: false
+---
+# 🚀 Performance Optimization
+
+## Image and Media Optimization
+
+✅ **Next.js Image Component**
+- Always use `next/image` for optimized image loading
+- Provide appropriate `sizes` prop for responsive images
+- Use `priority` for above-the-fold images
+- Implement proper `alt` text for accessibility
+
+✅ **Modern Image Formats**
+- Serve images in WebP/AVIF formats when supported
+- Implement progressive JPEG for large images
+- Use appropriate compression levels for different image types
+- Consider lazy loading for off-screen images
+
+## Core Web Vitals
+
+✅ **Largest Contentful Paint (LCP)**
+- Optimize largest visible element loading time (target: <2.5s)
+- Preload critical resources and fonts
+- Use Server-Side Rendering (SSR) for above-the-fold content
+- Optimize image delivery and sizing
+
+✅ **Cumulative Layout Shift (CLS)**
+- Reserve space for dynamic content and images
+- Avoid inserting content above existing content
+- Use `aspect-ratio` or explicit dimensions for media
+- Minimize layout shifts during loading (target: <0.1)
+
+✅ **First Input Delay (FID) / Interaction to Next Paint (INP)**
+- Minimize JavaScript execution time on main thread
+- Break up long tasks with `scheduler.postTask()` or `setTimeout`
+- Use code splitting to reduce initial bundle size
+- Optimize event handlers and avoid heavy computations
+
+## Bundle Optimization
+
+✅ **Code Splitting**
+- Implement route-based code splitting with dynamic imports
+- Use React.lazy() for component-level splitting
+- Split vendor libraries from application code
+- Monitor bundle size with webpack-bundle-analyzer
+
+✅ **Tree Shaking**
+- Use ES modules for better tree shaking
+- Avoid importing entire libraries when only using specific functions
+- Use precise imports: `import { debounce } from 'lodash-es'`
+- Configure build tools to eliminate dead code
+
+## Runtime Performance
+
+✅ **React Optimization**
+- Use React.memo() for expensive components with stable props
+- Implement useMemo() and useCallback() for expensive computations
+- Avoid creating objects/functions in render methods
+- Use keys properly in lists for efficient reconciliation
+
+✅ **Data Fetching**
+- Implement proper caching strategies (SWR, React Query)
+- Use streaming responses for large datasets
+- Implement optimistic updates for better UX
+- Debounce user input for search/filter operations
+
+## Monitoring and Measurement
+
+✅ **Performance Monitoring**
+- Use Real User Monitoring (RUM) tools
+- Set up Core Web Vitals tracking
+- Monitor bundle size in CI/CD pipeline
+- Use Lighthouse CI for automated performance testing
+
+✅ **Profiling and Debugging**
+- Use React DevTools Profiler for component performance
+- Profile with Chrome DevTools Performance tab
+- Monitor memory usage and potential leaks
+- Use performance.mark() for custom timing measurements

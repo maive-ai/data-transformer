@@ -13,6 +13,7 @@ import ReactFlow, {
   applyNodeChanges,
   NodeChange,
   EdgeChange,
+  StepEdge,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { WorkflowNode } from './workflow-node';
@@ -25,6 +26,14 @@ import { WorkflowOutputNode } from './workflow-output-node';
 import { WorkflowHttpTriggerNode } from './workflow-http-trigger-node';
 import { WorkflowHttpResponseNode } from './workflow-http-response-node';
 import { WorkflowAiOperatorNode } from './workflow-ai-operator-node';
+import { WorkflowLoopNode } from './workflow-loop-node';
+import { WorkflowErpNode } from './workflow-erp-node';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Upload, X } from "lucide-react";
+import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType, ErpAction, IntegrationSubType, NodeLabel } from "@/types/enums";
+import { WorkflowIntegrationNode } from './workflow-integration-node';
+import CurvedFeedbackEdge from './workflow-curved-edge';
 
 // Add File System Access API type declarations
 declare global {
@@ -49,6 +58,14 @@ const nodeTypes = {
   httpTrigger: WorkflowHttpTriggerNode,
   httpResponse: WorkflowHttpResponseNode,
   aiOperator: WorkflowAiOperatorNode,
+  loop: WorkflowLoopNode,
+  erpLookup: WorkflowErpNode,
+  integration: WorkflowIntegrationNode,
+};
+
+const edgeTypes = {
+  step: StepEdge,
+  feedback: CurvedFeedbackEdge,
 };
 
 interface WorkflowCanvasProps {
@@ -179,9 +196,32 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         console.warn('Incompatible node types');
         return;
       }
-      setEdges((eds) => addEdge(params, eds));
+      
+      // Check if this is a feedback connection (CSV Append to Loop)
+      const sourceNode = nodes.find(n => n.id === params.source);
+      const targetNode = nodes.find(n => n.id === params.target);
+      
+      let edgeType = 'step';
+      let targetHandle = params.targetHandle;
+      
+      if (sourceNode?.data.label === NodeLabel.CSV_APPEND && 
+          targetNode?.type === NodeType.LOOP) {
+        edgeType = 'feedback';
+        targetHandle = 'bottom'; // Force connection to bottom handle
+        params = { ...params, sourceHandle: 'bottom' } as Connection;
+      }
+      
+      const newEdge = {
+        ...params,
+        type: edgeType,
+        targetHandle,
+        id: `${params.source}-${params.target}`,
+        sourceHandle: params.sourceHandle,
+      };
+      
+      setEdges((eds) => addEdge(newEdge, eds));
     },
-    [setEdges, validateConnection]
+    [setEdges, validateConnection, nodes]
   );
 
   // Run pipeline animation logic
@@ -192,7 +232,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         ...n,
         data: {
           ...n.data,
-          runState: 'idle',
+          runState: RunState.IDLE,
         },
       }))
     );
@@ -200,8 +240,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     // Find root nodes (no incoming edges), sorted by y position
     const rootNodes = [...nodes.filter(n => !edges.some(e => e.target === n.id))].sort((a, b) => a.position.y - b.position.y);
     // Only consider file upload root nodes (manual triggers)
-    const fileUploadRoots = rootNodes.filter(n => n.type === 'trigger' && n.data.type === 'manual');
-    const otherRoots = rootNodes.filter(n => !(n.type === 'trigger' && n.data.type === 'manual'));
+    const fileUploadRoots = rootNodes.filter(n => n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL);
+    const otherRoots = rootNodes.filter(n => !(n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL));
     // Track node completion and outputs
     const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[] }> = new Map();
     completedRef.current = new Set();
@@ -226,7 +266,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return runNode(nodeId);
       }
       // Short-circuit for markdown output type: create a dummy markdown file and pass it downstream, skipping Gemini/model call
-      if (node.data.ioConfig?.outputType?.type === 'markdown') {
+      if (node.data.ioConfig?.outputType?.type === FileType.MARKDOWN) {
         // Sleep for 7 seconds before outputting the dummy markdown file
         await new Promise(resolve => setTimeout(resolve, 7000));
         const mdFile = new File([''], 'output.md', { type: 'text/markdown' });
@@ -235,7 +275,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           ...n,
           data: {
             ...n.data,
-            runState: 'done',
+            runState: RunState.DONE,
             fileUrl: URL.createObjectURL(mdFile),
             outputFileName: 'output.md',
           }
@@ -248,12 +288,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       }
 
       // Short-circuit for Doc Export node: always output the hardcoded DOCX file, skip Gemini/model call
-      if (node.type === 'output' && node.data.type === 'doc') {
+      if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC) {
         setNodes(nds => nds.map(n => n.id === nodeId ? {
           ...n,
           data: {
             ...n.data,
-            runState: 'done',
+            runState: RunState.DONE,
             fileUrl: '/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
             outputFileName: 'Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
           }
@@ -266,11 +306,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       }
 
       // MOCKED HTTP TRIGGER/RESPONSE FLOW
-      if (node.type === 'httpTrigger') {
+      if (node.type === NodeType.HTTP_TRIGGER) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           await new Promise(res => setTimeout(res, 800)); // Simulate network delay
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
           completedRef.current.add(nodeId);
           // Trigger downstream nodes AFTER marking as done
           for (const downstreamId of getDownstream(nodeId)) {
@@ -278,64 +318,33 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
         } catch (err) {
           console.error('Error in HTTP Trigger node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
       }
-      if (node.type === 'httpResponse') {
+      if (node.type === NodeType.HTTP_RESPONSE) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           await new Promise(res => setTimeout(res, 800)); // Simulate processing delay
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', responseValue: 81.72, responseStatus: 200 } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE, responseValue: 81.72, responseStatus: 200 } } : n));
           completedRef.current.add(nodeId);
         } catch (err) {
           console.error('Error in HTTP Response node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
       }
-      if (node.type === 'trigger' && node.data.type === 'manual') {
+      if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL) {
         setNodes(nds => nds.map(n =>
-          n.type === 'trigger' && n.data.type === 'manual'
-            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'prompt' : (n.data.runState === 'done' ? 'done' : 'idle') } }
+          n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL
+            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.PROMPT : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
             : n
         ));
         setCurrentUploadNode(nodeId);
         setShowFileUpload(true);
-        try {
-          // Wait for the user to upload a file via the modal
-          const files = await new Promise<File[]>((resolve, reject) => {
-            fileUploadResolver.current = resolve;
-          });
-          nodeData.set(nodeId, { files });
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', uploadedFileNames: files.map(f => f.name) } } : n));
-          setCurrentUploadNode(null);
-          setShowFileUpload(false);
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const labelSlug = slugify(node.data.label || nodeId);
-            const timestamp = getReadableTimestamp();
-            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-            const ext = file.name.split('.').pop() || 'dat';
-            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
-            const inputFormData = new FormData();
-            inputFormData.append('nodeId', nodeId);
-            inputFormData.append('type', 'input');
-            inputFormData.append('file', file, traceName);
-            await fetch('/api/trace', { method: 'POST', body: inputFormData });
-          }
-          completedRef.current.add(nodeId);
-          // On successful upload, trigger downstream nodes
-          for (const downstreamId of getDownstream(nodeId)) {
-            runNode(downstreamId);
-          }
-        } catch (error) {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
-          setCurrentUploadNode(null);
-          setShowFileUpload(false);
-        }
-      } else if (node.type === 'output' && node.data.type === 'excel') {
-        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+        return;
+      } else if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
         try {
           // Gather all input files from upstream nodes
           const inputFiles: File[] = [];
@@ -349,7 +358,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           // Log each input CSV as a trace
           for (let i = 0; i < inputFiles.length; i++) {
             const file = inputFiles[i];
-            if (file.type === 'text/csv') {
+            if (file.type === MimeType.TEXT_CSV) {
               const labelSlug = slugify(node.data.label || nodeId);
               const timestamp = getReadableTimestamp();
               const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
@@ -369,7 +378,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const sheetNamesFromNode = Array.isArray(node.data.sheetNames) ? node.data.sheetNames : [];
           for (let i = 0; i < inputFiles.length; i++) {
             const file = inputFiles[i];
-            if (file.type === 'text/csv') {
+            if (file.type === MimeType.TEXT_CSV) {
               const csvContent = await file.text();
               const rows = csvContent.split('\n').map(row => row.split(','));
               const headers = rows[0];
@@ -408,7 +417,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             ...n,
             data: {
               ...n.data,
-              runState: 'done',
+              runState: RunState.DONE,
               fileUrl: URL.createObjectURL(mergedExcelFile),
               outputFileName: node.data.fileName || mergedExcelFile.name,
             },
@@ -429,7 +438,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           setNodeRunHistory(history => {
             const entry = {
               timestamp: new Date().toISOString(),
-              status: 'done',
+              status: RunState.DONE,
               inputFile: inputFiles.map(f => f.name).join(','),
               outputFile: mergedExcelFile.name,
             };
@@ -441,7 +450,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
         } catch (error) {
           console.error(`Error running Excel export node ${nodeId}:`, error);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         completedRef.current.add(nodeId);
         // Notify any waiting downstream nodes
@@ -455,18 +464,372 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         for (const downstreamId of getDownstream(nodeId)) {
           runNode(downstreamId);
         }
-      } else if (node.type === 'aiOperator') {
+      } else if (node.type === NodeType.AI_OPERATOR) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           // Do not mark as done here; let the sidebar video onEnded handler do it
           // Do not call any backend or set a timeout
         } catch (err) {
           console.error('Error in AI Operator node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
+        }
+        return;
+      } else if (node.type === NodeType.ERP_LOOKUP || (node.type === NodeType.ACTION && node.data.label === 'ERP') || (node.type === NodeType.INTEGRATION && node.data.integrationType === IntegrationSubType.ERP)) {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+          
+          // Get input file from upstream node
+          const upstreamId = getUpstream(nodeId)[0];
+          const upstreamData = nodeData.get(upstreamId);
+          if (!upstreamData?.file) throw new Error('No input file available');
+          
+          // Get ERP configuration - handle both legacy and new integration node formats
+          const erpAction = node.data.erpAction || ErpAction.BOM_LOOKUP;
+          const useMockData = node.data.useMockData !== false;
+          const mockDistribution = node.data.mockDistribution || { directMatch: 80, substitution: 10, notFound: 10 };
+          
+          // Read the input file
+          const inputText = await upstreamData.file.text();
+          const lines = inputText.split('\n').filter(line => line.trim());
+          
+          // Skip header line
+          const dataLines = lines.slice(1);
+          
+          // Process each line based on ERP action
+          const processedLines = dataLines.map(line => {
+            const parts = line.match(/\S+/g) || [];
+            
+            if (erpAction === ErpAction.BOM_LOOKUP) {
+              const refDes = parts[0] || "";
+              const mpn = parts[1] || "";
+              const manufacturer = parts[2] || "";
+              const quantity = parts[3] || "";
+              const description = parts[4] || "";
+              const package_ = parts[5] || "";
+
+              let status = "Direct Match";
+              let substitution = undefined;
+
+              if (useMockData) {
+                // Use configured mock distribution
+                const rand = Math.random() * 100;
+                if (rand < mockDistribution.directMatch) {
+                  status = "Direct Match";
+                } else if (rand < mockDistribution.directMatch + mockDistribution.substitution) {
+                  status = "Substitution Found";
+                  substitution = `${mpn}-ALT`;
+      } else {
+                  status = "Not Found in ERP";
+                }
+              } else {
+                // Real ERP connection logic would go here
+                status = "Mock Data Disabled";
+              }
+
+              return {
+                mpn,
+                description,
+                manufacturer,
+                quantity,
+                refDes,
+                package: package_,
+                status,
+                substitution
+              };
+            } else {
+              // Handle other ERP actions
+              const baseData = {
+                partNumber: parts[0] || "",
+                description: parts[1] || "",
+                manufacturer: parts[2] || "",
+              };
+
+              let actionResult = {};
+              
+              if (useMockData) {
+                switch (erpAction) {
+                  case ErpAction.BOM_GENERATION:
+                    actionResult = {
+                      ...baseData,
+                      itemNumber: `ITEM-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+                      category: ['Resistor', 'Capacitor', 'IC', 'Connector', 'Mechanical'][Math.floor(Math.random() * 5)],
+                      bomLevel: Math.floor(Math.random() * 5) + 1,
+                      assemblyQuantity: Math.floor(Math.random() * 10) + 1,
+                      unitCost: (Math.random() * 50 + 0.1).toFixed(2),
+                      totalCost: ((Math.random() * 50 + 0.1) * (Math.floor(Math.random() * 10) + 1)).toFixed(2),
+                      status: 'Generated'
+                    };
+                    break;
+                  case ErpAction.INVENTORY_CHECK:
+                    actionResult = {
+                      ...baseData,
+                      stockLevel: Math.floor(Math.random() * 1000),
+                      location: `Bin-${Math.floor(Math.random() * 100)}`,
+                      status: Math.random() > 0.2 ? 'In Stock' : 'Out of Stock'
+                    };
+                    break;
+                  case ErpAction.PRICE_LOOKUP:
+                    actionResult = {
+                      ...baseData,
+                      unitPrice: (Math.random() * 100 + 1).toFixed(2),
+                      currency: 'USD',
+                      priceBreaks: '1-99: $' + (Math.random() * 100 + 1).toFixed(2),
+                      status: 'Price Available'
+                    };
+                    break;
+                  case ErpAction.SUPPLIER_LOOKUP:
+                    actionResult = {
+                      ...baseData,
+                      supplier: `Supplier-${Math.floor(Math.random() * 10) + 1}`,
+                      contactEmail: `contact${Math.floor(Math.random() * 10)}@supplier.com`,
+                      leadTime: Math.floor(Math.random() * 30 + 1) + ' days',
+                      status: 'Supplier Found'
+                    };
+                    break;
+                  case ErpAction.LEAD_TIME_CHECK:
+                    actionResult = {
+                      ...baseData,
+                      leadTime: Math.floor(Math.random() * 30 + 1) + ' days',
+                      supplier: `Supplier-${Math.floor(Math.random() * 10) + 1}`,
+                      status: 'Lead Time Available'
+                    };
+                    break;
+                  case ErpAction.ALTERNATE_PARTS:
+                    actionResult = {
+                      ...baseData,
+                      alternates: `${baseData.partNumber}-ALT1, ${baseData.partNumber}-ALT2`,
+                      alternateCount: Math.floor(Math.random() * 5) + 1,
+                      status: 'Alternates Found'
+                    };
+                    break;
+                  case ErpAction.COMPLIANCE_CHECK:
+                    actionResult = {
+                      ...baseData,
+                      rohsCompliant: Math.random() > 0.1 ? 'Yes' : 'No',
+                      reachCompliant: Math.random() > 0.05 ? 'Yes' : 'No',
+                      status: 'Compliance Checked'
+                    };
+                    break;
+                  default:
+                    actionResult = {
+                      ...baseData,
+                      result: 'Mock response for ' + erpAction,
+                      status: 'Processed'
+                    };
+                }
+              } else {
+                actionResult = {
+                  ...baseData,
+                  status: 'Mock Data Disabled - Configure ERP Connection'
+                };
+              }
+
+              return actionResult;
+            }
+          });
+
+          // Generate appropriate headers based on action type
+          let headers = [];
+          if (erpAction === ErpAction.BOM_LOOKUP) {
+            headers = ['Manufacturer Part Number', 'Description', 'Manufacturer', 'Quantity', 'Reference Designators', 'Package', 'Status', 'Substitution'];
+          } else if (erpAction === ErpAction.BOM_GENERATION) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Item Number', 'Category', 'BOM Level', 'Assembly Quantity', 'Unit Cost', 'Total Cost', 'Status'];
+          } else if (erpAction === ErpAction.INVENTORY_CHECK) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Stock Level', 'Location', 'Status'];
+          } else if (erpAction === ErpAction.PRICE_LOOKUP) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Unit Price', 'Currency', 'Price Breaks', 'Status'];
+          } else if (erpAction === ErpAction.SUPPLIER_LOOKUP) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Supplier', 'Contact Email', 'Lead Time', 'Status'];
+          } else if (erpAction === ErpAction.LEAD_TIME_CHECK) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Lead Time', 'Supplier', 'Status'];
+          } else if (erpAction === ErpAction.ALTERNATE_PARTS) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Alternates', 'Alternate Count', 'Status'];
+          } else if (erpAction === ErpAction.COMPLIANCE_CHECK) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'RoHS Compliant', 'REACH Compliant', 'Status'];
+          } else {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Result', 'Status'];
+          }
+
+          // Convert to CSV
+          const csvRows = [
+            headers.join(','),
+            ...processedLines.map(line => {
+              if (erpAction === ErpAction.BOM_LOOKUP) {
+                return [
+                  (line as any).mpn,
+                  (line as any).description,
+                  (line as any).manufacturer,
+                  (line as any).quantity,
+                  (line as any).refDes,
+                  (line as any).package,
+                  (line as any).status,
+                  (line as any).substitution || ''
+                ].join(',');
+              } else {
+                return Object.values(line).join(',');
+              }
+            })
+          ];
+          const csvContent = csvRows.join('\n');
+          
+          // Create output file
+          const outputFile = new File([csvContent], `erp-${erpAction}-results.csv`, { type: 'text/csv' });
+          
+          // Update node state
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: RunState.DONE,
+              file: outputFile,
+              ioConfig: {
+                inputTypes: [{ type: FileType.CSV }],
+                outputType: { type: FileType.CSV }
+              }
+            }
+          } : n));
+          
+          // Store the output file
+          nodeData.set(nodeId, { file: outputFile });
+          
+          // Mark as completed
+          completedRef.current.add(nodeId);
+          
+          // Process downstream nodes
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
+        } catch (err) {
+          console.error('Error in ERP node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
+        }
+        return;
+      } else if (node.type === NodeType.LOOP) {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+
+          // Check if this loop has a feedback connection (CSV append feeding back)
+          const feedbackEdges = edges.filter(e => e.target === nodeId && e.type === 'feedback');
+          const hasFeedback = feedbackEdges.length > 0;
+
+          if (hasFeedback) {
+            // Handle feedback loop: accumulate results iteratively
+            await handleFeedbackLoop(nodeId, nodeData, getUpstream, getDownstream, runNode);
+          } else {
+            // Original loop logic: process each row sequentially
+            const upstreamId = getUpstream(nodeId)[0];
+            const upstreamData = nodeData.get(upstreamId);
+            if (!upstreamData?.file) throw new Error('No input file available');
+
+            // Read the input file
+            const inputText = await upstreamData.file.text();
+            const lines = inputText.split('\n').filter(line => line.trim());
+            if (lines.length < 2) throw new Error('CSV must have at least one data row');
+            const header = lines[0];
+            const dataLines = lines.slice(1);
+
+            // For each data line, create a new CSV file and run downstream nodes
+            for (let i = 0; i < dataLines.length; i++) {
+              const csvContent = `${header}\n${dataLines[i]}`;
+              const rowFile = new File([csvContent], `row_${i + 1}.csv`, { type: 'text/csv' });
+              // For each downstream node, run it with this row file
+              for (const downstreamId of getDownstream(nodeId)) {
+                // Store the row file as the input for the downstream node
+                nodeData.set(nodeId + '_row_' + i, { file: rowFile });
+                // Run the downstream node, passing a special upstream context
+                await runNodeWithInput(downstreamId, rowFile, nodeId + '_row_' + i);
+              }
+            }
+          }
+
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
+          completedRef.current.add(nodeId);
+        } catch (err) {
+          console.error('Error in Loop node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
+        }
+        return;
+      } else if (node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND) {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+
+          // Get all input files from upstream nodes
+          const inputFiles: File[] = [];
+          for (const upstreamId of getUpstream(nodeId)) {
+            const upstreamData = nodeData.get(upstreamId);
+            if (upstreamData?.files) inputFiles.push(...upstreamData.files);
+            else if (upstreamData?.file) inputFiles.push(upstreamData.file);
+          }
+          
+          if (inputFiles.length === 0) throw new Error('No input files available for CSV append');
+          
+          // Filter for CSV files only
+          const csvFiles = inputFiles.filter(file => file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv'));
+          if (csvFiles.length === 0) throw new Error('No CSV files found in input');
+
+          let allRows: string[] = [];
+          let headers: string | null = null;
+          
+          // Process each CSV file
+          for (const csvFile of csvFiles) {
+            const csvContent = await csvFile.text();
+            const lines = csvContent.split('\n').filter(line => line.trim());
+            
+            if (lines.length === 0) continue;
+            
+            const fileHeaders = lines[0];
+            const fileDataRows = lines.slice(1);
+            
+            // Use headers from first file, validate subsequent files have same structure
+            if (headers === null) {
+              headers = fileHeaders;
+              allRows.push(headers);
+            } else if (headers !== fileHeaders) {
+              console.warn(`CSV file ${csvFile.name} has different headers, skipping data rows`);
+              continue;
+            }
+            
+            // Append data rows (skip header)
+            allRows.push(...fileDataRows);
+          }
+          
+          if (headers === null) throw new Error('No valid CSV headers found');
+          
+          // Create the merged CSV content
+          const mergedCsvContent = allRows.join('\n');
+          const outputFileName = node.data.outputFileName || 'merged_data.csv';
+          const outputFile = new File([mergedCsvContent], outputFileName, { type: 'text/csv' });
+          
+          // Store the output file
+          nodeData.set(nodeId, { file: outputFile });
+          
+          // Update node state
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: RunState.DONE,
+              file: outputFile,
+              ioConfig: {
+                inputTypes: [{ type: FileType.CSV }],
+                outputType: { type: FileType.CSV }
+              }
+            }
+          } : n));
+          
+          completedRef.current.add(nodeId);
+          
+          // Process downstream nodes
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
+        } catch (err) {
+          console.error('Error in CSV Append node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
       } else {
-        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
         try {
           // Gather all input files from all upstream nodes
           const inputFiles: File[] = [];
@@ -475,7 +838,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             if (upstreamData?.files) inputFiles.push(...upstreamData.files);
             else if (upstreamData?.file) inputFiles.push(upstreamData.file);
           }
-          if (!inputFiles.length && node.type !== 'aiOperator') throw new Error('No input files available');
+          if (!inputFiles.length && node.type !== NodeType.AI_OPERATOR) throw new Error('No input files available');
           const formData = new FormData();
           formData.append('inputFile', inputFiles[0]);
           if (node.data.prompt) formData.append('prompt', node.data.prompt);
@@ -505,10 +868,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const result = await response.json();
           let csvFiles = [];
           // If output type is json, create a downloadable file from the result (including hardcoded JSON)
-          if (node.data.ioConfig?.outputType?.type === 'json' && result.data && result.data.length > 0) {
+          if (node.data.ioConfig?.outputType?.type === FileType.JSON && result.data && result.data.length > 0) {
             const jsonData = result.data.length === 1 ? result.data[0] : result.data;
             // Short-circuit for hardcoded JSON output when input is MP4
-            if (node.data.ioConfig?.inputTypes?.some((t: any) => t.type === 'mp4')) {
+            if (node.data.ioConfig?.inputTypes?.some((t: any) => t.type === FileType.MP4)) {
               // Sleep for 30 seconds before outputting the hardcoded JSON
               await new Promise(resolve => setTimeout(resolve, 30000));
               const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
@@ -519,7 +882,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 ...n,
                 data: {
                   ...n.data,
-                  runState: 'done',
+                  runState: RunState.DONE,
                   fileUrl,
                   outputFileName: 'P-650-WTH-BKM.json',
                 }
@@ -538,7 +901,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               ...n,
               data: {
                 ...n.data,
-                runState: 'done',
+                runState: RunState.DONE,
                 fileUrl,
                 outputFileName: 'P-650-WTH-BKM.json',
               }
@@ -546,7 +909,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           } else {
             csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
             nodeData.set(nodeId, { files: csvFiles });
-            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
           }
           // Always mark node as completed and trigger downstream nodes after output is set
           completedRef.current.add(nodeId);
@@ -555,12 +918,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
         } catch (error) {
           console.error(`Error running node ${nodeId}:`, error);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         setNodeRunHistory(history => {
           const entry = {
             timestamp: new Date().toISOString(),
-            status: 'done',
+            status: RunState.DONE,
             inputFile: node?.data?.uploadedFileNames?.join(','),
             outputFile: node?.data?.fileName,
           };
@@ -571,6 +934,143 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         });
       }
     };
+
+    // Helper function to run a node with a specific input file and context key
+    async function runNodeWithInput(nodeId: string, file: File, contextKey: string) {
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node || completedRef.current.has(contextKey)) return;
+      // Store the file in nodeData with the context key
+      nodeData.set(contextKey, { file });
+      // Mark as completed for this context
+      completedRef.current.add(contextKey);
+      // Run the node as usual (could be extended for more context-aware logic)
+      await runNode(nodeId);
+    }
+
+    // Helper function to handle feedback loops (Loop -> ERP -> CSV Append -> Loop)
+    async function handleFeedbackLoop(
+      loopNodeId: string, 
+      nodeData: Map<string, any>, 
+      getUpstream: (id: string) => string[], 
+      getDownstream: (id: string) => string[], 
+      runNode: (id: string) => Promise<void>
+    ) {
+      // Get initial input data
+      const upstreamId = getUpstream(loopNodeId)[0];
+      const upstreamData = nodeData.get(upstreamId);
+      if (!upstreamData?.file) throw new Error('No input file available for feedback loop');
+
+      // Read the input file
+      const inputText = await upstreamData.file.text();
+      const lines = inputText.split('\n').filter((line: string) => line.trim());
+      if (lines.length < 2) throw new Error('CSV must have at least one data row for feedback loop');
+      
+      const header = lines[0];
+      const dataLines = lines.slice(1);
+      
+      // Initialize accumulated results with header
+      let accumulatedResults = [header];
+      
+      // Process each row through the feedback loop
+      for (let i = 0; i < dataLines.length; i++) {
+        const csvContent = `${header}\n${dataLines[i]}`;
+        const rowFile = new File([csvContent], `row_${i + 1}.csv`, { type: 'text/csv' });
+        
+        // Store row file for this iteration
+        const iterationKey = `${loopNodeId}_iteration_${i}`;
+        nodeData.set(iterationKey, { file: rowFile });
+        
+        // Run downstream nodes (ERP -> CSV Append)
+        const downstreamNodes = getDownstream(loopNodeId);
+        for (const downstreamId of downstreamNodes) {
+          // Skip feedback edges to avoid infinite loop
+          const isDirectDownstream = edges.some(e => 
+            e.source === loopNodeId && 
+            e.target === downstreamId && 
+            e.type !== 'feedback'
+          );
+          
+          if (isDirectDownstream) {
+            // Run the downstream chain (ERP -> CSV Append)
+            await runDownstreamChain(downstreamId, rowFile, iterationKey);
+            
+            // Get the result from CSV Append node (find it in the chain)
+            const csvAppendNodeId = findCsvAppendInChain(downstreamId);
+            if (csvAppendNodeId) {
+              const csvAppendResult = nodeData.get(csvAppendNodeId);
+              if (csvAppendResult?.file) {
+                               const resultText = await csvAppendResult.file.text();
+               const resultLines = resultText.split('\n').filter((line: string) => line.trim());
+                // Add new data rows (skip header)
+                if (resultLines.length > 1) {
+                  accumulatedResults.push(...resultLines.slice(1));
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Create final accumulated file
+      const finalCsvContent = accumulatedResults.join('\n');
+      const finalFile = new File([finalCsvContent], 'accumulated_results.csv', { type: 'text/csv' });
+      nodeData.set(loopNodeId, { file: finalFile });
+    }
+
+    // Helper to run a chain of nodes starting from a given node
+    async function runDownstreamChain(startNodeId: string, inputFile: File, contextKey: string) {
+      const startNode = nodes.find(n => n.id === startNodeId);
+      if (!startNode) return;
+      
+      // Store input for this chain
+      nodeData.set(contextKey, { file: inputFile });
+      
+      // Run the starting node
+      await runNode(startNodeId);
+      
+      // Continue with its downstream nodes
+      const nextDownstream = getDownstream(startNodeId);
+      for (const nextId of nextDownstream) {
+        // Skip feedback edges
+        const isNotFeedback = !edges.some(e => 
+          e.source === startNodeId && 
+          e.target === nextId && 
+          e.type === 'feedback'
+        );
+        
+        if (isNotFeedback) {
+          const nodeResult = nodeData.get(startNodeId);
+          if (nodeResult?.file) {
+            await runDownstreamChain(nextId, nodeResult.file, `${contextKey}_${nextId}`);
+          }
+        }
+      }
+    }
+
+    // Helper to find CSV Append node in a downstream chain
+    function findCsvAppendInChain(startNodeId: string): string | null {
+      const visited = new Set<string>();
+      const queue = [startNodeId];
+      
+      while (queue.length > 0) {
+        const nodeId = queue.shift()!;
+        if (visited.has(nodeId)) continue;
+        visited.add(nodeId);
+        
+        const node = nodes.find(n => n.id === nodeId);
+        if (node?.data.label === NodeLabel.CSV_APPEND) {
+          return nodeId;
+        }
+        
+        // Add downstream nodes (excluding feedback edges)
+        const downstream = getDownstream(nodeId).filter(id => 
+          !edges.some(e => e.source === nodeId && e.target === id && e.type === 'feedback')
+        );
+        queue.push(...downstream);
+      }
+      
+      return null;
+    }
 
     // Sequentially prompt for file upload roots in y order, but do not await downstreams
     for (let i = 0; i < fileUploadRoots.length; i++) {
@@ -626,7 +1126,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       ...n,
       data: {
         ...n.data,
-        runState: 'idle',
+        runState: RunState.IDLE,
       },
     })));
     setCurrentUploadNode(null);
@@ -665,9 +1165,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         <ReactFlow
           nodes={nodes.map(n => {
             let isHighlighted = false;
-            if (n.type === 'trigger' && n.data.type === 'manual') {
+            if (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) {
               isHighlighted = n.id === currentUploadNode;
-            } else if (n.data.runState === 'running') {
+            } else if (n.data.runState === RunState.RUNNING) {
               isHighlighted = true;
             }
             return {
@@ -685,9 +1185,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           onEdgesChange={handleEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           onNodeClick={handleNodeClick}
           onPaneClick={handleSidebarClose}
+          defaultEdgeOptions={{ type: 'step', style: { strokeWidth: 2, stroke: '#222' } }}
         >
           <Background />
           <Controls />

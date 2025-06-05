@@ -1,0 +1,77 @@
+---
+description: 
+globs: *.ts*
+alwaysApply: false
+---
+# 🧠 TypeScript Best Practices
+
+## Configuration and Strictness
+
+✅ **Strict TypeScript Configuration**
+- Enable strict mode in `tsconfig.json` for rigorous type checking
+- Use `noUncheckedIndexedAccess` to catch potential undefined access
+- Enable `exactOptionalPropertyTypes` for precise optional handling
+
+## Type Definitions
+
+✅ **Interface vs Type**
+- Prefer `interface` for object shapes that might be extended
+- Use `type` for unions, primitives, and computed types
+- Example:
+  ```typescript
+  interface User {        // Extensible
+    id: string;
+    name: string;
+  }
+  
+  type Status = 'active' | 'inactive';  // Union type
+  ```
+
+✅ **Union Types for String Literals**
+- Use union types for simple string literal sets
+- Benefits: No runtime overhead, better tree-shaking, strict type checking
+- Example: `type Theme = 'light' | 'dark' | 'auto'`
+
+❌ **Avoid `enum` for Simple Cases**
+- Use union types or `const` objects instead of enums when possible
+- Exception: Use enums when you need runtime representation or complex behavior
+
+## Component and Function Patterns
+
+✅ **Functional Components**
+- Use functional components exclusively in React
+- Define props with TypeScript interfaces
+- Example:
+  ```typescript
+  interface ButtonProps {
+    variant: 'primary' | 'secondary';
+    children: React.ReactNode;
+    onClick?: () => void;
+  }
+  
+  export function Button({ variant, children, onClick }: ButtonProps) {
+    // component logic
+  }
+  ```
+
+✅ **Generic Constraints**
+- Use generic constraints to make functions more type-safe
+- Prefer specific constraints over `any` or `unknown`
+- Example:
+  ```typescript
+  function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+    // implementation
+  }
+  ```
+
+## Advanced Patterns
+
+✅ **Utility Types**
+- Leverage built-in utility types: `Partial`, `Required`, `Pick`, `Omit`
+- Create custom utility types for common patterns
+- Use template literal types for string manipulation
+
+✅ **Type Guards and Assertions**
+- Write type guards for runtime type checking
+- Use assertion functions when you need to narrow types
+- Avoid `as` assertions; prefer type guards when possible

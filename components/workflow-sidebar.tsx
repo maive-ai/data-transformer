@@ -3,15 +3,20 @@
 import { X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useMemo, useRef, useReducer } from "react";
+import { AiTransformSidebar } from "./workflow-sidebar-ai-transform";
+import { ExcelExportSidebar } from "./workflow-sidebar-excel-export";
+import { HttpTriggerSidebar } from "./workflow-sidebar-http-trigger";
+import { HttpResponseSidebar } from "./workflow-sidebar-http-response";
+import { AiOperatorSidebar } from "./workflow-sidebar-ai-operator";
+import { EventTriggerSidebar } from "./workflow-sidebar-event-trigger";
+import { DecisionSidebar } from "./workflow-sidebar-decision";
+import { DocExportSidebar } from "./workflow-sidebar-doc-export";
+import { ErpSidebar } from "./workflow-sidebar-erp";
+import { IntegrationSidebar } from "./workflow-sidebar-integration";
+import { CsvAppendSidebar } from "./workflow-sidebar-csv-append";
+import { NodeType, TriggerSubType, OutputSubType, ActionSubType, FileType, NodeLabel } from "@/types/enums";
 
-const INTEGRATIONS = [
-  { name: "Gmail", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail" className="w-7 h-7" /> },
-  { name: "Outlook", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg/640px-Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg.png" alt="Outlook" className="w-7 h-7" /> },
-  { name: "SharePoint", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Microsoft_Office_SharePoint_%282019%E2%80%93present%29.svg/640px-Microsoft_Office_SharePoint_%282019%E2%80%93present%29.svg.png" alt="SharePoint" className="w-7 h-7" /> },
-  { name: "Google Drive", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Google_Drive_icon_%282020%29.svg/640px-Google_Drive_icon_%282020%29.svg.png" alt="Google Drive" className="w-7 h-7" /> },
-  { name: "Dropbox", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Dropbox_Icon.svg/640px-Dropbox_Icon.svg.png" alt="Dropbox" className="w-7 h-7" /> },
-  { name: "Salesforce", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/640px-Salesforce.com_logo.svg.png " alt="Salesforce" className="w-7 h-7" /> },
-];
+
 
 // Define the state type
 type NodeState = {
@@ -30,7 +35,12 @@ type NodeState = {
   method: string;
   statusCode: number;
   contentType: string;
-  aiPrompt: string;
+
+  decisionConditions: Array<{
+    condition: string;
+    outputPath: string;
+  }>;
+  defaultOutputPath: string;
 };
 
 // Define action type
@@ -56,7 +66,9 @@ const initialState: NodeState = {
   method: "POST",
   statusCode: 200,
   contentType: "application/json",
-  aiPrompt: "",
+
+  decisionConditions: [],
+  defaultOutputPath: "",
 };
 
 // Reducer function
@@ -86,6 +98,8 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
   const [showInfoModal, setShowInfoModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Node-specific sidebar components will handle their own state
+
   // Update state when node changes
   useEffect(() => {
     dispatch({
@@ -106,7 +120,9 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         method: node.data.method || "POST",
         statusCode: node.data.statusCode || 200,
         contentType: node.data.contentType || "application/json",
-        aiPrompt: node.data.prompt || "",
+
+        decisionConditions: node.data.decisionConditions || [],
+        defaultOutputPath: node.data.defaultOutputPath || "",
       }
     });
   }, [node]);
@@ -119,7 +135,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   // Ensure inputTypes array matches number of input connections
   useEffect(() => {
-    if (node.type === "action") {
+    if (node.type === NodeType.ACTION) {
       const currentTypes = [...state.inputTypes];
       while (currentTypes.length < inputConnections) {
         currentTypes.push("");
@@ -133,12 +149,12 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   // For Excel Export node: compute inbound CSV count based on actual edges
   const inboundCsvCount = useMemo(() => {
-    if (node.type !== 'output' || node.data.type !== 'excel') return 0;
+    if (node.type !== NodeType.OUTPUT || node.data.type !== OutputSubType.EXCEL) return 0;
     const inboundEdges = edges.filter(e => e.target === node.id);
     let count = 0;
     for (const edge of inboundEdges) {
       const sourceNode = nodes.find(n => n.id === edge.source);
-      if (sourceNode && sourceNode.data?.ioConfig?.outputType?.type === 'csv') {
+      if (sourceNode && sourceNode.data?.ioConfig?.outputType?.type === FileType.CSV) {
         count++;
       }
     }
@@ -147,7 +163,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   // Ensure sheetNames array matches inboundCsvCount
   useEffect(() => {
-    if (node.type === 'output' && node.data.type === 'excel') {
+    if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
       let names = state.sheetNames.slice();
       while (names.length < inboundCsvCount) names.push(`Sheet${names.length + 1}`);
       if (names.length > inboundCsvCount) names = names.slice(0, inboundCsvCount);
@@ -155,13 +171,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
     }
   }, [inboundCsvCount, node.id]);
 
-  const handleIntegrationSelect = (integration: any) => {
-    dispatch({ type: 'UPDATE_NODE', payload: { integration } });
-  };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    dispatch({ type: 'UPDATE_NODE', payload: { description: e.target.value } });
-  };
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     dispatch({ type: 'UPDATE_NODE', payload: { prompt: e.target.value } });
@@ -235,30 +245,25 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   const handleSave = async () => {
     setSaving(true);
-    if (node.type === "httpTrigger") {
-      await onChange(node.id, { endpoint: state.endpoint, method: state.method });
-    } else if (node.type === "httpResponse") {
-      await onChange(node.id, { statusCode: state.statusCode, contentType: state.contentType });
-    } else if (node.type === "aiOperator") {
-      await onChange(node.id, { prompt: state.aiPrompt });
-    } else if (node.type === "trigger" && node.data.type === "event") {
-      await onChange(node.id, { integration: state.integration, description: state.description });
-    } else if (node.type === "trigger" && node.data.type === "manual") {
+    if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL) {
       await onChange(node.id, { 
         uploadedFileName: state.uploadedFileName,
         ioConfig: {
           inputTypes: [],
-          outputType: { type: uploadedFile?.name.split('.')?.pop()?.toLowerCase() || "csv" }
+          outputType: { type: uploadedFile?.name.split('.')?.pop()?.toLowerCase() || FileType.CSV }
         }
       });
-    } else if (node.type === "action") {
-      if (state.inputTypes[0] === "mp4") {
+    } else if (node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM) {
+      // AI Transform node handles its own save logic
+      return;
+    } else if (node.type === NodeType.ACTION) {
+      if (state.inputTypes[0] === FileType.MP4) {
         await onChange(node.id, { 
           prompt: state.prompt,
           outputFileName: "P-650-WTH-BKM.json",
           ioConfig: {
-            inputTypes: [{ type: "mp4" }],
-            outputType: { type: "json" }
+            inputTypes: [{ type: FileType.MP4 }],
+            outputType: { type: FileType.JSON }
           }
         });
       } else {
@@ -272,27 +277,15 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           }
         });
       }
-    } else if (node.type === "output" && node.data.type === "excel") {
-      await onChange(node.id, {
-        fileName: state.fileName,
-        sheetNames: state.sheetNames,
-        ioConfig: {
-          inputTypes: [{ type: "csv" }],
-          outputType: { type: "excel" }
-        }
-      });
-    } else if (node.type === "output" && node.data.type === "doc") {
-      await onChange(node.id, {
-        fileName: "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
-        ioConfig: {
-          inputTypes: [],
-          outputType: { type: "doc" }
-        }
-      });
+    } else if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
+      // Excel Export node handles its own save logic
+      return;
     }
     setSaving(false);
     onClose();
   };
+
+
 
   return (
     <div className="fixed top-0 right-0 h-full w-[380px] bg-white shadow-2xl z-40 flex flex-col border-l border-gray-200 animate-in slide-in-from-right duration-200">
@@ -342,117 +335,27 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             </div>
           </div>
         )}
-        {node.type === "httpTrigger" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">HTTP Method</div>
-              <select
-                className="w-full border rounded-lg p-2 text-sm"
-                value={state.method}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { method: e.target.value } })}
-              >
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-              </select>
-            </div>
-            <div>
-              <div className="font-medium mb-2">Endpoint</div>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="/api/webhook"
-                value={state.endpoint}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { endpoint: e.target.value } })}
-              />
-            </div>
-          </div>
-        ) : node.type === "httpResponse" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Status Code</div>
-              <input
-                type="number"
-                className="w-full border rounded-lg p-2 text-sm"
-                value={state.statusCode}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { statusCode: parseInt(e.target.value) } })}
-              />
-            </div>
-            <div>
-              <div className="font-medium mb-2">Content Type</div>
-              <select
-                className="w-full border rounded-lg p-2 text-sm"
-                value={state.contentType}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { contentType: e.target.value } })}
-              >
-                <option value="application/json">application/json</option>
-                <option value="application/xml">application/xml</option>
-                <option value="text/plain">text/plain</option>
-                <option value="text/html">text/html</option>
-              </select>
-            </div>
-            {typeof node.data.responseValue !== 'undefined' && (
-              <div className="p-4 bg-green-50 border rounded-lg flex flex-col items-start gap-2">
-                <div className="font-medium text-sm">HTTP Response</div>
-                <div className="text-xs text-gray-700">Status: <span className="font-semibold">{node.data.responseStatus}</span></div>
-                <div className="text-xs text-gray-700">Value: <span className="font-semibold">{node.data.responseValue}</span></div>
-              </div>
-            )}
-          </div>
-        ) : node.type === "aiOperator" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">AI Prompt</div>
-              <textarea
-                className="w-full min-h-[120px] border rounded-lg p-2 text-sm"
-                placeholder="Describe what the AI should do on the GUI..."
-                value={state.aiPrompt}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { aiPrompt: e.target.value } })}
-              />
-            </div>
-            {node.data.runState === "running" && (
-              <div>
-                <div className="font-medium mb-2">GUI Preview</div>
-                <video
-                  ref={videoRef}
-                  className="w-full rounded-lg"
-                  src="/ignition_operation.mp4"
-                  controls
-                  autoPlay
-                  onEnded={() => onChange(node.id, { runState: "done" })}
-                />
-              </div>
-            )}
-          </div>
-        ) : node.type === "trigger" && node.data.type === "event" ? (
-          <>
-            <div className="mb-6">
-              <div className="font-medium mb-2">Integration</div>
-              <div className="grid grid-cols-3 gap-3">
-                {INTEGRATIONS.map((int) => (
-                  <button
-                    key={int.name}
-                    className={`flex flex-col items-center justify-center p-3 rounded-lg border transition hover:bg-gray-100 ${state.integration?.name === int.name ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
-                    onClick={() => handleIntegrationSelect(int)}
-                  >
-                    <span className="mb-1">{int.icon}</span>
-                    <span className="text-xs font-medium">{int.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="font-medium mb-2">Trigger Prompt</div>
-              <textarea
-                className="w-full min-h-[80px] border rounded-lg p-2 text-sm"
-                placeholder="Describe what should happen when this event occurs..."
-                value={state.description}
-                onChange={handleDescriptionChange}
-              />
-            </div>
-          </>
-        ) : node.type === "trigger" && node.data.type === "manual" ? (
+        {node.type === NodeType.HTTP_TRIGGER ? (
+          <HttpTriggerSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.HTTP_RESPONSE ? (
+          <HttpResponseSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.AI_OPERATOR ? (
+          <AiOperatorSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.EVENT ? (
+          <EventTriggerSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL ? (
           <>
             {/* Only show run history and other relevant sections for manual trigger node */}
             <input
@@ -462,250 +365,43 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               onChange={handleFileUpload}
             />
           </>
-        ) : node.type === "action" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Transform Prompt</div>
-              <textarea
-                className="w-full min-h-[120px] border rounded-lg p-2 text-sm"
-                placeholder="Describe the AI processing step..."
-                value={state.prompt}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { prompt: e.target.value } })}
-              />
-            </div>
-            <div>
-              <div className="font-medium mb-2">Output Template</div>
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  id="useOutputTemplate"
-                  checked={state.useOutputTemplate}
-                  onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { useOutputTemplate: e.target.checked } })}
-                  className="rounded border-gray-300"
-                />
-                <label htmlFor="useOutputTemplate" className="text-sm">
-                  Use output template file
-                </label>
-              </div>
-              {state.useOutputTemplate && (
-                <label className="block w-full border-dashed border-2 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".csv,.xlsx,.doc,.docx,.mp4,video/mp4"
-                    onChange={handleOutputTemplateChange}
-                  />
-                  {xlsxTemplate ? (
-                    <span className="text-sm">{xlsxTemplate.name}</span>
-                  ) : state.outputTemplateName ? (
-                    <span className="text-sm">{state.outputTemplateName}</span>
-                  ) : (
-                    <span className="text-gray-400 text-sm">Click to upload an output template file</span>
-                  )}
-                </label>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                {state.useOutputTemplate
-                  ? "The AI will use this file as a template and add data to it. Multi-sheet Excel templates (.xlsx) and Word documents (.docx) are supported."
-                  : "The AI will generate a new output file"}
-              </p>
-            </div>
-            <div>
-              <div className="font-medium mb-2">Input File Types</div>
-              {state.inputTypes.map((type, index) => (
-                <div key={index} className="mb-2">
-                  <div className="text-sm text-gray-600 mb-1">Input {index + 1}</div>
-                  <select
-                    value={type}
-                    onChange={(e) => handleInputTypeChange(e.target.value, index)}
-                    className="w-full border rounded-lg p-2 text-sm"
-                  >
-                    <option value="">Select input type</option>
-                    {["csv", "excel", "json", "xml", "pdf", "doc", "docx", "mp4", "txt"].map((type) => (
-                      <option key={type} value={type}>
-                        {type.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-            </div>
-            <div>
-              <div className="font-medium mb-2">Output File Type</div>
-              <select
-                value={state.outputType}
-                onChange={(e) => handleOutputTypeChange(e.target.value)}
-                className="w-full border rounded-lg p-2 text-sm"
-              >
-                <option value="">Select output type</option>
-                {["csv", "excel", "json", "xml", "markdown"].map((type) => (
-                  <option key={type} value={type}>
-                    {type.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {/* Download section for AI Transform node after run */}
-            {node.data.ioConfig?.outputType?.type === 'json' && node.data.fileUrl && (
-              <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-purple-50">
-                <div className="font-medium text-sm">Download JSON Output</div>
-                <div className="text-xs text-gray-700 mb-2">{state.outputFileName || 'output.json'}</div>
-                <button
-                  onClick={async () => {
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = node.data.fileUrl;
-                    downloadLink.download = state.outputFileName || 'output.json';
-                    downloadLink.click();
-                  }}
-                  className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-semibold shadow hover:bg-purple-700 transition"
-                >
-                  Download File
-                </button>
-                {/* Optionally, show a preview of the JSON */}
-                <pre className="mt-2 text-xs bg-gray-100 rounded p-2 max-h-48 overflow-auto">
-                  <code>
-                    {/* We'll fetch and show the JSON preview using a useEffect+useState in a real app, but for now just show the fileUrl */}
-                    {node.data.fileUrl}
-                  </code>
-                </pre>
-              </div>
-            )}
-          </div>
-        ) : node.type === "output" && node.data.type === "excel" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Output File Name</div>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="output.xlsx"
-                value={state.fileName}
-                onChange={handleFileNameChange}
-              />
-              <p className="text-xs text-gray-500 mt-1">Enter the name for your Excel file (e.g., report.xlsx)</p>
-            </div>
-            {/* Sheet name configuration for Excel Export node */}
-            {node.type === 'output' && node.data.type === 'excel' && (
-              <div className="mt-4">
-                <div className="font-medium mb-2">Sheet Names</div>
-                <div className="space-y-2">
-                  {state.sheetNames.map((name, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      className="w-full border rounded-lg p-2 text-sm"
-                      value={name}
-                      onChange={(e) => {
-                        const newNames = [...state.sheetNames];
-                        newNames[idx] = e.target.value;
-                        dispatch({ type: 'UPDATE_NODE', payload: { sheetNames: newNames } });
-                      }}
-                      placeholder={`Sheet${idx + 1}`}
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">You can customize the name of each sheet in the final Excel file. The number of sheets matches the number of inbound CSV files.</p>
-              </div>
-            )}
-            {/* Download section for Excel output node after run */}
-            {runHistory.length > 0 && node.data.fileUrl && (
-              <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-green-50">
-                <div className="font-medium text-sm">Download Output</div>
-                <div className="text-xs text-gray-700 mb-2">{state.fileName || "output.xlsx"}</div>
-                <button
-                  onClick={async () => {
-                    try {
-                      // Try to use the File System Access API if available
-                      if ('showSaveFilePicker' in window) {
-                        const handle = await window.showSaveFilePicker({
-                          suggestedName: state.fileName || 'output.xlsx',
-                          types: [{
-                            description: 'Excel Spreadsheet',
-                            accept: {
-                              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
-                            }
-                          }]
-                        });
-                        const writable = await handle.createWritable();
-                        const response = await fetch(node.data.fileUrl);
-                        const blob = await response.blob();
-                        await writable.write(blob);
-                        await writable.close();
-                      } else {
-                        // Fallback for browsers that don't support File System Access API
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = node.data.fileUrl;
-                        downloadLink.download = state.fileName || 'output.xlsx';
-                        downloadLink.click();
-                      }
-                    } catch (err) {
-                      // If user cancels or there's an error, fall back to standard download
-                      const downloadLink = document.createElement('a');
-                      downloadLink.href = node.data.fileUrl;
-                      downloadLink.download = state.fileName || 'output.xlsx';
-                      downloadLink.click();
-                    }
-                  }}
-                  className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold shadow hover:bg-green-700 transition"
-                >
-                  Download File
-                </button>
-              </div>
-            )}
-          </div>
-        ) : node.type === "output" && node.data.type === "doc" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Output File</div>
-              <div className="text-sm text-gray-600">
-                This node will always output: <span className="font-medium">Standard Operating Procedure_ Toothbrush Holder Assembly.docx</span>
-              </div>
-            </div>
-            {/* Download section for Doc output node after run */}
-            <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-blue-50">
-              <div className="font-medium text-sm">Download Output</div>
-              <div className="text-xs text-gray-700 mb-2">Standard Operating Procedure_ Toothbrush Holder Assembly.docx</div>
-              <button
-                onClick={async () => {
-                  const fileUrl = "/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
-                  try {
-                    // Try to use the File System Access API if available
-                    if ('showSaveFilePicker' in window) {
-                      const handle = await window.showSaveFilePicker({
-                        suggestedName: "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
-                        types: [{
-                          description: 'Word Document',
-                          accept: {
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
-                          }
-                        }]
-                      });
-                      const writable = await handle.createWritable();
-                      const response = await fetch(fileUrl);
-                      const blob = await response.blob();
-                      await writable.write(blob);
-                      await writable.close();
-                    } else {
-                      // Fallback for browsers that don't support File System Access API
-                      const downloadLink = document.createElement('a');
-                      downloadLink.href = fileUrl;
-                      downloadLink.download = "Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
-                      downloadLink.click();
-                    }
-                  } catch (err) {
-                    // If user cancels or there's an error, fall back to standard download
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = fileUrl;
-                    downloadLink.download = "Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
-                    downloadLink.click();
-                  }
-                }}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 transition"
-              >
-                Download File
-              </button>
-            </div>
-          </div>
+        ) : (node.type === NodeType.ACTION && node.data.type === ActionSubType.DECISION) ? (
+          <DecisionSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : (node.type === NodeType.ACTION && node.data.label === NodeLabel.ERP) ? (
+          <ErpSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : (node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND) ? (
+          <CsvAppendSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.INTEGRATION ? (
+          <IntegrationSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM ? (
+          <AiTransformSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL ? (
+          <ExcelExportSidebar 
+            node={node} 
+            onChange={onChange}
+            edges={edges}
+            nodes={nodes}
+          />
+        ) : node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC ? (
+          <DocExportSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : (
           <div className="text-gray-500 text-sm">Implementation details for this node type coming soon.</div>
         )}
@@ -730,6 +426,18 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           )}
         </div>
       </div>
+      {/* Save button only shown for node types that use the general reducer */}
+      {!(node.type === NodeType.HTTP_TRIGGER) &&
+       !(node.type === NodeType.HTTP_RESPONSE) &&
+       !(node.type === NodeType.AI_OPERATOR) &&
+       !(node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.EVENT) &&
+       !(node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM) && 
+       !(node.type === NodeType.ACTION && node.data.label === NodeLabel.ERP) &&
+       !(node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND) &&
+       !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) &&
+       !(node.type === NodeType.ACTION && node.data.type === ActionSubType.DECISION) &&
+       !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC) &&
+       !(node.type === NodeType.INTEGRATION) && (
       <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
         <Button
           className="pointer-events-auto px-8 py-2 rounded-xl shadow-lg font-semibold text-base"
@@ -739,6 +447,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           {saving ? "Saving..." : "Save"}
         </Button>
       </div>
+      )}
     </div>
   );
 } 

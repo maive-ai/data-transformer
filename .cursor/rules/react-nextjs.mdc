@@ -1,0 +1,69 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# ⚛️ React and Next.js Guidelines
+
+## Component Architecture
+
+✅ **Server Components First**
+- Default to React Server Components (RSC) for better performance
+- Use `"use client"` directive sparingly, only for client-side interactivity
+- Co-locate server and client components thoughtfully
+
+✅ **Component Composition**
+- Prefer composition over prop drilling
+- Use children and render props for flexible APIs
+- Extract custom hooks for reusable stateful logic
+- Keep components focused on single responsibilities
+
+## Next.js App Router
+
+✅ **File-based Routing**
+- Utilize Next.js App Router for intuitive page structure
+- Use dynamic routes with `[param]` and catch-all routes with `[...param]`
+- Implement parallel routes with `@folder` convention
+- Use route groups with `(folder)` for organization without affecting URL
+
+✅ **Data Fetching**
+- Use async Server Components for data fetching when possible
+- Implement proper loading and error boundaries
+- Use Suspense with meaningful fallback UI
+- Leverage Next.js caching strategies appropriately
+
+## State Management
+
+✅ **URL State for Shareable Data**
+- Use URL search parameters for shareable/bookmarkable state
+- Consider libraries like `nuqs` for URL state management
+- Keep component state local when possible
+- Use context sparingly; prefer prop passing
+
+✅ **Form Handling**
+- Use Server Actions for form submissions when possible
+- Implement proper form validation (both client and server)
+- Provide immediate feedback for user interactions
+- Handle loading and error states gracefully
+
+## Performance Patterns
+
+✅ **Optimization Strategies**
+- Wrap client components in Suspense with appropriate fallbacks
+- Use `React.memo()` judiciously for expensive re-renders
+- Implement code splitting with dynamic imports
+- Optimize images with Next.js Image component
+
+✅ **Bundle Optimization**
+- Use barrel exports carefully to avoid large bundles
+- Implement tree-shaking-friendly imports
+- Monitor bundle size with tools like `@next/bundle-analyzer`
+- Use Next.js built-in optimization features
+
+## Error Handling
+
+✅ **Boundary Strategy**
+- Implement error boundaries at appropriate levels
+- Create custom error pages (`error.tsx`, `not-found.tsx`)
+- Handle both client and server errors gracefully
+- Provide meaningful error messages to users

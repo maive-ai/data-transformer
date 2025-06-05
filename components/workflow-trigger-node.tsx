@@ -3,15 +3,14 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { Clock, Zap, FileUp } from "lucide-react";
+import { Upload, Calendar } from "lucide-react";
+import { RunState, TriggerSubType } from "@/types/enums";
 
 interface WorkflowTriggerNodeData {
   label: string;
-  type: "schedule" | "event" | "manual";
-  integration?: {
-    name: string;
-    icon: string;
-  };
+  type: string;
+  runState?: string;
+  highlighted?: boolean;
 }
 
 const INTEGRATIONS = [
@@ -29,45 +28,46 @@ const INTEGRATIONS = [
   { name: "Custom API", icon: "🔌" },
 ];
 
-export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNodeData & { runState?: string, highlighted?: boolean }>) => {
+export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNodeData>) => {
   let borderClass = "";
-  if (data.runState === "prompt") borderClass = "border-2 border-blue-400 animate-pulse";
-  else if (data.runState === "running") borderClass = "";
-  else if (data.runState === "done") borderClass = "border-2 border-green-500";
-  else borderClass = "border border-blue-100";
+  if (data.runState === RunState.PROMPT) borderClass = "border-2 border-blue-400 animate-pulse";
+  else if (data.runState === RunState.RUNNING) borderClass = "";
+  else if (data.runState === RunState.DONE) borderClass = "border-2 border-green-500";
+  else borderClass = "border border-gray-200";
 
-  const highlighted = data.highlighted && data.runState !== "prompt";
+  const highlighted = data.highlighted && data.runState !== RunState.PROMPT;
   if (highlighted) {
-    // Debug: log when a trigger node is highlighted
+    // Debug: log when a node is highlighted
     console.log('Rainbow highlight (trigger):', data.label, highlighted);
   }
 
   const getIcon = () => {
     switch (data.type) {
-      case "schedule":
-        return <Clock className="w-6 h-6" />;
-      case "event":
-        return <Zap className="w-6 h-6" />;
-      case "manual":
-        return <FileUp className="w-6 h-6" />;
+      case TriggerSubType.MANUAL:
+        return <Upload className="w-6 h-6" />;
+      case TriggerSubType.EVENT:
+        return <Calendar className="w-6 h-6" />;
       default:
-        return null;
+        return <Upload className="w-6 h-6" />;
+    }
+  };
+
+  const getBgColor = () => {
+    switch (data.type) {
+      case TriggerSubType.MANUAL:
+        return 'bg-blue-50';
+      case TriggerSubType.EVENT:
+        return 'bg-purple-50';
+      default:
+        return 'bg-blue-50';
     }
   };
 
   return (
-    <Card className={`p-4 w-48 shadow-lg bg-blue-50 ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} ${getBgColor()}`}>
       <div className="flex flex-col items-center gap-2">
-        <div className="text-2xl">
-          {getIcon()}
-        </div>
+        <div className="text-2xl">{getIcon()}</div>
         <div className="text-sm font-medium text-center">{data.label}</div>
-        {data.integration && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{data.integration.icon}</span>
-            <span>{data.integration.name}</span>
-          </div>
-        )}
       </div>
       <Handle type="source" position={Position.Right} className="w-3 h-3" />
     </Card>

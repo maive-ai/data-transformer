@@ -4,7 +4,7 @@
     "name": "Vial Wash data to Excel",
     "description": "",
     "createdAt": "2025-05-24T00:37:32.757Z",
-    "updatedAt": "2025-05-30T18:39:21.516Z",
+    "updatedAt": "2025-06-05T21:46:34.670Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -33,7 +33,7 @@
               "Overwrap data for Maive.pdf"
             ]
           },
-          "width": 192,
+          "width": 110,
           "height": 88,
           "selected": false,
           "positionAbsolute": {
@@ -66,7 +66,7 @@
               "Vial Wash data for Maive.pdf"
             ]
           },
-          "width": 192,
+          "width": 110,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -111,7 +111,7 @@
             "outputTemplateName": "overwrap_template.csv",
             "runState": "done"
           },
-          "width": 116,
+          "width": 121,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -156,7 +156,7 @@
             "outputTemplateName": "vial_template.csv",
             "runState": "done"
           },
-          "width": 116,
+          "width": 121,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -194,7 +194,7 @@
             "fileUrl": "blob:http://localhost:3001/00e88ec8-4411-46b7-86a7-c1dfaa10c1e7",
             "outputFileName": "merged_output.xlsx"
           },
-          "width": 114,
+          "width": 118,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -857,7 +857,7 @@
     "name": "AI Operator Endpoint",
     "description": "",
     "createdAt": "2025-05-30T16:41:41.886Z",
-    "updatedAt": "2025-05-30T18:56:58.020Z",
+    "updatedAt": "2025-06-04T17:35:35.089Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -896,10 +896,10 @@
             "label": "AI Operator",
             "type": "action",
             "prompt": "Please use Ignition, read the discharge temperature from the fan, and return it.",
-            "runState": "running"
+            "runState": "done"
           },
           "width": 192,
-          "height": 125,
+          "height": 128,
           "selected": false,
           "positionAbsolute": {
             "x": 299.49706470178467,
@@ -923,7 +923,7 @@
           },
           "width": 146,
           "height": 110,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 625.5963788850084,
             "y": 329.1513091535609
@@ -951,10 +951,10 @@
   },
   "pipeline-1748919214360": {
     "id": "pipeline-1748919214360",
-    "name": "BOM to CSV",
+    "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-04T03:24:42.534Z",
+    "updatedAt": "2025-06-05T20:55:08.790Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -981,9 +981,9 @@
               "space-delimited-bom.txt"
             ]
           },
-          "width": 192,
+          "width": 135,
           "height": 88,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": -70.5,
             "y": 98.5
@@ -994,7 +994,7 @@
           "id": "action-1748919230696",
           "type": "action",
           "position": {
-            "x": 216.9569254660015,
+            "x": 217.68762980306764,
             "y": 99.04307453399846
           },
           "data": {
@@ -1013,39 +1013,118 @@
                 "type": "csv"
               }
             },
-            "outputTemplateUrl": "/templates/c88b24be-a7d0-4c0a-a4aa-cf6f39991544-bom-import-template.csv",
+            "outputTemplateUrl": "/templates/9dbb4056-9df5-4efd-bc96-accb018034f5-bom-import-template.csv",
             "outputTemplateName": "bom-import-template.csv",
             "runState": "done"
           },
-          "width": 116,
+          "width": 121,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
-            "x": 216.9569254660015,
+            "x": 217.68762980306764,
             "y": 99.04307453399846
           },
           "dragging": false
         },
         {
-          "id": "output-1748919235811",
-          "type": "output",
+          "id": "integration-1749147713399",
+          "type": "integration",
           "position": {
-            "x": 434.1238563928212,
-            "y": 101.26471925415944
+            "x": 650.0025143490134,
+            "y": 75.78116611599384
           },
           "data": {
-            "label": "Excel Export",
-            "type": "excel",
-            "runState": "done",
-            "fileUrl": "blob:http://localhost:3000/2436aa88-b320-4c51-9fff-72c0bb960996",
-            "outputFileName": "merged_output.xlsx"
+            "label": "ERP",
+            "type": "integration",
+            "integrationType": "erp",
+            "erpAction": "bom-lookup",
+            "direction": "both"
           },
-          "width": 115,
-          "height": 88,
-          "selected": false,
+          "width": 104,
+          "height": 134,
+          "selected": true,
           "positionAbsolute": {
-            "x": 434.1238563928212,
-            "y": 101.26471925415944
+            "x": 650.0025143490134,
+            "y": 75.78116611599384
+          },
+          "dragging": false
+        },
+        {
+          "id": "integration-1749149343043",
+          "type": "integration",
+          "position": {
+            "x": 1085.849397444539,
+            "y": 74.42376228435751
+          },
+          "data": {
+            "label": "ERP",
+            "type": "integration",
+            "integrationType": "erp",
+            "erpAction": "bom-generation",
+            "direction": "both",
+            "mockDistribution": {
+              "directMatch": 80,
+              "substitution": 10,
+              "notFound": 10
+            },
+            "useMockData": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            }
+          },
+          "width": 125,
+          "height": 134,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 1085.849397444539,
+            "y": 74.42376228435751
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1749153925654",
+          "type": "action",
+          "position": {
+            "x": 838.9846961476603,
+            "y": 99.34317203615399
+          },
+          "data": {
+            "label": "CSV Append",
+            "type": "action"
+          },
+          "width": 117,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 838.9846961476603,
+            "y": 99.34317203615399
+          },
+          "dragging": false
+        },
+        {
+          "id": "loop-1749153936964",
+          "type": "loop",
+          "position": {
+            "x": 448.17869214613796,
+            "y": 97.9044819960802
+          },
+          "data": {
+            "label": "Loop",
+            "type": "action"
+          },
+          "width": 67,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 448.17869214613796,
+            "y": 97.9044819960802
           },
           "dragging": false
         }
@@ -1059,11 +1138,52 @@
           "id": "reactflow__edge-trigger-1748919226147-action-1748919230696"
         },
         {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "integration-1749147713399",
+          "sourceHandle": null,
+          "target": "action-1749153925654",
+          "targetHandle": null,
+          "id": "integration-1749147713399-action-1749153925654"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749153925654",
+          "sourceHandle": null,
+          "target": "integration-1749149343043",
+          "targetHandle": null,
+          "id": "action-1749153925654-integration-1749149343043"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
           "source": "action-1748919230696",
           "sourceHandle": null,
-          "target": "output-1748919235811",
+          "target": "loop-1749153936964",
           "targetHandle": null,
-          "id": "reactflow__edge-action-1748919230696-output-1748919235811"
+          "id": "action-1748919230696-loop-1749153936964"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "loop-1749153936964",
+          "sourceHandle": null,
+          "target": "integration-1749147713399",
+          "targetHandle": null,
+          "id": "loop-1749153936964-integration-1749147713399"
         }
       ]
     }

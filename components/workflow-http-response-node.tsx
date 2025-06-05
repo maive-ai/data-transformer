@@ -21,7 +21,7 @@ export const WorkflowHttpResponseNode = memo(({ data }: NodeProps<WorkflowHttpRe
   const highlighted = data.highlighted && data.runState !== "prompt";
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg bg-purple-50 ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-full h-full shadow-lg bg-white ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">

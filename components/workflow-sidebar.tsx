@@ -361,6 +361,11 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               onChange={handleFileUpload}
             />
           </>
+        ) : (node.type === "action" && node.data.type === "decision") ? (
+          <DecisionSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === "action" && node.data.label === "AI Transform" ? (
           <AiTransformSidebar 
             node={node} 
@@ -372,11 +377,6 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             onChange={onChange}
             edges={edges}
             nodes={nodes}
-          />
-        ) : node.type === "action" && node.data.type === "decision" ? (
-          <DecisionSidebar 
-            node={node} 
-            onChange={onChange}
           />
         ) : node.type === "output" && node.data.type === "doc" ? (
           <DocExportSidebar 

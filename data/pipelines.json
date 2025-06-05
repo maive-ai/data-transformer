@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-05T17:40:20.201Z",
+    "updatedAt": "2025-06-05T17:50:40.909Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1027,130 +1027,124 @@
           "dragging": false
         },
         {
-          "id": "loop-1749082903551",
+          "id": "loop-1749145776363",
           "type": "loop",
           "position": {
-            "x": 439.57454757657456,
-            "y": 99.42831717539326
+            "x": 427.9322182713918,
+            "y": 102.40647595269661
           },
           "data": {
             "label": "Loop",
-            "type": "action",
-            "runState": "error"
+            "type": "action"
           },
           "width": 65,
           "height": 86,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
-            "x": 439.57454757657456,
-            "y": 99.42831717539326
+            "x": 427.9322182713918,
+            "y": 102.40647595269661
           },
           "dragging": false
         },
         {
-          "id": "action-1749083111448",
+          "id": "action-1749145781713",
           "type": "action",
           "position": {
-            "x": 874.3727288794984,
-            "y": 99.25149479708058
+            "x": 807.1283329709248,
+            "y": 101.39535881018385
           },
           "data": {
             "label": "Decision",
             "iconType": "decision",
-            "type": "action",
-            "runState": "idle"
+            "type": "decision"
           },
           "width": 88,
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 874.3727288794984,
-            "y": 99.25149479708058
+            "x": 807.1283329709248,
+            "y": 101.39535881018385
           },
           "dragging": false
         },
         {
-          "id": "output-1749084487459",
-          "type": "output",
+          "id": "erpLookup-1749145785177",
+          "type": "erpLookup",
           "position": {
-            "x": 1137.1988791938124,
-            "y": -6.879812820150917
-          },
-          "data": {
-            "label": "ERP Write",
-            "type": "erp",
-            "runState": "idle"
-          },
-          "width": 99,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": 1137.1988791938124,
-            "y": -6.879812820150917
-          },
-          "dragging": false
-        },
-        {
-          "id": "output-1749084507344",
-          "type": "output",
-          "position": {
-            "x": 1138.2995568577444,
-            "y": 100.92061888365939
-          },
-          "data": {
-            "label": "ERP Write",
-            "type": "erp",
-            "runState": "idle"
-          },
-          "width": 99,
-          "height": 86,
-          "selected": false,
-          "positionAbsolute": {
-            "x": 1138.2995568577444,
-            "y": 100.92061888365939
-          },
-          "dragging": false
-        },
-        {
-          "id": "output-1749084516450",
-          "type": "output",
-          "position": {
-            "x": 1140.0595360279647,
-            "y": 227.39887351154522
-          },
-          "data": {
-            "label": "ERP Write",
-            "type": "erp",
-            "runState": "idle"
-          },
-          "width": 99,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": 1140.0595360279647,
-            "y": 227.39887351154522
-          },
-          "dragging": false
-        },
-        {
-          "id": "action-1749100097489",
-          "type": "action",
-          "position": {
-            "x": 618.6513358406135,
-            "y": 98.38550915824203
+            "x": 606.1880197586621,
+            "y": 102.09303821527575
           },
           "data": {
             "label": "ERP Lookup",
             "iconType": "erp",
-            "type": "action",
-            "runState": "idle"
+            "type": "action"
           },
           "width": 112,
           "height": 86,
+          "selected": false,
+          "positionAbsolute": {
+            "x": 606.1880197586621,
+            "y": 102.09303821527575
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1749145813147",
+          "type": "output",
+          "position": {
+            "x": 1022.1232602316959,
+            "y": -54.418564759264626
+          },
+          "data": {
+            "label": "ERP Write",
+            "type": "erp"
+          },
+          "width": 99,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 618.6513358406135,
-            "y": 98.38550915824203
+            "x": 1022.1232602316959,
+            "y": -54.418564759264626
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1749145821266",
+          "type": "output",
+          "position": {
+            "x": 1027.947329279602,
+            "y": 100.0708039302502
+          },
+          "data": {
+            "label": "ERP Write",
+            "type": "erp"
+          },
+          "width": 99,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 1027.947329279602,
+            "y": 100.0708039302502
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1749145828496",
+          "type": "output",
+          "position": {
+            "x": 1024.373017315682,
+            "y": 234.05461404850865
+          },
+          "data": {
+            "label": "ERP Write",
+            "type": "erp"
+          },
+          "width": 99,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 1024.373017315682,
+            "y": 234.05461404850865
           },
           "dragging": false
         }
@@ -1164,11 +1158,16 @@
           "id": "reactflow__edge-trigger-1748919226147-action-1748919230696"
         },
         {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
           "source": "action-1748919230696",
           "sourceHandle": null,
-          "target": "loop-1749082903551",
+          "target": "loop-1749145776363",
           "targetHandle": null,
-          "id": "reactflow__edge-action-1748919230696-loop-1749082903551"
+          "id": "reactflow__edge-action-1748919230696-loop-1749145776363"
         },
         {
           "type": "step",
@@ -1176,11 +1175,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "action-1749083111448",
+          "source": "erpLookup-1749145785177",
           "sourceHandle": null,
-          "target": "output-1749084487459",
+          "target": "action-1749145781713",
           "targetHandle": null,
-          "id": "reactflow__edge-action-1749083111448-output-1749084487459"
+          "id": "reactflow__edge-erpLookup-1749145785177-action-1749145781713"
         },
         {
           "type": "step",
@@ -1188,11 +1187,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "action-1749083111448",
+          "source": "loop-1749145776363",
           "sourceHandle": null,
-          "target": "output-1749084507344",
+          "target": "erpLookup-1749145785177",
           "targetHandle": null,
-          "id": "reactflow__edge-action-1749083111448-output-1749084507344"
+          "id": "reactflow__edge-loop-1749145776363-erpLookup-1749145785177"
         },
         {
           "type": "step",
@@ -1200,11 +1199,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "action-1749083111448",
+          "source": "action-1749145781713",
           "sourceHandle": null,
-          "target": "output-1749084516450",
+          "target": "output-1749145813147",
           "targetHandle": null,
-          "id": "reactflow__edge-action-1749083111448-output-1749084516450"
+          "id": "reactflow__edge-action-1749145781713-output-1749145813147"
         },
         {
           "type": "step",
@@ -1212,11 +1211,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "action-1749100097489",
+          "source": "action-1749145781713",
           "sourceHandle": null,
-          "target": "action-1749083111448",
+          "target": "output-1749145821266",
           "targetHandle": null,
-          "id": "reactflow__edge-action-1749100097489-action-1749083111448"
+          "id": "reactflow__edge-action-1749145781713-output-1749145821266"
         },
         {
           "type": "step",
@@ -1224,11 +1223,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "loop-1749082903551",
+          "source": "action-1749145781713",
           "sourceHandle": null,
-          "target": "action-1749100097489",
+          "target": "output-1749145828496",
           "targetHandle": null,
-          "id": "reactflow__edge-loop-1749082903551-action-1749100097489"
+          "id": "reactflow__edge-action-1749145781713-output-1749145828496"
         }
       ]
     }

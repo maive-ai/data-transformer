@@ -1,86 +1,108 @@
+@import url('https://api.fontshare.com/v2/css?f[]=mona-sans@400,500,600,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Mona Sans', system-ui, sans-serif;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Maive brand utilities */
+  .maive-gradient {
+    background: linear-gradient(135deg, #FFB519 0%, #FFE00B 100%);
+  }
+  
+  .maive-gradient-animated {
+    background: linear-gradient(270deg, #FFB519, #FFE00B, #FFB519);
+    background-size: 400% 400%;
+    animation: maive-gradient 6s ease infinite;
+  }
+  
+  .maive-text-gradient {
+    background: linear-gradient(135deg, #FFB519 0%, #FFE00B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    /* Light theme using Maive brand colors */
+    --background: 40 100% 97%; /* FFF9EF - cream */
+    --foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --card: 40 100% 97%; /* FFF9EF - cream */
+    --card-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --popover: 40 100% 97%; /* FFF9EF - cream */
+    --popover-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --primary: 42 100% 54%; /* FFB519 - orange */
+    --primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --secondary: 240 4% 26%; /* 424346 - dark gray */
+    --secondary-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --muted: 40 50% 92%; /* Lighter cream */
+    --muted-foreground: 240 4% 26%; /* 424346 - dark gray */
+    --accent: 54 100% 52%; /* FFE00B - yellow */
+    --accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --border: 240 4% 85%; /* Light gray border */
+    --input: 240 4% 90%; /* Light gray input */
+    --ring: 42 100% 54%; /* FFB519 - orange for focus rings */
+    --chart-1: 42 100% 54%; /* FFB519 - orange */
+    --chart-2: 54 100% 52%; /* FFE00B - yellow */
+    --chart-3: 240 4% 26%; /* 424346 - dark gray */
+    --chart-4: 220 25% 8%; /* 0E1317 - darker gray */
+    --chart-5: 40 100% 97%; /* FFF9EF - cream */
+    --radius: 0.75rem;
+    --sidebar-background: 40 100% 97%; /* FFF9EF - cream */
+    --sidebar-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-primary: 42 100% 54%; /* FFB519 - orange */
+    --sidebar-primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-accent: 54 100% 52%; /* FFE00B - yellow */
+    --sidebar-accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-border: 240 4% 85%; /* Light gray border */
+    --sidebar-ring: 42 100% 54%; /* FFB519 - orange */
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    /* Dark theme using Maive brand colors */
+    --background: 220 25% 8%; /* 0E1317 - darker gray */
+    --foreground: 40 100% 97%; /* FFF9EF - cream */
+    --card: 220 25% 12%; /* Slightly lighter than background */
+    --card-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --popover: 220 25% 8%; /* 0E1317 - darker gray */
+    --popover-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --primary: 42 100% 54%; /* FFB519 - orange */
+    --primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --secondary: 240 4% 26%; /* 424346 - dark gray */
+    --secondary-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --muted: 240 4% 20%; /* Darker muted */
+    --muted-foreground: 240 4% 70%; /* Lighter muted text */
+    --accent: 54 100% 52%; /* FFE00B - yellow */
+    --accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --border: 240 4% 20%; /* Dark border */
+    --input: 240 4% 15%; /* Dark input */
+    --ring: 42 100% 54%; /* FFB519 - orange for focus rings */
+    --chart-1: 42 100% 54%; /* FFB519 - orange */
+    --chart-2: 54 100% 52%; /* FFE00B - yellow */
+    --chart-3: 240 4% 26%; /* 424346 - dark gray */
+    --chart-4: 40 100% 97%; /* FFF9EF - cream */
+    --chart-5: 240 4% 50%; /* Medium gray */
+    --sidebar-background: 220 25% 10%; /* Slightly lighter than main background */
+    --sidebar-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --sidebar-primary: 42 100% 54%; /* FFB519 - orange */
+    --sidebar-primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-accent: 54 100% 52%; /* FFE00B - yellow */
+    --sidebar-accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-border: 240 4% 20%; /* Dark border */
+    --sidebar-ring: 42 100% 54%; /* FFB519 - orange */
   }
 }
 
@@ -89,10 +111,11 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
 
+/* Updated rainbow outline with Maive colors */
 .rainbow-outline {
   position: relative;
   z-index: 1;
@@ -106,7 +129,7 @@ body {
   border-radius: var(--radius, 16px);
   border: 4px solid transparent;
   box-sizing: border-box;
-  background: linear-gradient(270deg, #ff0080, #7928ca, #007cf0, #00dfd8, #ff0080);
+  background: linear-gradient(270deg, #FFB519, #FFE00B, #424346, #0E1317, #FFB519);
   background-size: 400% 400%;
   background-clip: border-box;
   -webkit-background-clip: border-box;

@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-05T00:48:55.506Z",
+    "updatedAt": "2025-06-05T05:08:24.004Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1027,32 +1027,11 @@
           "dragging": false
         },
         {
-          "id": "action-1749082894829",
-          "type": "action",
-          "position": {
-            "x": 697.2871085257694,
-            "y": 100.26929566293384
-          },
-          "data": {
-            "label": "ERP Lookup",
-            "iconType": "erp",
-            "type": "action"
-          },
-          "width": 112,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": 697.2871085257694,
-            "y": 100.26929566293384
-          },
-          "dragging": false
-        },
-        {
           "id": "loop-1749082903551",
           "type": "loop",
           "position": {
-            "x": 499.05548688518024,
-            "y": 100.35770685209022
+            "x": 439.57454757657456,
+            "y": 99.42831717539326
           },
           "data": {
             "label": "Loop",
@@ -1062,8 +1041,8 @@
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 499.05548688518024,
-            "y": 100.35770685209022
+            "x": 439.57454757657456,
+            "y": 99.42831717539326
           },
           "dragging": false
         },
@@ -1071,8 +1050,8 @@
           "id": "action-1749083111448",
           "type": "action",
           "position": {
-            "x": 913.407095300771,
-            "y": 100.18088447377754
+            "x": 874.3727288794984,
+            "y": 99.25149479708058
           },
           "data": {
             "label": "Decision",
@@ -1083,8 +1062,8 @@
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 913.407095300771,
-            "y": 100.18088447377754
+            "x": 874.3727288794984,
+            "y": 99.25149479708058
           },
           "dragging": false
         },
@@ -1147,6 +1126,27 @@
             "y": 227.39887351154522
           },
           "dragging": false
+        },
+        {
+          "id": "action-1749100097489",
+          "type": "action",
+          "position": {
+            "x": 618.6513358406135,
+            "y": 98.38550915824203
+          },
+          "data": {
+            "label": "ERP Lookup",
+            "iconType": "erp",
+            "type": "action"
+          },
+          "width": 112,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 618.6513358406135,
+            "y": 98.38550915824203
+          },
+          "dragging": false
         }
       ],
       "edges": [
@@ -1163,20 +1163,6 @@
           "target": "loop-1749082903551",
           "targetHandle": null,
           "id": "reactflow__edge-action-1748919230696-loop-1749082903551"
-        },
-        {
-          "source": "loop-1749082903551",
-          "sourceHandle": null,
-          "target": "action-1749082894829",
-          "targetHandle": null,
-          "id": "reactflow__edge-loop-1749082903551-action-1749082894829"
-        },
-        {
-          "source": "action-1749082894829",
-          "sourceHandle": null,
-          "target": "action-1749083111448",
-          "targetHandle": null,
-          "id": "reactflow__edge-action-1749082894829-action-1749083111448"
         },
         {
           "type": "step",
@@ -1213,6 +1199,30 @@
           "target": "output-1749084516450",
           "targetHandle": null,
           "id": "reactflow__edge-action-1749083111448-output-1749084516450"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749100097489",
+          "sourceHandle": null,
+          "target": "action-1749083111448",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1749100097489-action-1749083111448"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "loop-1749082903551",
+          "sourceHandle": null,
+          "target": "action-1749100097489",
+          "targetHandle": null,
+          "id": "reactflow__edge-loop-1749082903551-action-1749100097489"
         }
       ]
     }

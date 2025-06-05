@@ -27,6 +27,7 @@ import { WorkflowHttpTriggerNode } from './workflow-http-trigger-node';
 import { WorkflowHttpResponseNode } from './workflow-http-response-node';
 import { WorkflowAiOperatorNode } from './workflow-ai-operator-node';
 import { WorkflowLoopNode } from './workflow-loop-node';
+import { WorkflowErpLookupNode } from './workflow-erp-lookup-node';
 
 // Add File System Access API type declarations
 declare global {
@@ -52,6 +53,7 @@ const nodeTypes = {
   httpResponse: WorkflowHttpResponseNode,
   aiOperator: WorkflowAiOperatorNode,
   loop: WorkflowLoopNode,
+  erpLookup: WorkflowErpLookupNode,
 };
 
 const edgeTypes = {
@@ -469,6 +471,107 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           // Do not call any backend or set a timeout
         } catch (err) {
           console.error('Error in AI Operator node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
+      } else if (node.type === 'erpLookup') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          
+          // Get input file from upstream node
+          const upstreamId = getUpstream(nodeId)[0];
+          const upstreamData = nodeData.get(upstreamId);
+          if (!upstreamData?.file) throw new Error('No input file available');
+          
+          // Read the input file
+          const inputText = await upstreamData.file.text();
+          const lines = inputText.split('\n').filter(line => line.trim());
+          
+          // Skip header line
+          const dataLines = lines.slice(1);
+          
+          // Process each line
+          const processedLines = dataLines.map(line => {
+            const parts = line.match(/\S+/g) || [];
+            const refDes = parts[0] || "";
+            const mpn = parts[1] || "";
+            const manufacturer = parts[2] || "";
+            const quantity = parts[3] || "";
+            const description = parts[4] || "";
+            const package_ = parts[5] || "";
+
+            // Mock ERP lookup
+            const rand = Math.random();
+            let status = "Direct Match";
+            let substitution = undefined;
+            
+            if (rand < 0.8) {
+              status = "Direct Match";
+            } else if (rand < 0.9) {
+              status = "Substitution Found";
+              substitution = `${mpn}-ALT`;
+            } else {
+              status = "Not Found in ERP";
+            }
+
+            return {
+              mpn,
+              description,
+              manufacturer,
+              quantity,
+              refDes,
+              package: package_,
+              status,
+              substitution
+            };
+          });
+
+          // Convert to CSV
+          const headers = ['Manufacturer Part Number', 'Description', 'Manufacturer', 'Quantity', 'Reference Designators', 'Package', 'Status', 'Substitution'];
+          const csvRows = [
+            headers.join(','),
+            ...processedLines.map(line => [
+              line.mpn,
+              line.description,
+              line.manufacturer,
+              line.quantity,
+              line.refDes,
+              line.package,
+              line.status,
+              line.substitution || ''
+            ].join(','))
+          ];
+          const csvContent = csvRows.join('\n');
+          
+          // Create output file
+          const outputFile = new File([csvContent], 'erp-lookup-results.csv', { type: 'text/csv' });
+          
+          // Update node state
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: 'done',
+              file: outputFile,
+              ioConfig: {
+                inputTypes: [{ type: 'csv' }],
+                outputType: { type: 'csv' }
+              }
+            }
+          } : n));
+          
+          // Store the output file
+          nodeData.set(nodeId, { file: outputFile });
+          
+          // Mark as completed
+          completedRef.current.add(nodeId);
+          
+          // Process downstream nodes
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
+        } catch (err) {
+          console.error('Error in ERP Lookup node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
         }
         return;

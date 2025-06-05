@@ -176,7 +176,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
             <Button
               variant="ghost"
               className="justify-start"
-              onClick={() => handleAddNode("action", { label: "ERP Lookup", iconType: "erp", type: "action" })}
+              onClick={() => handleAddNode("erpLookup", { label: "ERP Lookup", iconType: "erp", type: "action" })}
             >
               <Database className="w-4 h-4 mr-2" />
               ERP Lookup

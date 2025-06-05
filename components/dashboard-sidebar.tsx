@@ -38,6 +38,12 @@ export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Load system prompt from file on mount
   useEffect(() => {
@@ -93,24 +99,30 @@ export function DashboardSidebar() {
     }
   };
 
+  // Use the main logo for now - we can add theme switching later
+  const logoSrc = "/maive_main_logo.png";
+
+  if (!mounted) {
+    return null; // Avoid hydration mismatch
+  }
+
   return (
     <>
       <aside
-        className={`hidden border-r md:block relative ${collapsed ? 'w-20' : 'w-fit'}`}
-        style={{ backgroundColor: "#FFF9EF", transition: 'width 0.2s' }}
+        className={cn(
+          "hidden border-r md:block relative bg-sidebar border-sidebar-border transition-all duration-200",
+          collapsed ? 'w-20' : 'w-fit'
+        )}
         data-oid="5hcjuqs"
       >
         <div className="flex flex-col items-center pt-8 pb-2">
           {collapsed ? (
-            <img
-              src="/maive_light_avatar.png"
-              alt="Maive Logo"
-              className="w-8 mb-4"
-              data-oid="nra7ryn"
-            />
+            <div className="w-8 h-8 mb-4 rounded-lg bg-gradient-to-br from-maive-orange to-maive-yellow flex items-center justify-center">
+              <span className="text-maive-darker-gray font-bold text-lg">M</span>
+            </div>
           ) : (
             <img
-              src="/maive_main_logo.png"
+              src={logoSrc}
               alt="Maive Logo"
               className="w-32 mb-10"
               data-oid="nra7ryn"
@@ -121,7 +133,13 @@ export function DashboardSidebar() {
           <div className="px-4" data-oid="qp1kobx">
             <div className="mb-6" data-oid="c9yvzi9">
               <Link href="/dashboard/pipelines/new" data-oid="v.-1gu:">
-                <Button className="w-full justify-start gap-2" data-oid="ux58-jr">
+                <Button 
+                  className={cn(
+                    "w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium",
+                    collapsed && "justify-center px-2"
+                  )}
+                  data-oid="ux58-jr"
+                >
                   <PlusCircle className="h-4 w-4" data-oid="8uibz_a" />
                   {!collapsed && 'New Pipeline'}
                 </Button>
@@ -134,12 +152,12 @@ export function DashboardSidebar() {
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
                       pathname === link.href ||
                         (link.href !== "/dashboard" &&
                           pathname.startsWith(link.href))
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                        ? "bg-accent text-accent-foreground shadow-sm"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                       collapsed && 'justify-center px-2'
                     )}
                     data-oid="wfdp29x"
@@ -152,7 +170,7 @@ export function DashboardSidebar() {
                   <button
                     key={link.title}
                     className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium w-full text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-150",
                       collapsed && 'justify-center px-2'
                     )}
                     style={{ outline: 'none', border: 'none', background: 'none' }}
@@ -172,34 +190,35 @@ export function DashboardSidebar() {
         <button
           aria-label="Toggle sidebar"
           onClick={() => setCollapsed((c) => !c)}
-          className="absolute bottom-16 right-0 translate-x-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md border flex items-center justify-center transition-colors hover:bg-gray-100"
-          style={{
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            border: '1px solid #e5e7eb',
-          }}
+          className="absolute bottom-16 right-0 translate-x-1/2 z-10 w-10 h-10 rounded-full bg-background shadow-lg border border-border flex items-center justify-center transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:scale-105"
         >
-          {collapsed ? <ChevronRight /> : <ChevronLeft />}
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </aside>
 
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>System Prompt</DialogTitle>
+            <DialogTitle className="text-xl font-semibold maive-text-gradient">System Prompt</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Configure a global system prompt that will be applied to all AI operations in your pipelines.
+              </p>
               <Textarea
                 id="system-prompt"
                 placeholder="Enter your system prompt..."
                 value={systemPrompt}
                 onChange={(e) => setSystemPrompt(e.target.value)}
-                className="min-h-[200px]"
+                className="min-h-[200px] focus:ring-primary"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveSettings}>Save Changes</Button>
+            <Button onClick={handleSaveSettings} className="bg-primary hover:bg-primary/90">
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

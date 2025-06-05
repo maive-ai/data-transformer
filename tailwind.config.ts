@@ -10,7 +10,20 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        sans: ['Mona Sans', 'system-ui', 'sans-serif'],
+        mono: ['SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'monospace'],
+      },
   		colors: {
+        // Maive Brand Colors
+        maive: {
+          orange: '#FFB519',
+          yellow: '#FFE00B', 
+          'dark-gray': '#424346',
+          'darker-gray': '#0E1317',
+          cream: '#FFF9EF',
+        },
+        // Theme colors using brand palette
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -83,11 +96,17 @@ const config: Config = {
   				to: {
   					height: '0'
   				}
-  			}
+  			},
+        'maive-gradient': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' }
+        }
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+        'maive-gradient': 'maive-gradient 6s ease infinite'
   		}
   	}
   },

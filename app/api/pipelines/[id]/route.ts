@@ -3,7 +3,7 @@ import { getPipeline, savePipeline, deletePipeline } from '@/lib/storage';
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  let pipeline = getPipeline(id);
+  let pipeline = await getPipeline(id);
 
   if (!pipeline) {
     return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
@@ -16,7 +16,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
   const { id } = await context.params;
   const updatedPipeline = await request.json();
 
-  if (savePipeline(id, updatedPipeline)) {
+  if (await savePipeline(id, updatedPipeline)) {
     return NextResponse.json(updatedPipeline);
   }
 
@@ -25,7 +25,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
 export async function POST(request: NextRequest) {
   const newPipeline = await request.json();
-  if (savePipeline(newPipeline.id, newPipeline)) {
+  if (await savePipeline(newPipeline.id, newPipeline)) {
     return NextResponse.json(newPipeline);
   }
   return NextResponse.json({ error: "Failed to create pipeline" }, { status: 500 });
@@ -33,11 +33,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const pipeline = getPipeline(id);
+  const pipeline = await getPipeline(id);
   if (!pipeline) {
     return NextResponse.json({ error: "Pipeline not found" }, { status: 404 });
   }
-  if (deletePipeline(id)) {
+  if (await deletePipeline(id)) {
     return NextResponse.json({ success: true });
   }
   return NextResponse.json({ error: "Failed to delete pipeline" }, { status: 500 });

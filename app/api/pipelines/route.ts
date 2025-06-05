@@ -3,8 +3,8 @@ import { savePipeline, getPipelines } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   const newPipeline = await request.json();
-  
-  if (savePipeline(newPipeline.id, newPipeline)) {
+
+  if (await savePipeline(newPipeline.id, newPipeline)) {
     return NextResponse.json(newPipeline);
   }
   
@@ -13,6 +13,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   // Read all pipelines from disk and return as array
-  const pipelines = getPipelines();
+  const pipelines = await getPipelines();
   return NextResponse.json(Object.values(pipelines));
-} 
+}

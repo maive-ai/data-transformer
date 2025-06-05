@@ -3,49 +3,41 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { FileSpreadsheet, Mail, Database, Brain, Signpost } from "lucide-react";
+import { Brain } from "lucide-react";
+import { RunState, ActionSubType } from "@/types/enums";
 
 interface WorkflowNodeData {
   label: string;
-  iconType?: string; // e.g., 'excel', 'email', 'erp', 'decision'
-  type: "action" | "trigger" | "output";
+  type?: string;
+  runState?: string;
+  highlighted?: boolean;
 }
 
-export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runState?: string, highlighted?: boolean }>) => {
+export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData>) => {
   let borderClass = "";
-  if (data.runState === "prompt") borderClass = "border-2 border-blue-400 animate-pulse";
-  else if (data.runState === "running") borderClass = "";
-  else if (data.runState === "done") borderClass = "border-2 border-green-500";
+  if (data.runState === RunState.PROMPT) borderClass = "border-2 border-blue-400 animate-pulse";
+  else if (data.runState === RunState.RUNNING) borderClass = "";
+  else if (data.runState === RunState.DONE) borderClass = "border-2 border-green-500";
   else borderClass = "border border-gray-200";
 
-  const highlighted = data.highlighted && data.runState !== "prompt";
+  const highlighted = data.highlighted && data.runState !== RunState.PROMPT;
   if (highlighted) {
     // Debug: log when a node is highlighted
-    console.log('Rainbow highlight:', data.label, highlighted);
+    console.log('Rainbow highlight (action):', data.label, highlighted);
   }
 
-  // Render icon based on iconType string
   const getIcon = () => {
-    switch (data.iconType) {
-      case "excel":
-        return <FileSpreadsheet className="w-6 h-6" />;
-      case "email":
-        return <Mail className="w-6 h-6" />;
-      case "erp":
-        return <Database className="w-6 h-6" />;
-      case "brain":
-        return <Brain className="w-6 h-6" />;
-      case "decision":
-        return <Signpost className="w-6 h-6" />;
-      default:
-        // Default to Brain icon for action nodes
-        if (data.type === "action") return <Brain className="w-6 h-6" />;
-        return null;
-    }
+    if (data.type === ActionSubType.DECISION) return <div className="text-2xl">🔀</div>;
+    return <Brain className="w-6 h-6" />;
+  };
+
+  const getBgColor = () => {
+    if (data.type === ActionSubType.DECISION) return 'bg-amber-50';
+    return '';
   };
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} ${getBgColor()}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>

@@ -28,6 +28,10 @@ import { WorkflowHttpResponseNode } from './workflow-http-response-node';
 import { WorkflowAiOperatorNode } from './workflow-ai-operator-node';
 import { WorkflowLoopNode } from './workflow-loop-node';
 import { WorkflowErpLookupNode } from './workflow-erp-lookup-node';
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Upload, X } from "lucide-react";
+import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType } from "@/types/enums";
 
 // Add File System Access API type declarations
 declare global {
@@ -201,7 +205,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         ...n,
         data: {
           ...n.data,
-          runState: 'idle',
+          runState: RunState.IDLE,
         },
       }))
     );
@@ -209,8 +213,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     // Find root nodes (no incoming edges), sorted by y position
     const rootNodes = [...nodes.filter(n => !edges.some(e => e.target === n.id))].sort((a, b) => a.position.y - b.position.y);
     // Only consider file upload root nodes (manual triggers)
-    const fileUploadRoots = rootNodes.filter(n => n.type === 'trigger' && n.data.type === 'manual');
-    const otherRoots = rootNodes.filter(n => !(n.type === 'trigger' && n.data.type === 'manual'));
+    const fileUploadRoots = rootNodes.filter(n => n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL);
+    const otherRoots = rootNodes.filter(n => !(n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL));
     // Track node completion and outputs
     const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[] }> = new Map();
     completedRef.current = new Set();
@@ -235,7 +239,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return runNode(nodeId);
       }
       // Short-circuit for markdown output type: create a dummy markdown file and pass it downstream, skipping Gemini/model call
-      if (node.data.ioConfig?.outputType?.type === 'markdown') {
+      if (node.data.ioConfig?.outputType?.type === FileType.MARKDOWN) {
         // Sleep for 7 seconds before outputting the dummy markdown file
         await new Promise(resolve => setTimeout(resolve, 7000));
         const mdFile = new File([''], 'output.md', { type: 'text/markdown' });
@@ -244,7 +248,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           ...n,
           data: {
             ...n.data,
-            runState: 'done',
+            runState: RunState.DONE,
             fileUrl: URL.createObjectURL(mdFile),
             outputFileName: 'output.md',
           }
@@ -257,12 +261,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       }
 
       // Short-circuit for Doc Export node: always output the hardcoded DOCX file, skip Gemini/model call
-      if (node.type === 'output' && node.data.type === 'doc') {
+      if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC) {
         setNodes(nds => nds.map(n => n.id === nodeId ? {
           ...n,
           data: {
             ...n.data,
-            runState: 'done',
+            runState: RunState.DONE,
             fileUrl: '/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
             outputFileName: 'Standard Operating Procedure_ Toothbrush Holder Assembly.docx',
           }
@@ -275,11 +279,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       }
 
       // MOCKED HTTP TRIGGER/RESPONSE FLOW
-      if (node.type === 'httpTrigger') {
+      if (node.type === NodeType.HTTP_TRIGGER) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           await new Promise(res => setTimeout(res, 800)); // Simulate network delay
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
           completedRef.current.add(nodeId);
           // Trigger downstream nodes AFTER marking as done
           for (const downstreamId of getDownstream(nodeId)) {
@@ -287,64 +291,33 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
         } catch (err) {
           console.error('Error in HTTP Trigger node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
       }
-      if (node.type === 'httpResponse') {
+      if (node.type === NodeType.HTTP_RESPONSE) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           await new Promise(res => setTimeout(res, 800)); // Simulate processing delay
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', responseValue: 81.72, responseStatus: 200 } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE, responseValue: 81.72, responseStatus: 200 } } : n));
           completedRef.current.add(nodeId);
         } catch (err) {
           console.error('Error in HTTP Response node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
       }
-      if (node.type === 'trigger' && node.data.type === 'manual') {
+      if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL) {
         setNodes(nds => nds.map(n =>
-          n.type === 'trigger' && n.data.type === 'manual'
-            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? 'prompt' : (n.data.runState === 'done' ? 'done' : 'idle') } }
+          n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL
+            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.PROMPT : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
             : n
         ));
         setCurrentUploadNode(nodeId);
         setShowFileUpload(true);
-        try {
-          // Wait for the user to upload a file via the modal
-          const files = await new Promise<File[]>((resolve, reject) => {
-            fileUploadResolver.current = resolve;
-          });
-          nodeData.set(nodeId, { files });
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done', uploadedFileNames: files.map(f => f.name) } } : n));
-          setCurrentUploadNode(null);
-          setShowFileUpload(false);
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const labelSlug = slugify(node.data.label || nodeId);
-            const timestamp = getReadableTimestamp();
-            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-            const ext = file.name.split('.').pop() || 'dat';
-            const traceName = `${labelSlug}-${timestamp}-${i + 1}-${uuid}.${ext}`;
-            const inputFormData = new FormData();
-            inputFormData.append('nodeId', nodeId);
-            inputFormData.append('type', 'input');
-            inputFormData.append('file', file, traceName);
-            await fetch('/api/trace', { method: 'POST', body: inputFormData });
-          }
-          completedRef.current.add(nodeId);
-          // On successful upload, trigger downstream nodes
-          for (const downstreamId of getDownstream(nodeId)) {
-            runNode(downstreamId);
-          }
-        } catch (error) {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
-          setCurrentUploadNode(null);
-          setShowFileUpload(false);
-        }
-      } else if (node.type === 'output' && node.data.type === 'excel') {
-        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+        return;
+      } else if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
         try {
           // Gather all input files from upstream nodes
           const inputFiles: File[] = [];
@@ -358,7 +331,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           // Log each input CSV as a trace
           for (let i = 0; i < inputFiles.length; i++) {
             const file = inputFiles[i];
-            if (file.type === 'text/csv') {
+            if (file.type === MimeType.TEXT_CSV) {
               const labelSlug = slugify(node.data.label || nodeId);
               const timestamp = getReadableTimestamp();
               const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
@@ -378,7 +351,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const sheetNamesFromNode = Array.isArray(node.data.sheetNames) ? node.data.sheetNames : [];
           for (let i = 0; i < inputFiles.length; i++) {
             const file = inputFiles[i];
-            if (file.type === 'text/csv') {
+            if (file.type === MimeType.TEXT_CSV) {
               const csvContent = await file.text();
               const rows = csvContent.split('\n').map(row => row.split(','));
               const headers = rows[0];
@@ -417,7 +390,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             ...n,
             data: {
               ...n.data,
-              runState: 'done',
+              runState: RunState.DONE,
               fileUrl: URL.createObjectURL(mergedExcelFile),
               outputFileName: node.data.fileName || mergedExcelFile.name,
             },
@@ -438,7 +411,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           setNodeRunHistory(history => {
             const entry = {
               timestamp: new Date().toISOString(),
-              status: 'done',
+              status: RunState.DONE,
               inputFile: inputFiles.map(f => f.name).join(','),
               outputFile: mergedExcelFile.name,
             };
@@ -450,7 +423,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
         } catch (error) {
           console.error(`Error running Excel export node ${nodeId}:`, error);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         completedRef.current.add(nodeId);
         // Notify any waiting downstream nodes
@@ -464,19 +437,19 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         for (const downstreamId of getDownstream(nodeId)) {
           runNode(downstreamId);
         }
-      } else if (node.type === 'aiOperator') {
+      } else if (node.type === NodeType.AI_OPERATOR) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           // Do not mark as done here; let the sidebar video onEnded handler do it
           // Do not call any backend or set a timeout
         } catch (err) {
           console.error('Error in AI Operator node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
-      } else if (node.type === 'erpLookup') {
+      } else if (node.type === NodeType.ERP_LOOKUP) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           
           // Get input file from upstream node
           const upstreamId = getUpstream(nodeId)[0];
@@ -551,11 +524,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             ...n,
             data: {
               ...n.data,
-              runState: 'done',
+              runState: RunState.DONE,
               file: outputFile,
               ioConfig: {
-                inputTypes: [{ type: 'csv' }],
-                outputType: { type: 'csv' }
+                inputTypes: [{ type: FileType.CSV }],
+                outputType: { type: FileType.CSV }
               }
             }
           } : n));
@@ -572,12 +545,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
         } catch (err) {
           console.error('Error in ERP Lookup node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
-      } else if (node.type === 'loop') {
+      } else if (node.type === NodeType.LOOP) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
 
           // Get input file from upstream node
           const upstreamId = getUpstream(nodeId)[0];
@@ -604,15 +577,15 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             }
           }
 
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
           completedRef.current.add(nodeId);
         } catch (err) {
           console.error('Error in Loop node:', err);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
       } else {
-        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
         try {
           // Gather all input files from all upstream nodes
           const inputFiles: File[] = [];
@@ -621,7 +594,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             if (upstreamData?.files) inputFiles.push(...upstreamData.files);
             else if (upstreamData?.file) inputFiles.push(upstreamData.file);
           }
-          if (!inputFiles.length && node.type !== 'aiOperator') throw new Error('No input files available');
+          if (!inputFiles.length && node.type !== NodeType.AI_OPERATOR) throw new Error('No input files available');
           const formData = new FormData();
           formData.append('inputFile', inputFiles[0]);
           if (node.data.prompt) formData.append('prompt', node.data.prompt);
@@ -651,10 +624,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const result = await response.json();
           let csvFiles = [];
           // If output type is json, create a downloadable file from the result (including hardcoded JSON)
-          if (node.data.ioConfig?.outputType?.type === 'json' && result.data && result.data.length > 0) {
+          if (node.data.ioConfig?.outputType?.type === FileType.JSON && result.data && result.data.length > 0) {
             const jsonData = result.data.length === 1 ? result.data[0] : result.data;
             // Short-circuit for hardcoded JSON output when input is MP4
-            if (node.data.ioConfig?.inputTypes?.some((t: any) => t.type === 'mp4')) {
+            if (node.data.ioConfig?.inputTypes?.some((t: any) => t.type === FileType.MP4)) {
               // Sleep for 30 seconds before outputting the hardcoded JSON
               await new Promise(resolve => setTimeout(resolve, 30000));
               const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
@@ -665,7 +638,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 ...n,
                 data: {
                   ...n.data,
-                  runState: 'done',
+                  runState: RunState.DONE,
                   fileUrl,
                   outputFileName: 'P-650-WTH-BKM.json',
                 }
@@ -684,7 +657,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               ...n,
               data: {
                 ...n.data,
-                runState: 'done',
+                runState: RunState.DONE,
                 fileUrl,
                 outputFileName: 'P-650-WTH-BKM.json',
               }
@@ -692,7 +665,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           } else {
             csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
             nodeData.set(nodeId, { files: csvFiles });
-            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
           }
           // Always mark node as completed and trigger downstream nodes after output is set
           completedRef.current.add(nodeId);
@@ -701,12 +674,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
         } catch (error) {
           console.error(`Error running node ${nodeId}:`, error);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         setNodeRunHistory(history => {
           const entry = {
             timestamp: new Date().toISOString(),
-            status: 'done',
+            status: RunState.DONE,
             inputFile: node?.data?.uploadedFileNames?.join(','),
             outputFile: node?.data?.fileName,
           };
@@ -784,7 +757,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       ...n,
       data: {
         ...n.data,
-        runState: 'idle',
+        runState: RunState.IDLE,
       },
     })));
     setCurrentUploadNode(null);
@@ -823,9 +796,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         <ReactFlow
           nodes={nodes.map(n => {
             let isHighlighted = false;
-            if (n.type === 'trigger' && n.data.type === 'manual') {
+            if (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) {
               isHighlighted = n.id === currentUploadNode;
-            } else if (n.data.runState === 'running') {
+            } else if (n.data.runState === RunState.RUNNING) {
               isHighlighted = true;
             }
             return {

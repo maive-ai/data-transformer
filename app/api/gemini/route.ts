@@ -3,19 +3,20 @@ import path from 'path';
 import fs from 'fs/promises';
 import * as XLSX from 'xlsx';
 import { readFile } from 'fs/promises';
+import { MimeType } from '@/types/enums';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
-// Map file extensions to MIME types
+// Map file extensions to MIME types using enum values
 const MIME_TYPES: { [key: string]: string } = {
-  'pdf': 'application/pdf',
-  'doc': 'application/msword',
-  'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'csv': 'text/csv',
-  'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'json': 'application/json',
-  'xml': 'application/xml',
-  'txt': 'text/plain'
+  'pdf': MimeType.APPLICATION_PDF,
+  'doc': MimeType.APPLICATION_MSWORD,
+  'docx': MimeType.APPLICATION_DOCX,
+  'csv': MimeType.TEXT_CSV,
+  'xlsx': MimeType.APPLICATION_XLSX,
+  'json': MimeType.APPLICATION_JSON,
+  'xml': MimeType.APPLICATION_XML,
+  'txt': MimeType.TEXT_PLAIN
 };
 
 // Utility: Generate JSON schema from CSV header row

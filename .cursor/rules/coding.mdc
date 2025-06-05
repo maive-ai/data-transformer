@@ -1,0 +1,48 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 🧭 General Coding Guidelines
+
+## Type Safety and Constants
+
+✅ **Use Enums for Fixed Sets of Constants**
+- Purpose: Enums provide clear, maintainable definitions for related constants
+- Benefits:
+  - Improves code readability by replacing magic strings/numbers with descriptive names
+  - Enables compile-time type safety and reduces invalid values
+  - Facilitates refactoring and IDE navigation/autocomplete
+- Best Practices:
+  - Prefer string enums over numeric enums for better debugging
+  - Use `const enum` for performance when enums aren't needed at runtime
+  - Avoid heterogeneous enums (mixing string and numeric values)
+
+✅ **Use Union Types for Simple String Literals**
+- When you only need a simple set of string literals without runtime representation
+- Benefits: No additional JavaScript code generated, better TypeScript integration
+- Example: `type Status = 'pending' | 'approved' | 'rejected'`
+
+❌ **Avoid String Matching for Control Flow**
+- Issue: Raw strings lead to typos and lack type safety
+- Solution: Replace string literals with enums or union types
+
+## Code Quality
+
+✅ **Simplicity First**
+- Focus on simplicity and readability over cleverness
+- Delete code that becomes functionally unnecessary after changes
+- Use well-established libraries rather than reinventing solutions
+- Prefer composition over inheritance
+
+✅ **Error Handling**
+- Use Result/Either patterns for predictable error handling
+- Avoid throwing exceptions for expected failures
+- Validate inputs at boundaries (API endpoints, user inputs)
+
+✅ **Naming Conventions**
+- Use descriptive, searchable names
+- Avoid abbreviations and single-letter variables (except loop counters)
+- Use verb-noun pattern for functions (`getUserById`, `calculateTotal`)
+- Use intention-revealing names (`isLoggedIn` vs `flag`)
+

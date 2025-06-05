@@ -1,0 +1,76 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 📝 Documentation and Readability
+
+## Code Documentation
+
+✅ **Meaningful Comments**
+- Write comments that explain "why" rather than "what"
+- Document complex business logic and algorithms
+- Use JSDoc for public APIs and exported functions
+- Keep comments up-to-date with code changes
+
+✅ **Self-Documenting Code**
+- Use descriptive variable and function names
+- Prefer clear code structure over excessive comments
+- Extract complex expressions into named variables
+- Use TypeScript types as documentation
+
+## Component Documentation
+
+✅ **Component APIs**
+- Document component props with TypeScript interfaces
+- Provide usage examples in JSDoc comments
+- Document expected children and render prop patterns
+- Include prop validation and default values
+
+✅ **Storybook Integration**
+- Create stories for all public components
+- Document different component states and variants
+- Provide interactive examples and use cases
+- Include accessibility and design guidelines
+
+## Project Documentation
+
+✅ **README Files**
+- Include comprehensive README files in major directories
+- Document project setup and installation instructions
+- Provide clear usage examples and API documentation
+- Keep README files current with project changes
+
+✅ **Architecture Documentation**
+- Document high-level architecture and design decisions
+- Create diagrams for complex data flows
+- Maintain decision records (ADRs) for important choices
+- Document API contracts and data schemas
+
+## Code Organization
+
+✅ **File Structure**
+- Use consistent file and folder naming conventions
+- Group related files together logically
+- Create index files for clean imports
+- Separate concerns clearly (components, hooks, utils)
+
+✅ **Import Organization**
+- Group imports logically (external, internal, relative)
+- Use absolute imports for commonly used modules
+- Avoid circular dependencies
+- Keep import statements clean and organized
+
+## Inline Documentation
+
+✅ **Type Annotations**
+- Use descriptive type names and interfaces
+- Add comments for complex type definitions
+- Document generic constraints and their purposes
+- Use utility types to express intent clearly
+
+✅ **Error Messages**
+- Write helpful error messages for developers
+- Include context and potential solutions
+- Use consistent error message formats
+- Log errors with sufficient debugging information

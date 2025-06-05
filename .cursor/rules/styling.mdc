@@ -1,0 +1,64 @@
+---
+description: 
+globs: *.tsx,*.css
+alwaysApply: false
+---
+# 🎨 Styling and UI Components
+
+## Design System
+
+✅ **Component Library Strategy**
+- Use Shadcn UI as the primary component foundation
+- Leverage Radix UI primitives for accessible, unstyled components
+- Build custom components on top of these primitives
+- Maintain consistent design tokens (colors, spacing, typography)
+
+✅ **Accessibility First**
+- Ensure proper ARIA attributes and semantic HTML
+- Implement keyboard navigation support
+- Maintain sufficient color contrast ratios (WCAG AA minimum)
+- Test with screen readers and keyboard-only navigation
+
+## Tailwind CSS Patterns
+
+✅ **Utility-First Approach**
+- Use Tailwind utilities for consistent spacing and sizing
+- Prefer utilities over custom CSS when possible
+- Use `@apply` sparingly; prefer component composition
+
+✅ **Responsive Design**
+- Follow mobile-first approach with min-width breakpoints
+- Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`)
+- Test across different device sizes and orientations
+
+✅ **Layout Patterns**
+- Use flexbox (`flex`) and CSS Grid (`grid`) for layouts
+- Prefer `gap` utilities over margin for spacing between elements
+- Use logical properties when available (`ms-` instead of `ml-`)
+
+## Component Styling
+
+✅ **Variant Patterns**
+- Use libraries like `class-variance-authority` for component variants
+- Create consistent variant APIs across similar components
+- Document variant combinations and their use cases
+
+✅ **Dark Mode Support**
+- Implement dark mode using Tailwind's `dark:` prefix
+- Use CSS custom properties for complex color schemes
+- Test all components in both light and dark modes
+- Provide smooth transitions between themes
+
+## Custom Styling
+
+✅ **CSS Organization**
+- Keep global styles minimal and well-documented
+- Use CSS Modules or styled-components for component-specific styles
+- Follow BEM methodology when writing custom CSS classes
+- Avoid deep nesting (max 3 levels)
+
+✅ **Animation and Transitions**
+- Use CSS transitions for simple state changes
+- Implement animations with `framer-motion` for complex interactions
+- Respect user's motion preferences (`prefers-reduced-motion`)
+- Keep animations fast and purposeful (under 300ms for most transitions)

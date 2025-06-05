@@ -1,0 +1,62 @@
+---
+description: 
+globs: *.tsx,*.css
+alwaysApply: false
+---
+# 🎨 UI Design Principles
+
+## Design Philosophy
+
+✅ **Simplicity and Clarity**
+- Design beautiful, simple, and intuitive user interfaces
+- Prioritize user needs and remove unnecessary complexity
+- Use whitespace effectively to create visual hierarchy
+- Focus on readability and scannability
+
+✅ **Consistency**
+- Maintain consistent patterns across the application
+- Use a cohesive design system with standardized components
+- Apply consistent spacing, typography, and color usage
+- Ensure predictable interaction patterns
+
+## Visual Hierarchy
+
+✅ **Typography Scale**
+- Use a modular type scale for consistent text sizing
+- Establish clear hierarchy with headings, body text, and captions
+- Ensure sufficient line height for readability (1.4-1.6 minimum)
+- Limit font families (2-3 maximum) for cohesion
+
+✅ **Color and Contrast**
+- Use color purposefully to guide attention and convey meaning
+- Maintain WCAG AA contrast ratios (4.5:1 for normal text)
+- Create semantic color tokens (primary, secondary, success, error)
+- Design for both light and dark themes
+
+## Layout and Spacing
+
+✅ **Grid and Alignment**
+- Use consistent grid systems for layout structure
+- Align elements to create order and reduce cognitive load
+- Implement consistent spacing scale (4px, 8px, 16px, 24px, etc.)
+- Use proximity to group related elements
+
+✅ **Responsive Design**
+- Design mobile-first, then enhance for larger screens
+- Use flexible layouts that adapt to different screen sizes
+- Ensure touch targets are minimum 44px for mobile interfaces
+- Test designs across various devices and orientations
+
+## Interaction Design
+
+✅ **Feedback and States**
+- Provide immediate visual feedback for user interactions
+- Design clear states: default, hover, active, disabled, loading
+- Use micro-animations to enhance user experience
+- Communicate system status and loading states clearly
+
+✅ **Navigation and Flow**
+- Create clear navigation patterns and information architecture
+- Use breadcrumbs and clear page hierarchy
+- Implement logical user flows with minimal friction
+- Ensure keyboard navigation is intuitive and accessible

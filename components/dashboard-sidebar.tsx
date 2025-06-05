@@ -150,9 +150,11 @@ export function DashboardSidebar() {
       >
         <div className="flex flex-col items-center pt-8 pb-2">
           {collapsed ? (
-            <div className="w-8 h-8 mb-4 rounded-lg bg-gradient-to-br from-maive-orange to-maive-yellow flex items-center justify-center">
-              <span className="text-maive-darker-gray font-bold text-lg">M</span>
-            </div>
+            <img
+              src="/maive_light_avatar.png"
+              alt="Maive Logo Collapsed"
+              className="w-12 h-12 mb-4 rounded-lg"
+            />
           ) : (
             <img
               src={logoSrc}

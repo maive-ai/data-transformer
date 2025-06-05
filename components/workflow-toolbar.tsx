@@ -185,6 +185,17 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
               <Repeat className="w-4 h-4 mr-2" />
               {NodeLabel.LOOP}
             </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode(NodeType.ACTION, { 
+                label: NodeLabel.CSV_APPEND, 
+                type: ActionSubType.AI_TRANSFORM 
+              })}
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              {NodeLabel.CSV_APPEND}
+            </Button>
           </div>
         </PopoverContent>
       </Popover>

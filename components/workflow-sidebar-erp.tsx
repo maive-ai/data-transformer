@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ErpAction, ErpActionLabel, FileType } from "@/types/enums";
+import { Info, X } from "lucide-react";
 
 interface ErpSidebarProps {
   node: any;
@@ -8,6 +9,7 @@ interface ErpSidebarProps {
 
 const ERP_ACTIONS = [
   { value: ErpAction.BOM_LOOKUP, label: ErpActionLabel.BOM_LOOKUP },
+  { value: ErpAction.BOM_GENERATION, label: ErpActionLabel.BOM_GENERATION },
   { value: ErpAction.INVENTORY_CHECK, label: ErpActionLabel.INVENTORY_CHECK },
   { value: ErpAction.PRICE_LOOKUP, label: ErpActionLabel.PRICE_LOOKUP },
   { value: ErpAction.SUPPLIER_LOOKUP, label: ErpActionLabel.SUPPLIER_LOOKUP },
@@ -16,42 +18,28 @@ const ERP_ACTIONS = [
   { value: ErpAction.COMPLIANCE_CHECK, label: ErpActionLabel.COMPLIANCE_CHECK },
 ];
 
+// Hardcoded mock parameters
+const HARDCODED_MOCK_DISTRIBUTION = {
+  directMatch: 80,
+  substitution: 10,
+  notFound: 10,
+};
+
 export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
   const [erpAction, setErpAction] = useState(node.data.erpAction || ErpAction.BOM_LOOKUP);
-  const [mockDistribution, setMockDistribution] = useState({
-    directMatch: node.data.mockDistribution?.directMatch || 80,
-    substitution: node.data.mockDistribution?.substitution || 10,
-    notFound: node.data.mockDistribution?.notFound || 10,
-  });
-  const [connectionConfig, setConnectionConfig] = useState({
-    host: node.data.connectionConfig?.host || "",
-    database: node.data.connectionConfig?.database || "",
-    port: node.data.connectionConfig?.port || 5432,
-  });
-  const [useMockData, setUseMockData] = useState(node.data.useMockData !== false); // Default to true
+  const [showActionInfo, setShowActionInfo] = useState(false);
 
   // Update state when node changes
   useEffect(() => {
     setErpAction(node.data.erpAction || ErpAction.BOM_LOOKUP);
-    setMockDistribution({
-      directMatch: node.data.mockDistribution?.directMatch || 80,
-      substitution: node.data.mockDistribution?.substitution || 10,
-      notFound: node.data.mockDistribution?.notFound || 10,
-    });
-    setConnectionConfig({
-      host: node.data.connectionConfig?.host || "",
-      database: node.data.connectionConfig?.database || "",
-      port: node.data.connectionConfig?.port || 5432,
-    });
-    setUseMockData(node.data.useMockData !== false);
   }, [node]);
 
   const handleSave = async () => {
     await onChange(node.id, {
       erpAction,
-      mockDistribution,
-      connectionConfig,
-      useMockData,
+      // Always use hardcoded mock parameters
+      mockDistribution: HARDCODED_MOCK_DISTRIBUTION,
+      useMockData: true,
       ioConfig: {
         inputTypes: [{ type: FileType.CSV }], // ERP nodes typically work with CSV/structured data
         outputType: { type: FileType.CSV }
@@ -59,31 +47,12 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
     });
   };
 
-  const handleDistributionChange = (field: keyof typeof mockDistribution, value: number) => {
-    const newDistribution = { ...mockDistribution, [field]: value };
-    
-    // Ensure values add up to 100
-    const total = newDistribution.directMatch + newDistribution.substitution + newDistribution.notFound;
-    if (total !== 100) {
-      // Adjust other values proportionally
-      const remaining = 100 - value;
-      const otherFields = Object.keys(newDistribution).filter(k => k !== field) as Array<keyof typeof mockDistribution>;
-      const otherTotal = otherFields.reduce((sum, k) => sum + newDistribution[k], 0);
-      
-      if (otherTotal > 0) {
-        otherFields.forEach(k => {
-          newDistribution[k] = Math.round((newDistribution[k] / otherTotal) * remaining);
-        });
-      }
-    }
-    
-    setMockDistribution(newDistribution);
-  };
-
   const getActionDescription = (action: ErpAction): string => {
     switch (action) {
       case ErpAction.BOM_LOOKUP:
         return "Looks up part numbers from BOM data and returns availability status, substitutions, and basic part information.";
+      case ErpAction.BOM_GENERATION:
+        return "Generates a complete BOM (Bill of Materials) from design requirements, including part specifications, quantities, and assembly structure.";
       case ErpAction.INVENTORY_CHECK:
         return "Checks current inventory levels for specified parts and returns stock quantities and locations.";
       case ErpAction.PRICE_LOOKUP:
@@ -105,7 +74,18 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
     <div className="space-y-6">
       {/* ERP Action Selection */}
       <div>
-        <div className="font-medium mb-2">ERP Action</div>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="font-medium">ERP Action</div>
+          <button
+            type="button"
+            aria-label="Action information"
+            onClick={() => setShowActionInfo(true)}
+            className="text-gray-400 hover:text-gray-600 focus:outline-none"
+            style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: 0 }}
+          >
+            <Info className="w-4 h-4" />
+          </button>
+        </div>
         <select
           className="w-full border rounded-lg p-2 text-sm"
           value={erpAction}
@@ -119,127 +99,31 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
         </select>
       </div>
 
-      {/* Mock Data Toggle */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <input
-            type="checkbox"
-            id="useMockData"
-            checked={useMockData}
-            onChange={(e) => setUseMockData(e.target.checked)}
-            className="rounded"
-          />
-          <label htmlFor="useMockData" className="font-medium text-sm">
-            Use Mock Data
-          </label>
-        </div>
-        <p className="text-xs text-gray-500">
-          When enabled, the node will generate mock responses instead of connecting to a real ERP system
-        </p>
-      </div>
-
-      {/* Mock Distribution Settings (only show when using mock data) */}
-      {useMockData && (
-        <div>
-          <div className="font-medium mb-2">Mock Response Distribution</div>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-sm">Direct Match</label>
-                <span className="text-sm text-gray-500">{mockDistribution.directMatch}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={mockDistribution.directMatch}
-                onChange={(e) => handleDistributionChange('directMatch', parseInt(e.target.value))}
-                className="w-full"
-              />
+      {/* Action Info Modal */}
+      {showActionInfo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30"
+          onClick={() => setShowActionInfo(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" 
+              onClick={() => setShowActionInfo(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="font-semibold text-lg mb-4">
+              {ERP_ACTIONS.find(a => a.value === erpAction)?.label} Info
             </div>
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-sm">Substitution Found</label>
-                <span className="text-sm text-gray-500">{mockDistribution.substitution}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={mockDistribution.substitution}
-                onChange={(e) => handleDistributionChange('substitution', parseInt(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-sm">Not Found</label>
-                <span className="text-sm text-gray-500">{mockDistribution.notFound}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={mockDistribution.notFound}
-                onChange={(e) => handleDistributionChange('notFound', parseInt(e.target.value))}
-                className="w-full"
-              />
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 mt-2">
-            Total: {mockDistribution.directMatch + mockDistribution.substitution + mockDistribution.notFound}%
+            <p className="text-base text-gray-800">
+              {getActionDescription(erpAction)}
+            </p>
           </div>
         </div>
       )}
-
-      {/* ERP Connection Configuration (only show when not using mock data) */}
-      {!useMockData && (
-        <div>
-          <div className="font-medium mb-2">ERP Connection</div>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Host</label>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="localhost"
-                value={connectionConfig.host}
-                onChange={(e) => setConnectionConfig(prev => ({ ...prev, host: e.target.value }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Database</label>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="erp_database"
-                value={connectionConfig.database}
-                onChange={(e) => setConnectionConfig(prev => ({ ...prev, database: e.target.value }))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Port</label>
-              <input
-                type="number"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="5432"
-                value={connectionConfig.port}
-                onChange={(e) => setConnectionConfig(prev => ({ ...prev, port: parseInt(e.target.value) || 5432 }))}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Action-specific help text */}
-      <div className="p-3 bg-blue-50 rounded-lg">
-        <div className="text-sm font-medium text-blue-800 mb-1">
-          {ERP_ACTIONS.find(a => a.value === erpAction)?.label} Info
-        </div>
-        <div className="text-xs text-blue-700">
-          {getActionDescription(erpAction)}
-        </div>
-      </div>
 
       {/* Save Button */}
       <button

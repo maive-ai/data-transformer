@@ -7,22 +7,29 @@ export enum NodeType {
   HTTP_RESPONSE = 'httpResponse',
   AI_OPERATOR = 'aiOperator',
   ERP_LOOKUP = 'erpLookup',
-  LOOP = 'loop'
+  LOOP = 'loop',
+  INTEGRATION = 'integration',
 }
 
 // Node sub-type enums
 export enum TriggerSubType {
   MANUAL = 'manual',
-  EVENT = 'event'
+  EVENT = 'event',
+  SCHEDULE = 'schedule',
+  HTTP = 'http'
 }
 
 export enum OutputSubType {
   EXCEL = 'excel',
-  DOC = 'doc'
+  DOC = 'doc',
+  HTTP = 'http'
 }
 
 export enum ActionSubType {
-  DECISION = 'decision'
+  DECISION = 'decision',
+  AI_TRANSFORM = 'action',
+  EXCEL_TRANSFORM = 'action',
+  LOOP = 'action'
 }
 
 // Run state enums
@@ -86,5 +93,63 @@ export enum ContentType {
 // Node labels that are frequently used
 export enum NodeLabel {
   AI_TRANSFORM = 'AI Transform',
-  EXCEL_EXPORT = 'Excel Export'
+  AI_OPERATOR = 'AI Operator',
+  EXCEL_EXPORT = 'Excel Export',
+  EXCEL_TRANSFORM = 'Excel Transform',
+  DOC_EXPORT = 'Doc Export',
+  MANUAL_UPLOAD = 'Manual Upload',
+  SCHEDULE = 'Schedule',
+  HTTP_ENDPOINT = 'HTTP Endpoint',
+  HTTP_RESPONSE = 'HTTP Response',
+  DECISION = 'Decision',
+  LOOP = 'Loop',
+  CSV_APPEND = 'CSV Append',
+  ERP = 'ERP'
+}
+
+export enum IntegrationSubType {
+  ERP = 'erp',
+  EMAIL = 'email',
+  FILE_STORAGE = 'fileStorage',
+  DATABASE = 'database',
+  API = 'api',
+  WEBHOOK = 'webhook',
+}
+
+// ERP specific enums
+export enum ErpAction {
+  BOM_LOOKUP = 'bom-lookup',
+  BOM_GENERATION = 'bom-generation',
+  INVENTORY_CHECK = 'inventory-check',
+  PRICE_LOOKUP = 'price-lookup',
+  SUPPLIER_LOOKUP = 'supplier-lookup',
+  LEAD_TIME_CHECK = 'lead-time-check',
+  ALTERNATE_PARTS = 'alternate-parts',
+  COMPLIANCE_CHECK = 'compliance-check'
+}
+
+export enum ErpActionLabel {
+  BOM_LOOKUP = 'BOM Part Lookup',
+  BOM_GENERATION = 'BOM Generation',
+  INVENTORY_CHECK = 'Inventory Availability',
+  PRICE_LOOKUP = 'Price Lookup',
+  SUPPLIER_LOOKUP = 'Supplier Information',
+  LEAD_TIME_CHECK = 'Lead Time Check',
+  ALTERNATE_PARTS = 'Alternate Parts Search',
+  COMPLIANCE_CHECK = 'Compliance Verification'
+}
+
+// Email specific enums
+export enum EmailAction {
+  SEND = 'send',
+  RECEIVE = 'receive',
+  FORWARD = 'forward',
+  REPLY = 'reply'
+}
+
+// Integration direction enum
+export enum IntegrationDirection {
+  READ = 'read',
+  WRITE = 'write',
+  BOTH = 'both'
 }

@@ -13,6 +13,7 @@ import { DecisionSidebar } from "./workflow-sidebar-decision";
 import { DocExportSidebar } from "./workflow-sidebar-doc-export";
 import { ErpSidebar } from "./workflow-sidebar-erp";
 import { IntegrationSidebar } from "./workflow-sidebar-integration";
+import { CsvAppendSidebar } from "./workflow-sidebar-csv-append";
 import { NodeType, TriggerSubType, OutputSubType, ActionSubType, FileType, NodeLabel } from "@/types/enums";
 
 
@@ -374,6 +375,11 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             node={node} 
             onChange={onChange}
           />
+        ) : (node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND) ? (
+          <CsvAppendSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === NodeType.INTEGRATION ? (
           <IntegrationSidebar 
             node={node} 
@@ -427,19 +433,20 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
        !(node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.EVENT) &&
        !(node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM) && 
        !(node.type === NodeType.ACTION && node.data.label === NodeLabel.ERP) &&
+       !(node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND) &&
        !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) &&
        !(node.type === NodeType.ACTION && node.data.type === ActionSubType.DECISION) &&
        !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC) &&
        !(node.type === NodeType.INTEGRATION) && (
-        <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
-          <Button
-            className="pointer-events-auto px-8 py-2 rounded-xl shadow-lg font-semibold text-base"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? "Saving..." : "Save"}
-          </Button>
-        </div>
+      <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
+        <Button
+          className="pointer-events-auto px-8 py-2 rounded-xl shadow-lg font-semibold text-base"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? "Saving..." : "Save"}
+        </Button>
+      </div>
       )}
     </div>
   );

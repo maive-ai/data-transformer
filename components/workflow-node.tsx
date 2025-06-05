@@ -4,7 +4,7 @@ import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
 import { Brain } from "lucide-react";
-import { RunState, ActionSubType } from "@/types/enums";
+import { RunState, ActionSubType, NodeLabel } from "@/types/enums";
 
 interface WorkflowNodeData {
   label: string;
@@ -44,6 +44,11 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData>) => {
         <div className="text-sm font-medium text-center">{data.label}</div>
       </div>
       <Handle type="source" position={Position.Right} className="w-3 h-3" />
+      {/* Extra bottom handle for feedback from CSV Append */}
+      {data.label === NodeLabel.CSV_APPEND && (
+        <Handle type="source" position={Position.Bottom} id="bottom" className="w-4 h-4" style={{ background: '#2563eb', zIndex: 10 }} />
+      )}
+      <Handle type="target" position={Position.Right} className="hidden" />
     </Card>
   );
 }); 

@@ -31,8 +31,9 @@ import { WorkflowErpNode } from './workflow-erp-node';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Upload, X } from "lucide-react";
-import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType, ErpAction, IntegrationSubType } from "@/types/enums";
+import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType, ErpAction, IntegrationSubType, NodeLabel } from "@/types/enums";
 import { WorkflowIntegrationNode } from './workflow-integration-node';
+import CurvedFeedbackEdge from './workflow-curved-edge';
 
 // Add File System Access API type declarations
 declare global {
@@ -64,6 +65,7 @@ const nodeTypes = {
 
 const edgeTypes = {
   step: StepEdge,
+  feedback: CurvedFeedbackEdge,
 };
 
 interface WorkflowCanvasProps {
@@ -194,9 +196,32 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         console.warn('Incompatible node types');
         return;
       }
-      setEdges((eds) => addEdge(params, eds));
+      
+      // Check if this is a feedback connection (CSV Append to Loop)
+      const sourceNode = nodes.find(n => n.id === params.source);
+      const targetNode = nodes.find(n => n.id === params.target);
+      
+      let edgeType = 'step';
+      let targetHandle = params.targetHandle;
+      
+      if (sourceNode?.data.label === NodeLabel.CSV_APPEND && 
+          targetNode?.type === NodeType.LOOP) {
+        edgeType = 'feedback';
+        targetHandle = 'bottom'; // Force connection to bottom handle
+        params = { ...params, sourceHandle: 'bottom' } as Connection;
+      }
+      
+      const newEdge = {
+        ...params,
+        type: edgeType,
+        targetHandle,
+        id: `${params.source}-${params.target}`,
+        sourceHandle: params.sourceHandle,
+      };
+      
+      setEdges((eds) => addEdge(newEdge, eds));
     },
-    [setEdges, validateConnection]
+    [setEdges, validateConnection, nodes]
   );
 
   // Run pipeline animation logic
@@ -493,7 +518,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 } else if (rand < mockDistribution.directMatch + mockDistribution.substitution) {
                   status = "Substitution Found";
                   substitution = `${mpn}-ALT`;
-                } else {
+      } else {
                   status = "Not Found in ERP";
                 }
               } else {
@@ -523,6 +548,18 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               
               if (useMockData) {
                 switch (erpAction) {
+                  case ErpAction.BOM_GENERATION:
+                    actionResult = {
+                      ...baseData,
+                      itemNumber: `ITEM-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+                      category: ['Resistor', 'Capacitor', 'IC', 'Connector', 'Mechanical'][Math.floor(Math.random() * 5)],
+                      bomLevel: Math.floor(Math.random() * 5) + 1,
+                      assemblyQuantity: Math.floor(Math.random() * 10) + 1,
+                      unitCost: (Math.random() * 50 + 0.1).toFixed(2),
+                      totalCost: ((Math.random() * 50 + 0.1) * (Math.floor(Math.random() * 10) + 1)).toFixed(2),
+                      status: 'Generated'
+                    };
+                    break;
                   case ErpAction.INVENTORY_CHECK:
                     actionResult = {
                       ...baseData,
@@ -595,6 +632,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           let headers = [];
           if (erpAction === ErpAction.BOM_LOOKUP) {
             headers = ['Manufacturer Part Number', 'Description', 'Manufacturer', 'Quantity', 'Reference Designators', 'Package', 'Status', 'Substitution'];
+          } else if (erpAction === ErpAction.BOM_GENERATION) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Item Number', 'Category', 'BOM Level', 'Assembly Quantity', 'Unit Cost', 'Total Cost', 'Status'];
           } else if (erpAction === ErpAction.INVENTORY_CHECK) {
             headers = ['Part Number', 'Description', 'Manufacturer', 'Stock Level', 'Location', 'Status'];
           } else if (erpAction === ErpAction.PRICE_LOOKUP) {
@@ -669,28 +708,37 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         try {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
 
-          // Get input file from upstream node
-          const upstreamId = getUpstream(nodeId)[0];
-          const upstreamData = nodeData.get(upstreamId);
-          if (!upstreamData?.file) throw new Error('No input file available');
+          // Check if this loop has a feedback connection (CSV append feeding back)
+          const feedbackEdges = edges.filter(e => e.target === nodeId && e.type === 'feedback');
+          const hasFeedback = feedbackEdges.length > 0;
 
-          // Read the input file
-          const inputText = await upstreamData.file.text();
-          const lines = inputText.split('\n').filter(line => line.trim());
-          if (lines.length < 2) throw new Error('CSV must have at least one data row');
-          const header = lines[0];
-          const dataLines = lines.slice(1);
+          if (hasFeedback) {
+            // Handle feedback loop: accumulate results iteratively
+            await handleFeedbackLoop(nodeId, nodeData, getUpstream, getDownstream, runNode);
+          } else {
+            // Original loop logic: process each row sequentially
+            const upstreamId = getUpstream(nodeId)[0];
+            const upstreamData = nodeData.get(upstreamId);
+            if (!upstreamData?.file) throw new Error('No input file available');
 
-          // For each data line, create a new CSV file and run downstream nodes
-          for (let i = 0; i < dataLines.length; i++) {
-            const csvContent = `${header}\n${dataLines[i]}`;
-            const rowFile = new File([csvContent], `row_${i + 1}.csv`, { type: 'text/csv' });
-            // For each downstream node, run it with this row file
-            for (const downstreamId of getDownstream(nodeId)) {
-              // Store the row file as the input for the downstream node
-              nodeData.set(nodeId + '_row_' + i, { file: rowFile });
-              // Run the downstream node, passing a special upstream context
-              await runNodeWithInput(downstreamId, rowFile, nodeId + '_row_' + i);
+            // Read the input file
+            const inputText = await upstreamData.file.text();
+            const lines = inputText.split('\n').filter(line => line.trim());
+            if (lines.length < 2) throw new Error('CSV must have at least one data row');
+            const header = lines[0];
+            const dataLines = lines.slice(1);
+
+            // For each data line, create a new CSV file and run downstream nodes
+            for (let i = 0; i < dataLines.length; i++) {
+              const csvContent = `${header}\n${dataLines[i]}`;
+              const rowFile = new File([csvContent], `row_${i + 1}.csv`, { type: 'text/csv' });
+              // For each downstream node, run it with this row file
+              for (const downstreamId of getDownstream(nodeId)) {
+                // Store the row file as the input for the downstream node
+                nodeData.set(nodeId + '_row_' + i, { file: rowFile });
+                // Run the downstream node, passing a special upstream context
+                await runNodeWithInput(downstreamId, rowFile, nodeId + '_row_' + i);
+              }
             }
           }
 
@@ -698,6 +746,85 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           completedRef.current.add(nodeId);
         } catch (err) {
           console.error('Error in Loop node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
+        }
+        return;
+      } else if (node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND) {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+
+          // Get all input files from upstream nodes
+          const inputFiles: File[] = [];
+          for (const upstreamId of getUpstream(nodeId)) {
+            const upstreamData = nodeData.get(upstreamId);
+            if (upstreamData?.files) inputFiles.push(...upstreamData.files);
+            else if (upstreamData?.file) inputFiles.push(upstreamData.file);
+          }
+          
+          if (inputFiles.length === 0) throw new Error('No input files available for CSV append');
+          
+          // Filter for CSV files only
+          const csvFiles = inputFiles.filter(file => file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv'));
+          if (csvFiles.length === 0) throw new Error('No CSV files found in input');
+
+          let allRows: string[] = [];
+          let headers: string | null = null;
+          
+          // Process each CSV file
+          for (const csvFile of csvFiles) {
+            const csvContent = await csvFile.text();
+            const lines = csvContent.split('\n').filter(line => line.trim());
+            
+            if (lines.length === 0) continue;
+            
+            const fileHeaders = lines[0];
+            const fileDataRows = lines.slice(1);
+            
+            // Use headers from first file, validate subsequent files have same structure
+            if (headers === null) {
+              headers = fileHeaders;
+              allRows.push(headers);
+            } else if (headers !== fileHeaders) {
+              console.warn(`CSV file ${csvFile.name} has different headers, skipping data rows`);
+              continue;
+            }
+            
+            // Append data rows (skip header)
+            allRows.push(...fileDataRows);
+          }
+          
+          if (headers === null) throw new Error('No valid CSV headers found');
+          
+          // Create the merged CSV content
+          const mergedCsvContent = allRows.join('\n');
+          const outputFileName = node.data.outputFileName || 'merged_data.csv';
+          const outputFile = new File([mergedCsvContent], outputFileName, { type: 'text/csv' });
+          
+          // Store the output file
+          nodeData.set(nodeId, { file: outputFile });
+          
+          // Update node state
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: RunState.DONE,
+              file: outputFile,
+              ioConfig: {
+                inputTypes: [{ type: FileType.CSV }],
+                outputType: { type: FileType.CSV }
+              }
+            }
+          } : n));
+          
+          completedRef.current.add(nodeId);
+          
+          // Process downstream nodes
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
+        } catch (err) {
+          console.error('Error in CSV Append node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
@@ -818,6 +945,131 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       completedRef.current.add(contextKey);
       // Run the node as usual (could be extended for more context-aware logic)
       await runNode(nodeId);
+    }
+
+    // Helper function to handle feedback loops (Loop -> ERP -> CSV Append -> Loop)
+    async function handleFeedbackLoop(
+      loopNodeId: string, 
+      nodeData: Map<string, any>, 
+      getUpstream: (id: string) => string[], 
+      getDownstream: (id: string) => string[], 
+      runNode: (id: string) => Promise<void>
+    ) {
+      // Get initial input data
+      const upstreamId = getUpstream(loopNodeId)[0];
+      const upstreamData = nodeData.get(upstreamId);
+      if (!upstreamData?.file) throw new Error('No input file available for feedback loop');
+
+      // Read the input file
+      const inputText = await upstreamData.file.text();
+      const lines = inputText.split('\n').filter((line: string) => line.trim());
+      if (lines.length < 2) throw new Error('CSV must have at least one data row for feedback loop');
+      
+      const header = lines[0];
+      const dataLines = lines.slice(1);
+      
+      // Initialize accumulated results with header
+      let accumulatedResults = [header];
+      
+      // Process each row through the feedback loop
+      for (let i = 0; i < dataLines.length; i++) {
+        const csvContent = `${header}\n${dataLines[i]}`;
+        const rowFile = new File([csvContent], `row_${i + 1}.csv`, { type: 'text/csv' });
+        
+        // Store row file for this iteration
+        const iterationKey = `${loopNodeId}_iteration_${i}`;
+        nodeData.set(iterationKey, { file: rowFile });
+        
+        // Run downstream nodes (ERP -> CSV Append)
+        const downstreamNodes = getDownstream(loopNodeId);
+        for (const downstreamId of downstreamNodes) {
+          // Skip feedback edges to avoid infinite loop
+          const isDirectDownstream = edges.some(e => 
+            e.source === loopNodeId && 
+            e.target === downstreamId && 
+            e.type !== 'feedback'
+          );
+          
+          if (isDirectDownstream) {
+            // Run the downstream chain (ERP -> CSV Append)
+            await runDownstreamChain(downstreamId, rowFile, iterationKey);
+            
+            // Get the result from CSV Append node (find it in the chain)
+            const csvAppendNodeId = findCsvAppendInChain(downstreamId);
+            if (csvAppendNodeId) {
+              const csvAppendResult = nodeData.get(csvAppendNodeId);
+              if (csvAppendResult?.file) {
+                               const resultText = await csvAppendResult.file.text();
+               const resultLines = resultText.split('\n').filter((line: string) => line.trim());
+                // Add new data rows (skip header)
+                if (resultLines.length > 1) {
+                  accumulatedResults.push(...resultLines.slice(1));
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Create final accumulated file
+      const finalCsvContent = accumulatedResults.join('\n');
+      const finalFile = new File([finalCsvContent], 'accumulated_results.csv', { type: 'text/csv' });
+      nodeData.set(loopNodeId, { file: finalFile });
+    }
+
+    // Helper to run a chain of nodes starting from a given node
+    async function runDownstreamChain(startNodeId: string, inputFile: File, contextKey: string) {
+      const startNode = nodes.find(n => n.id === startNodeId);
+      if (!startNode) return;
+      
+      // Store input for this chain
+      nodeData.set(contextKey, { file: inputFile });
+      
+      // Run the starting node
+      await runNode(startNodeId);
+      
+      // Continue with its downstream nodes
+      const nextDownstream = getDownstream(startNodeId);
+      for (const nextId of nextDownstream) {
+        // Skip feedback edges
+        const isNotFeedback = !edges.some(e => 
+          e.source === startNodeId && 
+          e.target === nextId && 
+          e.type === 'feedback'
+        );
+        
+        if (isNotFeedback) {
+          const nodeResult = nodeData.get(startNodeId);
+          if (nodeResult?.file) {
+            await runDownstreamChain(nextId, nodeResult.file, `${contextKey}_${nextId}`);
+          }
+        }
+      }
+    }
+
+    // Helper to find CSV Append node in a downstream chain
+    function findCsvAppendInChain(startNodeId: string): string | null {
+      const visited = new Set<string>();
+      const queue = [startNodeId];
+      
+      while (queue.length > 0) {
+        const nodeId = queue.shift()!;
+        if (visited.has(nodeId)) continue;
+        visited.add(nodeId);
+        
+        const node = nodes.find(n => n.id === nodeId);
+        if (node?.data.label === NodeLabel.CSV_APPEND) {
+          return nodeId;
+        }
+        
+        // Add downstream nodes (excluding feedback edges)
+        const downstream = getDownstream(nodeId).filter(id => 
+          !edges.some(e => e.source === nodeId && e.target === id && e.type === 'feedback')
+        );
+        queue.push(...downstream);
+      }
+      
+      return null;
     }
 
     // Sequentially prompt for file upload roots in y order, but do not await downstreams

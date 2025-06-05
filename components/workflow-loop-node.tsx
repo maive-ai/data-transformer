@@ -28,7 +28,7 @@ export const WorkflowLoopNode = memo(({ data }: NodeProps<WorkflowLoopNodeData &
         <div className="text-sm font-medium text-center">{data.label}</div>
       </div>
       <Handle type="source" position={Position.Right} className="w-3 h-3" />
-      <Handle type="target" position={Position.Bottom} className="w-3 h-3" />
+      <Handle type="target" position={Position.Bottom} id="bottom" className="w-4 h-4" style={{ background: '#2563eb', zIndex: 10 }} />
     </Card>
   );
 }); 

@@ -21,7 +21,7 @@ export const WorkflowHttpTriggerNode = memo(({ data }: NodeProps<WorkflowHttpTri
   const highlighted = data.highlighted && data.runState !== "prompt";
 
   return (
-    <Card className={`p-4 w-48 shadow-lg bg-purple-50 ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-48 shadow-lg bg-white ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">
           <Globe className="w-6 h-6" />

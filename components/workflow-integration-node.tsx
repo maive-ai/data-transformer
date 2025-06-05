@@ -54,7 +54,7 @@ export const WorkflowIntegrationNode = memo(({ data }: NodeProps<WorkflowIntegra
   };
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} bg-white`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>

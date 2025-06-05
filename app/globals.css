@@ -30,27 +30,32 @@ body {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  
+  /* Add a white background utility */
+  .bg-white-important {
+    background: #fff !important;
+  }
 }
 
 @layer base {
   :root {
     /* Light theme using Maive brand colors */
-    --background: 40 100% 97%; /* FFF9EF - cream */
+    --background: 0 0% 100%; /* #fff - white */
     --foreground: 220 25% 8%; /* 0E1317 - darker gray */
-    --card: 40 100% 97%; /* FFF9EF - cream */
+    --card: 0 0% 100%; /* #fff - white */
     --card-foreground: 220 25% 8%; /* 0E1317 - darker gray */
-    --popover: 40 100% 97%; /* FFF9EF - cream */
+    --popover: 0 0% 100%; /* #fff - white */
     --popover-foreground: 220 25% 8%; /* 0E1317 - darker gray */
     --primary: 42 100% 54%; /* FFB519 - orange */
     --primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
     --secondary: 240 4% 26%; /* 424346 - dark gray */
-    --secondary-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --secondary-foreground: 0 0% 100%; /* #fff - white */
     --muted: 40 50% 92%; /* Lighter cream */
     --muted-foreground: 240 4% 26%; /* 424346 - dark gray */
     --accent: 54 100% 52%; /* FFE00B - yellow */
     --accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --destructive-foreground: 0 0% 100%; /* #fff - white */
     --border: 240 4% 85%; /* Light gray border */
     --input: 240 4% 90%; /* Light gray input */
     --ring: 42 100% 54%; /* FFB519 - orange for focus rings */
@@ -58,7 +63,7 @@ body {
     --chart-2: 54 100% 52%; /* FFE00B - yellow */
     --chart-3: 240 4% 26%; /* 424346 - dark gray */
     --chart-4: 220 25% 8%; /* 0E1317 - darker gray */
-    --chart-5: 40 100% 97%; /* FFF9EF - cream */
+    --chart-5: 0 0% 100%; /* #fff - white */
     --radius: 0.75rem;
     --sidebar-background: 40 100% 97%; /* FFF9EF - cream */
     --sidebar-foreground: 220 25% 8%; /* 0E1317 - darker gray */
@@ -156,4 +161,9 @@ body {
   border: none !important;
   box-shadow: none !important;
   background: transparent !important;
+}
+
+/* React Flow background override */
+.react-flow__viewport, .react-flow {
+  background: #fff !important;
 }

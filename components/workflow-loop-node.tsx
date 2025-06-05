@@ -21,7 +21,7 @@ export const WorkflowLoopNode = memo(({ data }: NodeProps<WorkflowLoopNodeData &
   const highlighted = data.highlighted && data.runState !== "prompt";
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} bg-white`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl"><Repeat className="w-6 h-6" /></div>

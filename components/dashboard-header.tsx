@@ -11,105 +11,110 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoonIcon, SunIcon, UserIcon } from "lucide-react";
+import { MoonIcon, SunIcon, UserIcon, Settings as SettingsIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
+import { useState, useEffect } from "react";
 
 export function DashboardHeader() {
   const { setTheme } = useTheme();
   const pathname = usePathname();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState("");
+
+  // Load system prompt from file on mount
+  useEffect(() => {
+    const fetchSystemPrompt = async () => {
+      try {
+        const response = await fetch('/api/pipelines/system-prompt');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.systemPrompt) {
+          setSystemPrompt(data.systemPrompt);
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load system prompt. Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchSystemPrompt();
+  }, []);
+
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch('/api/pipelines/system-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ systemPrompt }),
+      });
+      if (!response.ok) throw new Error('Failed to save system prompt');
+      toast({
+        title: "System Prompt Saved",
+        description: "Your global system prompt has been updated and will be used for all workflows.",
+      });
+      setIsSettingsOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save system prompt. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <header
-      className="sticky top-0 z-10 w-full border-b bg-background"
+      className="sticky top-0 z-20 w-full bg-[hsl(var(--sidebar-background))]"
+      style={{ borderBottom: 'none' }}
       data-oid="n3po3yu"
     >
-      <div
-        className="container flex h-16 items-center px-4 sm:px-6 lg:px-8"
-        data-oid="v4e6o7."
-      >
-        <Link href="/" className="flex items-center gap-2" data-oid="9bzt:_y">
-          <span className="text-lg font-semibold" data-oid="hjlnplu">
-            DataFlow
-          </span>
-        </Link>
-        <nav className="ml-6 hidden md:flex gap-6" data-oid=".4rltb9">
-          <Link
-            href="/dashboard"
-            className={`text-sm font-medium ${
-              pathname === "/dashboard"
-                ? "text-foreground"
-                : "text-muted-foreground"
-            } transition-colors hover:text-foreground`}
-            data-oid="z9l7qa."
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold maive-text-gradient">System Prompt</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Configure a global system prompt that will be applied to all AI operations in your pipelines.
+              </p>
+              <Textarea
+                id="system-prompt"
+                placeholder="Enter your system prompt..."
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.target.value)}
+                className="min-h-[200px] focus:ring-primary"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSaveSettings} className="bg-primary hover:bg-primary/90">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <div className="flex h-16 items-center px-0" data-oid="v4e6o7.">
+        <div className="ml-auto flex items-center gap-2 pr-6" data-oid="5dnqxmj">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            aria-label="Settings"
+            onClick={() => setIsSettingsOpen(true)}
+            data-oid="settings-header"
           >
-            Dashboard
-          </Link>
-          <Link
-            href="/dashboard/pipelines"
-            className={`text-sm font-medium ${
-              pathname.startsWith("/dashboard/pipelines")
-                ? "text-foreground"
-                : "text-muted-foreground"
-            } transition-colors hover:text-foreground`}
-            data-oid="i8akysg"
-          >
-            Pipelines
-          </Link>
-          <Link
-            href="/dashboard/integrations"
-            className={`text-sm font-medium ${
-              pathname.startsWith("/dashboard/integrations")
-                ? "text-foreground"
-                : "text-muted-foreground"
-            } transition-colors hover:text-foreground`}
-            data-oid="7d46fmd"
-          >
-            Integrations
-          </Link>
-        </nav>
-        <div className="ml-auto flex items-center gap-2" data-oid="5dnqxmj">
-          <DropdownMenu data-oid="5pkv9d2">
-            <DropdownMenuTrigger asChild data-oid="kx9-ei5">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full"
-                data-oid="b57.pqs"
-              >
-                <SunIcon
-                  className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-                  data-oid="a9m7xsx"
-                />
-                <MoonIcon
-                  className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-                  data-oid="0dqij79"
-                />
-                <span className="sr-only" data-oid="jfmtnfj">
-                  Toggle theme
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" data-oid="iz9hk54">
-              <DropdownMenuItem
-                onClick={() => setTheme("light")}
-                data-oid="tyw70d:"
-              >
-                Light
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setTheme("dark")}
-                data-oid="phjf.6q"
-              >
-                Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setTheme("system")}
-                data-oid="zwv-ax0"
-              >
-                System
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <SettingsIcon className="h-5 w-5" />
+          </Button>
           <DropdownMenu data-oid="ohx1si5">
             <DropdownMenuTrigger asChild data-oid="ush-rdl">
               <Button

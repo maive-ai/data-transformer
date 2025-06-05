@@ -4,7 +4,7 @@
     "name": "Vial Wash data to Excel",
     "description": "",
     "createdAt": "2025-05-24T00:37:32.757Z",
-    "updatedAt": "2025-06-05T21:06:53.151Z",
+    "updatedAt": "2025-06-05T21:46:34.670Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -33,7 +33,7 @@
               "Overwrap data for Maive.pdf"
             ]
           },
-          "width": 192,
+          "width": 110,
           "height": 88,
           "selected": false,
           "positionAbsolute": {
@@ -66,7 +66,7 @@
               "Vial Wash data for Maive.pdf"
             ]
           },
-          "width": 192,
+          "width": 110,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -111,7 +111,7 @@
             "outputTemplateName": "overwrap_template.csv",
             "runState": "done"
           },
-          "width": 116,
+          "width": 121,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -156,7 +156,7 @@
             "outputTemplateName": "vial_template.csv",
             "runState": "done"
           },
-          "width": 116,
+          "width": 121,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -194,7 +194,7 @@
             "fileUrl": "blob:http://localhost:3001/00e88ec8-4411-46b7-86a7-c1dfaa10c1e7",
             "outputFileName": "merged_output.xlsx"
           },
-          "width": 114,
+          "width": 118,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -1239,19 +1239,6 @@
           "dragging": false
         }
       ],
-      "edges": []
-    }
-  },
-  "pipeline-1749157354777": {
-    "id": "pipeline-1749157354777",
-    "name": "Untitled Pipeline",
-    "description": "",
-    "createdAt": "2025-06-05T21:02:34.777Z",
-    "updatedAt": "2025-06-05T21:02:34.777Z",
-    "steps": [],
-    "runs": [],
-    "workflow": {
-      "nodes": [],
       "edges": []
     }
   }

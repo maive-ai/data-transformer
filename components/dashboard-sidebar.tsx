@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Shuffle, PlusCircle, ChevronLeft, ChevronRight, Settings as SettingsIcon } from "lucide-react";
+import { Shuffle, PlusCircle, ChevronLeft, ChevronRight, Settings as SettingsIcon, FileText, Wrench } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +22,16 @@ const mainLinks: SidebarLink[] = [
     title: "Pipelines",
     href: "/dashboard/pipelines",
     icon: <Shuffle className="h-5 w-5" data-oid="7apae41" />,
+  },
+  {
+    title: "Pages",
+    href: "/dashboard/pages",
+    icon: <FileText className="h-5 w-5" />,
+  },
+  {
+    title: "Builder",
+    href: "/dashboard/builder",
+    icon: <Wrench className="h-5 w-5" />,
   },
 ];
 
@@ -102,6 +112,29 @@ export function DashboardSidebar() {
   // Use the main logo for now - we can add theme switching later
   const logoSrc = "/maive_main_logo.png";
 
+  // Helper to determine if Builder should be active
+  const isBuilderActive =
+    pathname === "/dashboard/builder" ||
+    pathname === "/dashboard/pipelines/new" ||
+    /^\/dashboard\/pipelines\/[\w-]+$/.test(pathname);
+
+  // Determine active states for each top-level link
+  const isPipelinesActive = pathname.startsWith("/dashboard/pipelines") && !isBuilderActive;
+  const isPagesActive = pathname.startsWith("/dashboard/pages");
+
+  const getIsActive = (title: string) => {
+    switch (title) {
+      case "Pipelines":
+        return isPipelinesActive;
+      case "Pages":
+        return isPagesActive;
+      case "Builder":
+        return isBuilderActive;
+      default:
+        return pathname === "/dashboard";
+    }
+  };
+
   if (!mounted) {
     return null; // Avoid hydration mismatch
   }
@@ -133,26 +166,26 @@ export function DashboardSidebar() {
           <div className="px-4" data-oid="qp1kobx">
             <div className="space-y-6" data-oid="rb293g9">
               <nav className="flex flex-col space-y-1" data-oid=".a1jnvk">
-                {mainLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
-                      pathname === link.href ||
-                        (link.href !== "/dashboard" &&
-                          pathname.startsWith(link.href))
-                        ? "bg-black/5 text-foreground rounded-md"
-                        : "text-sidebar-foreground hover:bg-black/5 hover:text-foreground rounded-md",
-                      collapsed && 'justify-center px-2'
-                    )}
-                    style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}
-                    data-oid="wfdp29x"
-                  >
-                    {link.icon}
-                    {!collapsed && link.title}
-                  </Link>
-                ))}
+                {mainLinks.map((link) => {
+                  const isActive = getIsActive(link.title);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-[hsl(var(--sidebar-active))] text-sidebar-foreground rounded-md font-semibold shadow-sm"
+                          : "text-sidebar-foreground hover:bg-black/5 hover:text-foreground rounded-md",
+                        collapsed && 'justify-center px-2'
+                      )}
+                      data-oid="wfdp29x"
+                    >
+                      {link.icon}
+                      {!collapsed && link.title}
+                    </Link>
+                  );
+                })}
                 {secondaryLinks.map((link) => (
                   <button
                     key={link.title}

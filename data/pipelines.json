@@ -4,7 +4,7 @@
     "name": "Vial Wash data to Excel",
     "description": "",
     "createdAt": "2025-05-24T00:37:32.757Z",
-    "updatedAt": "2025-06-05T20:55:02.141Z",
+    "updatedAt": "2025-06-05T21:06:53.151Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1239,6 +1239,19 @@
           "dragging": false
         }
       ],
+      "edges": []
+    }
+  },
+  "pipeline-1749157354777": {
+    "id": "pipeline-1749157354777",
+    "name": "Untitled Pipeline",
+    "description": "",
+    "createdAt": "2025-06-05T21:02:34.777Z",
+    "updatedAt": "2025-06-05T21:02:34.777Z",
+    "steps": [],
+    "runs": [],
+    "workflow": {
+      "nodes": [],
       "edges": []
     }
   }

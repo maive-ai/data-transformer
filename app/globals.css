@@ -66,6 +66,7 @@ body {
     --chart-5: 0 0% 100%; /* #fff - white */
     --radius: 0.75rem;
     --sidebar-background: 40 100% 97%; /* FFF9EF - cream */
+    --sidebar-active: 40 100% 90%; /* #FFEBC2 - heavier cream */
     --sidebar-foreground: 220 25% 8%; /* 0E1317 - darker gray */
     --sidebar-primary: 42 100% 54%; /* FFB519 - orange */
     --sidebar-primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */

@@ -20,7 +20,7 @@ interface SidebarLink {
 const mainLinks: SidebarLink[] = [
   {
     title: "Builder",
-    href: "/dashboard/builder",
+    href: "/dashboard/pipelines/new",
     icon: <Wrench className="h-5 w-5" />,
   },
   {
@@ -50,7 +50,6 @@ export function DashboardSidebar() {
 
   // Helper to determine if Builder should be active
   const isBuilderActive =
-    pathname === "/dashboard/builder" ||
     pathname === "/dashboard/pipelines/new" ||
     /^\/dashboard\/pipelines\/[\w-]+$/.test(pathname);
 

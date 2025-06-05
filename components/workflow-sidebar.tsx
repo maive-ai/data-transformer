@@ -31,6 +31,11 @@ type NodeState = {
   statusCode: number;
   contentType: string;
   aiPrompt: string;
+  decisionConditions: Array<{
+    condition: string;
+    outputPath: string;
+  }>;
+  defaultOutputPath: string;
 };
 
 // Define action type
@@ -57,6 +62,8 @@ const initialState: NodeState = {
   statusCode: 200,
   contentType: "application/json",
   aiPrompt: "",
+  decisionConditions: [],
+  defaultOutputPath: "",
 };
 
 // Reducer function
@@ -107,6 +114,8 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         statusCode: node.data.statusCode || 200,
         contentType: node.data.contentType || "application/json",
         aiPrompt: node.data.prompt || "",
+        decisionConditions: node.data.decisionConditions || [],
+        defaultOutputPath: node.data.defaultOutputPath || "",
       }
     });
   }, [node]);
@@ -251,6 +260,15 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           outputType: { type: uploadedFile?.name.split('.')?.pop()?.toLowerCase() || "csv" }
         }
       });
+    } else if (node.type === "action" && node.data.type === "decision") {
+      await onChange(node.id, {
+        decisionConditions: state.decisionConditions,
+        defaultOutputPath: state.defaultOutputPath,
+        ioConfig: {
+          inputTypes: state.inputTypes.map(type => ({ type })),
+          outputType: { type: "decision" }
+        }
+      });
     } else if (node.type === "action") {
       if (state.inputTypes[0] === "mp4") {
         await onChange(node.id, { 
@@ -292,6 +310,37 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
     }
     setSaving(false);
     onClose();
+  };
+
+  // Add decision node handlers
+  const handleAddCondition = () => {
+    dispatch({
+      type: 'UPDATE_NODE',
+      payload: {
+        decisionConditions: [
+          ...state.decisionConditions,
+          { condition: '', outputPath: '' }
+        ]
+      }
+    });
+  };
+
+  const handleRemoveCondition = (index: number) => {
+    const newConditions = [...state.decisionConditions];
+    newConditions.splice(index, 1);
+    dispatch({
+      type: 'UPDATE_NODE',
+      payload: { decisionConditions: newConditions }
+    });
+  };
+
+  const handleConditionChange = (index: number, field: 'condition' | 'outputPath', value: string) => {
+    const newConditions = [...state.decisionConditions];
+    newConditions[index] = { ...newConditions[index], [field]: value };
+    dispatch({
+      type: 'UPDATE_NODE',
+      payload: { decisionConditions: newConditions }
+    });
   };
 
   return (
@@ -462,114 +511,67 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               onChange={handleFileUpload}
             />
           </>
-        ) : node.type === "action" ? (
+        ) : node.type === "action" && node.data.type === "decision" ? (
           <div className="space-y-6">
+            {/* Decision Conditions Section */}
             <div>
-              <div className="font-medium mb-2">Transform Prompt</div>
-              <textarea
-                className="w-full min-h-[120px] border rounded-lg p-2 text-sm"
-                placeholder="Describe the AI processing step..."
-                value={state.prompt}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { prompt: e.target.value } })}
-              />
-            </div>
-            <div>
-              <div className="font-medium mb-2">Output Template</div>
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  type="checkbox"
-                  id="useOutputTemplate"
-                  checked={state.useOutputTemplate}
-                  onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { useOutputTemplate: e.target.checked } })}
-                  className="rounded border-gray-300"
-                />
-                <label htmlFor="useOutputTemplate" className="text-sm">
-                  Use output template file
-                </label>
-              </div>
-              {state.useOutputTemplate && (
-                <label className="block w-full border-dashed border-2 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".csv,.xlsx,.doc,.docx,.mp4,video/mp4"
-                    onChange={handleOutputTemplateChange}
-                  />
-                  {xlsxTemplate ? (
-                    <span className="text-sm">{xlsxTemplate.name}</span>
-                  ) : state.outputTemplateName ? (
-                    <span className="text-sm">{state.outputTemplateName}</span>
-                  ) : (
-                    <span className="text-gray-400 text-sm">Click to upload an output template file</span>
-                  )}
-                </label>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                {state.useOutputTemplate
-                  ? "The AI will use this file as a template and add data to it. Multi-sheet Excel templates (.xlsx) and Word documents (.docx) are supported."
-                  : "The AI will generate a new output file"}
-              </p>
-            </div>
-            <div>
-              <div className="font-medium mb-2">Input File Types</div>
-              {state.inputTypes.map((type, index) => (
-                <div key={index} className="mb-2">
-                  <div className="text-sm text-gray-600 mb-1">Input {index + 1}</div>
-                  <select
-                    value={type}
-                    onChange={(e) => handleInputTypeChange(e.target.value, index)}
-                    className="w-full border rounded-lg p-2 text-sm"
-                  >
-                    <option value="">Select input type</option>
-                    {["csv", "excel", "json", "xml", "pdf", "doc", "docx", "mp4", "txt"].map((type) => (
-                      <option key={type} value={type}>
-                        {type.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-            </div>
-            <div>
-              <div className="font-medium mb-2">Output File Type</div>
-              <select
-                value={state.outputType}
-                onChange={(e) => handleOutputTypeChange(e.target.value)}
-                className="w-full border rounded-lg p-2 text-sm"
-              >
-                <option value="">Select output type</option>
-                {["csv", "excel", "json", "xml", "markdown"].map((type) => (
-                  <option key={type} value={type}>
-                    {type.toUpperCase()}
-                  </option>
+              <div className="font-medium mb-2">Decision Conditions</div>
+              <div className="space-y-4">
+                {state.decisionConditions.map((condition, index) => (
+                  <div key={index} className="p-4 border rounded-lg bg-gray-50">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="font-medium text-sm">Condition {index + 1}</div>
+                      <button
+                        onClick={() => handleRemoveCondition(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="text-sm text-gray-600 mb-1">Condition</div>
+                        <input
+                          type="text"
+                          className="w-full border rounded-lg p-2 text-sm"
+                          placeholder="e.g., value > 100"
+                          value={condition.condition}
+                          onChange={(e) => handleConditionChange(index, 'condition', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-600 mb-1">Output Path Label</div>
+                        <input
+                          type="text"
+                          className="w-full border rounded-lg p-2 text-sm"
+                          placeholder="e.g., High Value"
+                          value={condition.outputPath}
+                          onChange={(e) => handleConditionChange(index, 'outputPath', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </select>
-            </div>
-            {/* Download section for AI Transform node after run */}
-            {node.data.ioConfig?.outputType?.type === 'json' && node.data.fileUrl && (
-              <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-purple-50">
-                <div className="font-medium text-sm">Download JSON Output</div>
-                <div className="text-xs text-gray-700 mb-2">{state.outputFileName || 'output.json'}</div>
                 <button
-                  onClick={async () => {
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = node.data.fileUrl;
-                    downloadLink.download = state.outputFileName || 'output.json';
-                    downloadLink.click();
-                  }}
-                  className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-semibold shadow hover:bg-purple-700 transition"
+                  onClick={handleAddCondition}
+                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  Download File
+                  + Add Condition
                 </button>
-                {/* Optionally, show a preview of the JSON */}
-                <pre className="mt-2 text-xs bg-gray-100 rounded p-2 max-h-48 overflow-auto">
-                  <code>
-                    {/* We'll fetch and show the JSON preview using a useEffect+useState in a real app, but for now just show the fileUrl */}
-                    {node.data.fileUrl}
-                  </code>
-                </pre>
               </div>
-            )}
+            </div>
+            {/* Default Output Path Section */}
+            <div>
+              <div className="font-medium mb-2">Default Output Path</div>
+              <input
+                type="text"
+                className="w-full border rounded-lg p-2 text-sm"
+                placeholder="e.g., Default"
+                value={state.defaultOutputPath}
+                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { defaultOutputPath: e.target.value } })}
+              />
+              <p className="text-xs text-gray-500 mt-1">This path will be used when no conditions are met</p>
+            </div>
           </div>
         ) : node.type === "output" && node.data.type === "excel" ? (
           <div className="space-y-6">

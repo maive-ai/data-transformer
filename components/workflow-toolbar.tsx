@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot } from "lucide-react";
+import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot, Repeat, Signpost } from "lucide-react";
 import { Node } from "reactflow";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
@@ -71,6 +71,41 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() =>
+                    handleAddNode("trigger", {
+                      label: "Email Trigger",
+                      type: "event",
+                      integration: { name: "Gmail", icon: "📧" },
+                    })
+                  }
+                >
+                  <Mail className="w-6 h-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Email Trigger</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    handleAddNode("trigger", {
+                      label: "Schedule",
+                      type: "schedule",
+                    })
+                  }
+                >
+                  <Clock className="w-6 h-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Schedule</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
                     handleAddNode("httpTrigger", {
                       label: "HTTP Endpoint",
                       type: "http",
@@ -88,52 +123,81 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
         </PopoverContent>
       </Popover>
 
-      {/* Action Dropdown */}
+      {/* Actions Dropdown */}
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" className="flex items-center gap-2">
             <Brain className="w-5 h-5" />
-            Action
+            Actions
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="flex flex-row gap-2 p-3">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() =>
-                    handleAddNode("action", {
-                      label: "AI Transform",
-                      type: "action",
-                    })
-                  }
-                >
-                  <Brain className="w-6 h-6" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>AI Transform</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() =>
-                    handleAddNode("aiOperator", {
-                      label: "AI Operator",
-                      type: "action",
-                      prompt: "",
-                    })
-                  }
-                >
-                  <Bot className="w-6 h-6" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>AI Operator</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <PopoverContent className="w-48">
+          <div className="grid gap-2">
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("action", { label: "AI Transform", type: "action" })}
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              AI Transform
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("aiOperator", { label: "AI Operator", type: "action", prompt: "" })}
+            >
+              <Bot className="w-4 h-4 mr-2" />
+              AI Operator
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("action", { label: "Excel Transform", iconType: "excel", type: "action" })}
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              Excel Transform
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("action", { label: "Email Action", iconType: "email", type: "action" })}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Email Action
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("action", { label: "ERP Action", iconType: "erp", type: "action" })}
+            >
+              <Database className="w-4 h-4 mr-2" />
+              ERP Action
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("action", { label: "ERP Lookup", iconType: "erp", type: "action" })}
+            >
+              <Database className="w-4 h-4 mr-2" />
+              ERP Lookup
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("action", { label: "Decision", iconType: "decision", type: "decision" })}
+            >
+              <Signpost className="w-4 h-4 mr-2" />
+              Decision
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode("loop", { label: "Loop", type: "action" })}
+            >
+              <Repeat className="w-4 h-4 mr-2" />
+              Loop
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
 
@@ -224,7 +288,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                   size="icon"
                   onClick={() =>
                     handleAddNode("output", {
-                      label: "ERP Integration",
+                      label: "ERP Write",
                       type: "erp",
                     })
                   }

@@ -3,11 +3,11 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { FileSpreadsheet, Mail, Database, Brain } from "lucide-react";
+import { FileSpreadsheet, Mail, Database, Brain, Signpost } from "lucide-react";
 
 interface WorkflowNodeData {
   label: string;
-  iconType?: string; // e.g., 'excel', 'email', 'erp'
+  iconType?: string; // e.g., 'excel', 'email', 'erp', 'decision'
   type: "action" | "trigger" | "output";
 }
 
@@ -35,6 +35,8 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData & { runSt
         return <Database className="w-6 h-6" />;
       case "brain":
         return <Brain className="w-6 h-6" />;
+      case "decision":
+        return <Signpost className="w-6 h-6" />;
       default:
         // Default to Brain icon for action nodes
         if (data.type === "action") return <Brain className="w-6 h-6" />;

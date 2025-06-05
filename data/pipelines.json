@@ -857,7 +857,7 @@
     "name": "AI Operator Endpoint",
     "description": "",
     "createdAt": "2025-05-30T16:41:41.886Z",
-    "updatedAt": "2025-05-30T18:56:58.020Z",
+    "updatedAt": "2025-06-04T17:35:35.089Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -896,10 +896,10 @@
             "label": "AI Operator",
             "type": "action",
             "prompt": "Please use Ignition, read the discharge temperature from the fan, and return it.",
-            "runState": "running"
+            "runState": "done"
           },
           "width": 192,
-          "height": 125,
+          "height": 128,
           "selected": false,
           "positionAbsolute": {
             "x": 299.49706470178467,
@@ -923,7 +923,7 @@
           },
           "width": 146,
           "height": 110,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 625.5963788850084,
             "y": 329.1513091535609
@@ -951,10 +951,10 @@
   },
   "pipeline-1748919214360": {
     "id": "pipeline-1748919214360",
-    "name": "BOM to CSV",
+    "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-04T03:24:42.534Z",
+    "updatedAt": "2025-06-05T00:48:55.506Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -994,7 +994,7 @@
           "id": "action-1748919230696",
           "type": "action",
           "position": {
-            "x": 216.9569254660015,
+            "x": 217.68762980306764,
             "y": 99.04307453399846
           },
           "data": {
@@ -1021,31 +1021,130 @@
           "height": 88,
           "selected": true,
           "positionAbsolute": {
-            "x": 216.9569254660015,
+            "x": 217.68762980306764,
             "y": 99.04307453399846
           },
           "dragging": false
         },
         {
-          "id": "output-1748919235811",
-          "type": "output",
+          "id": "action-1749082894829",
+          "type": "action",
           "position": {
-            "x": 434.1238563928212,
-            "y": 101.26471925415944
+            "x": 697.2871085257694,
+            "y": 100.26929566293384
           },
           "data": {
-            "label": "Excel Export",
-            "type": "excel",
-            "runState": "done",
-            "fileUrl": "blob:http://localhost:3000/2436aa88-b320-4c51-9fff-72c0bb960996",
-            "outputFileName": "merged_output.xlsx"
+            "label": "ERP Lookup",
+            "iconType": "erp",
+            "type": "action"
           },
-          "width": 115,
-          "height": 88,
-          "selected": false,
+          "width": 112,
+          "height": 86,
+          "selected": true,
           "positionAbsolute": {
-            "x": 434.1238563928212,
-            "y": 101.26471925415944
+            "x": 697.2871085257694,
+            "y": 100.26929566293384
+          },
+          "dragging": false
+        },
+        {
+          "id": "loop-1749082903551",
+          "type": "loop",
+          "position": {
+            "x": 499.05548688518024,
+            "y": 100.35770685209022
+          },
+          "data": {
+            "label": "Loop",
+            "type": "action"
+          },
+          "width": 65,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 499.05548688518024,
+            "y": 100.35770685209022
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1749083111448",
+          "type": "action",
+          "position": {
+            "x": 913.407095300771,
+            "y": 100.18088447377754
+          },
+          "data": {
+            "label": "Decision",
+            "iconType": "decision",
+            "type": "action"
+          },
+          "width": 88,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 913.407095300771,
+            "y": 100.18088447377754
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1749084487459",
+          "type": "output",
+          "position": {
+            "x": 1137.1988791938124,
+            "y": -6.879812820150917
+          },
+          "data": {
+            "label": "ERP Write",
+            "type": "erp"
+          },
+          "width": 99,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 1137.1988791938124,
+            "y": -6.879812820150917
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1749084507344",
+          "type": "output",
+          "position": {
+            "x": 1140.9526818026309,
+            "y": 100.03624390203055
+          },
+          "data": {
+            "label": "ERP Write",
+            "type": "erp"
+          },
+          "width": 99,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 1140.9526818026309,
+            "y": 100.03624390203055
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1749084516450",
+          "type": "output",
+          "position": {
+            "x": 1140.0595360279647,
+            "y": 227.39887351154522
+          },
+          "data": {
+            "label": "ERP Write",
+            "type": "erp"
+          },
+          "width": 99,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 1140.0595360279647,
+            "y": 227.39887351154522
           },
           "dragging": false
         }
@@ -1061,9 +1160,59 @@
         {
           "source": "action-1748919230696",
           "sourceHandle": null,
-          "target": "output-1748919235811",
+          "target": "loop-1749082903551",
           "targetHandle": null,
-          "id": "reactflow__edge-action-1748919230696-output-1748919235811"
+          "id": "reactflow__edge-action-1748919230696-loop-1749082903551"
+        },
+        {
+          "source": "loop-1749082903551",
+          "sourceHandle": null,
+          "target": "action-1749082894829",
+          "targetHandle": null,
+          "id": "reactflow__edge-loop-1749082903551-action-1749082894829"
+        },
+        {
+          "source": "action-1749082894829",
+          "sourceHandle": null,
+          "target": "action-1749083111448",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1749082894829-action-1749083111448"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749083111448",
+          "sourceHandle": null,
+          "target": "output-1749084487459",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1749083111448-output-1749084487459"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749083111448",
+          "sourceHandle": null,
+          "target": "output-1749084507344",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1749083111448-output-1749084507344"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749083111448",
+          "sourceHandle": null,
+          "target": "output-1749084516450",
+          "targetHandle": null,
+          "id": "reactflow__edge-action-1749083111448-output-1749084516450"
         }
       ]
     }

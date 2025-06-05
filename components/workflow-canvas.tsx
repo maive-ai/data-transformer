@@ -13,6 +13,7 @@ import ReactFlow, {
   applyNodeChanges,
   NodeChange,
   EdgeChange,
+  StepEdge,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { WorkflowNode } from './workflow-node';
@@ -25,6 +26,7 @@ import { WorkflowOutputNode } from './workflow-output-node';
 import { WorkflowHttpTriggerNode } from './workflow-http-trigger-node';
 import { WorkflowHttpResponseNode } from './workflow-http-response-node';
 import { WorkflowAiOperatorNode } from './workflow-ai-operator-node';
+import { WorkflowLoopNode } from './workflow-loop-node';
 
 // Add File System Access API type declarations
 declare global {
@@ -49,6 +51,11 @@ const nodeTypes = {
   httpTrigger: WorkflowHttpTriggerNode,
   httpResponse: WorkflowHttpResponseNode,
   aiOperator: WorkflowAiOperatorNode,
+  loop: WorkflowLoopNode,
+};
+
+const edgeTypes = {
+  step: StepEdge,
 };
 
 interface WorkflowCanvasProps {
@@ -685,9 +692,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           onEdgesChange={handleEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           onNodeClick={handleNodeClick}
           onPaneClick={handleSidebarClose}
+          defaultEdgeOptions={{ type: 'step', style: { strokeWidth: 2, stroke: '#222' } }}
         >
           <Background />
           <Controls />

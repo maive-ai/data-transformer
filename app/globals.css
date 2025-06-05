@@ -166,5 +166,5 @@ body {
 
 /* React Flow background override */
 .react-flow__viewport, .react-flow {
-  background: #fff !important;
+  background: transparent !important;
 }

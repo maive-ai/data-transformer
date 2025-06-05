@@ -5,15 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect, useMemo, useRef, useReducer } from "react";
 import { AiTransformSidebar } from "./workflow-sidebar-ai-transform";
 import { ExcelExportSidebar } from "./workflow-sidebar-excel-export";
+import { HttpTriggerSidebar } from "./workflow-sidebar-http-trigger";
+import { HttpResponseSidebar } from "./workflow-sidebar-http-response";
+import { AiOperatorSidebar } from "./workflow-sidebar-ai-operator";
+import { EventTriggerSidebar } from "./workflow-sidebar-event-trigger";
+import { DecisionSidebar } from "./workflow-sidebar-decision";
+import { DocExportSidebar } from "./workflow-sidebar-doc-export";
 
-const INTEGRATIONS = [
-  { name: "Gmail", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail" className="w-7 h-7" /> },
-  { name: "Outlook", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg/640px-Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg.png" alt="Outlook" className="w-7 h-7" /> },
-  { name: "SharePoint", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Microsoft_Office_SharePoint_%282019%E2%80%93present%29.svg/640px-Microsoft_Office_SharePoint_%282019%E2%80%93present%29.svg.png" alt="SharePoint" className="w-7 h-7" /> },
-  { name: "Google Drive", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Google_Drive_icon_%282020%29.svg/640px-Google_Drive_icon_%282020%29.svg.png" alt="Google Drive" className="w-7 h-7" /> },
-  { name: "Dropbox", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Dropbox_Icon.svg/640px-Dropbox_Icon.svg.png" alt="Dropbox" className="w-7 h-7" /> },
-  { name: "Salesforce", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/640px-Salesforce.com_logo.svg.png " alt="Salesforce" className="w-7 h-7" /> },
-];
+
 
 // Define the state type
 type NodeState = {
@@ -168,13 +167,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
     }
   }, [inboundCsvCount, node.id]);
 
-  const handleIntegrationSelect = (integration: any) => {
-    dispatch({ type: 'UPDATE_NODE', payload: { integration } });
-  };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    dispatch({ type: 'UPDATE_NODE', payload: { description: e.target.value } });
-  };
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     dispatch({ type: 'UPDATE_NODE', payload: { prompt: e.target.value } });
@@ -248,29 +241,12 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   const handleSave = async () => {
     setSaving(true);
-    if (node.type === "httpTrigger") {
-      await onChange(node.id, { endpoint: state.endpoint, method: state.method });
-    } else if (node.type === "httpResponse") {
-      await onChange(node.id, { statusCode: state.statusCode, contentType: state.contentType });
-    } else if (node.type === "aiOperator") {
-      await onChange(node.id, { prompt: state.prompt });
-    } else if (node.type === "trigger" && node.data.type === "event") {
-      await onChange(node.id, { integration: state.integration, description: state.description });
-    } else if (node.type === "trigger" && node.data.type === "manual") {
+    if (node.type === "trigger" && node.data.type === "manual") {
       await onChange(node.id, { 
         uploadedFileName: state.uploadedFileName,
         ioConfig: {
           inputTypes: [],
           outputType: { type: uploadedFile?.name.split('.')?.pop()?.toLowerCase() || "csv" }
-        }
-      });
-    } else if (node.type === "action" && node.data.type === "decision") {
-      await onChange(node.id, {
-        decisionConditions: state.decisionConditions,
-        defaultOutputPath: state.defaultOutputPath,
-        ioConfig: {
-          inputTypes: state.inputTypes.map(type => ({ type })),
-          outputType: { type: "decision" }
         }
       });
     } else if (node.type === "action" && node.data.label === "AI Transform") {
@@ -300,49 +276,12 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
     } else if (node.type === "output" && node.data.type === "excel") {
       // Excel Export node handles its own save logic
       return;
-    } else if (node.type === "output" && node.data.type === "doc") {
-      await onChange(node.id, {
-        fileName: "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
-        ioConfig: {
-          inputTypes: [],
-          outputType: { type: "doc" }
-        }
-      });
     }
     setSaving(false);
     onClose();
   };
 
-  // Add decision node handlers
-  const handleAddCondition = () => {
-    dispatch({
-      type: 'UPDATE_NODE',
-      payload: {
-        decisionConditions: [
-          ...state.decisionConditions,
-          { condition: '', outputPath: '' }
-        ]
-      }
-    });
-  };
 
-  const handleRemoveCondition = (index: number) => {
-    const newConditions = [...state.decisionConditions];
-    newConditions.splice(index, 1);
-    dispatch({
-      type: 'UPDATE_NODE',
-      payload: { decisionConditions: newConditions }
-    });
-  };
-
-  const handleConditionChange = (index: number, field: 'condition' | 'outputPath', value: string) => {
-    const newConditions = [...state.decisionConditions];
-    newConditions[index] = { ...newConditions[index], [field]: value };
-    dispatch({
-      type: 'UPDATE_NODE',
-      payload: { decisionConditions: newConditions }
-    });
-  };
 
   return (
     <div className="fixed top-0 right-0 h-full w-[380px] bg-white shadow-2xl z-40 flex flex-col border-l border-gray-200 animate-in slide-in-from-right duration-200">
@@ -393,115 +332,25 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           </div>
         )}
         {node.type === "httpTrigger" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">HTTP Method</div>
-              <select
-                className="w-full border rounded-lg p-2 text-sm"
-                value={state.method}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { method: e.target.value } })}
-              >
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-              </select>
-            </div>
-            <div>
-              <div className="font-medium mb-2">Endpoint</div>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="/api/webhook"
-                value={state.endpoint}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { endpoint: e.target.value } })}
-              />
-            </div>
-          </div>
+          <HttpTriggerSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === "httpResponse" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Status Code</div>
-              <input
-                type="number"
-                className="w-full border rounded-lg p-2 text-sm"
-                value={state.statusCode}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { statusCode: parseInt(e.target.value) } })}
-              />
-            </div>
-            <div>
-              <div className="font-medium mb-2">Content Type</div>
-              <select
-                className="w-full border rounded-lg p-2 text-sm"
-                value={state.contentType}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { contentType: e.target.value } })}
-              >
-                <option value="application/json">application/json</option>
-                <option value="application/xml">application/xml</option>
-                <option value="text/plain">text/plain</option>
-                <option value="text/html">text/html</option>
-              </select>
-            </div>
-            {typeof node.data.responseValue !== 'undefined' && (
-              <div className="p-4 bg-green-50 border rounded-lg flex flex-col items-start gap-2">
-                <div className="font-medium text-sm">HTTP Response</div>
-                <div className="text-xs text-gray-700">Status: <span className="font-semibold">{node.data.responseStatus}</span></div>
-                <div className="text-xs text-gray-700">Value: <span className="font-semibold">{node.data.responseValue}</span></div>
-              </div>
-            )}
-          </div>
+          <HttpResponseSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === "aiOperator" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">AI Prompt</div>
-              <textarea
-                className="w-full min-h-[120px] border rounded-lg p-2 text-sm"
-                placeholder="Describe what the AI should do on the GUI..."
-                value={state.prompt}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { prompt: e.target.value } })}
-              />
-            </div>
-            {node.data.runState === "running" && (
-              <div>
-                <div className="font-medium mb-2">GUI Preview</div>
-                <video
-                  ref={videoRef}
-                  className="w-full rounded-lg"
-                  src="/ignition_operation.mp4"
-                  controls
-                  autoPlay
-                  onEnded={() => onChange(node.id, { runState: "done" })}
-                />
-              </div>
-            )}
-          </div>
+          <AiOperatorSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === "trigger" && node.data.type === "event" ? (
-          <>
-            <div className="mb-6">
-              <div className="font-medium mb-2">Integration</div>
-              <div className="grid grid-cols-3 gap-3">
-                {INTEGRATIONS.map((int) => (
-                  <button
-                    key={int.name}
-                    className={`flex flex-col items-center justify-center p-3 rounded-lg border transition hover:bg-gray-100 ${state.integration?.name === int.name ? "border-blue-500 bg-blue-50" : "border-gray-200"}`}
-                    onClick={() => handleIntegrationSelect(int)}
-                  >
-                    <span className="mb-1">{int.icon}</span>
-                    <span className="text-xs font-medium">{int.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="font-medium mb-2">Trigger Prompt</div>
-              <textarea
-                className="w-full min-h-[80px] border rounded-lg p-2 text-sm"
-                placeholder="Describe what should happen when this event occurs..."
-                value={state.description}
-                onChange={handleDescriptionChange}
-              />
-            </div>
-          </>
+          <EventTriggerSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === "trigger" && node.data.type === "manual" ? (
           <>
             {/* Only show run history and other relevant sections for manual trigger node */}
@@ -525,121 +374,15 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             nodes={nodes}
           />
         ) : node.type === "action" && node.data.type === "decision" ? (
-          <div className="space-y-6">
-            {/* Decision Conditions Section */}
-            <div>
-              <div className="font-medium mb-2">Decision Conditions</div>
-              <div className="space-y-4">
-                {state.decisionConditions.map((condition, index) => (
-                  <div key={index} className="p-4 border rounded-lg bg-gray-50">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="font-medium text-sm">Condition {index + 1}</div>
-                      <button
-                        onClick={() => handleRemoveCondition(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Condition</div>
-                        <input
-                          type="text"
-                          className="w-full border rounded-lg p-2 text-sm"
-                          placeholder="e.g., value > 100"
-                          value={condition.condition}
-                          onChange={(e) => handleConditionChange(index, 'condition', e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">Output Path Label</div>
-                        <input
-                          type="text"
-                          className="w-full border rounded-lg p-2 text-sm"
-                          placeholder="e.g., High Value"
-                          value={condition.outputPath}
-                          onChange={(e) => handleConditionChange(index, 'outputPath', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <button
-                  onClick={handleAddCondition}
-                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  + Add Condition
-                </button>
-              </div>
-            </div>
-            {/* Default Output Path Section */}
-            <div>
-              <div className="font-medium mb-2">Default Output Path</div>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="e.g., Default"
-                value={state.defaultOutputPath}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { defaultOutputPath: e.target.value } })}
-              />
-              <p className="text-xs text-gray-500 mt-1">This path will be used when no conditions are met</p>
-            </div>
-          </div>
-
+          <DecisionSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === "output" && node.data.type === "doc" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Output File</div>
-              <div className="text-sm text-gray-600">
-                This node will always output: <span className="font-medium">Standard Operating Procedure_ Toothbrush Holder Assembly.docx</span>
-              </div>
-            </div>
-            {/* Download section for Doc output node after run */}
-            <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-blue-50">
-              <div className="font-medium text-sm">Download Output</div>
-              <div className="text-xs text-gray-700 mb-2">Standard Operating Procedure_ Toothbrush Holder Assembly.docx</div>
-              <button
-                onClick={async () => {
-                  const fileUrl = "/static/Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
-                  try {
-                    // Try to use the File System Access API if available
-                    if ('showSaveFilePicker' in window) {
-                      const handle = await window.showSaveFilePicker({
-                        suggestedName: "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
-                        types: [{
-                          description: 'Word Document',
-                          accept: {
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
-                          }
-                        }]
-                      });
-                      const writable = await handle.createWritable();
-                      const response = await fetch(fileUrl);
-                      const blob = await response.blob();
-                      await writable.write(blob);
-                      await writable.close();
-                    } else {
-                      // Fallback for browsers that don't support File System Access API
-                      const downloadLink = document.createElement('a');
-                      downloadLink.href = fileUrl;
-                      downloadLink.download = "Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
-                      downloadLink.click();
-                    }
-                  } catch (err) {
-                    // If user cancels or there's an error, fall back to standard download
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = fileUrl;
-                    downloadLink.download = "Standard Operating Procedure_ Toothbrush Holder Assembly.docx";
-                    downloadLink.click();
-                  }
-                }}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 transition"
-              >
-                Download File
-              </button>
-            </div>
-          </div>
+          <DocExportSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : (
           <div className="text-gray-500 text-sm">Implementation details for this node type coming soon.</div>
         )}
@@ -665,8 +408,14 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         </div>
       </div>
       {/* Save button only shown for node types that use the general reducer */}
-      {!(node.type === "action" && node.data.label === "AI Transform") && 
-       !(node.type === "output" && node.data.type === "excel") && (
+      {!(node.type === "httpTrigger") &&
+       !(node.type === "httpResponse") &&
+       !(node.type === "aiOperator") &&
+       !(node.type === "trigger" && node.data.type === "event") &&
+       !(node.type === "action" && node.data.label === "AI Transform") && 
+       !(node.type === "output" && node.data.type === "excel") &&
+       !(node.type === "action" && node.data.type === "decision") &&
+       !(node.type === "output" && node.data.type === "doc") && (
         <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
           <Button
             className="pointer-events-auto px-8 py-2 rounded-xl shadow-lg font-semibold text-base"

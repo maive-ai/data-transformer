@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-05T17:31:10.546Z",
+    "updatedAt": "2025-06-05T17:40:20.201Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1013,7 +1013,7 @@
                 "type": "csv"
               }
             },
-            "outputTemplateUrl": "/templates/c88b24be-a7d0-4c0a-a4aa-cf6f39991544-bom-import-template.csv",
+            "outputTemplateUrl": "/templates/9dbb4056-9df5-4efd-bc96-accb018034f5-bom-import-template.csv",
             "outputTemplateName": "bom-import-template.csv",
             "runState": "done"
           },
@@ -1062,7 +1062,7 @@
           },
           "width": 88,
           "height": 86,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
             "x": 874.3727288794984,
             "y": 99.25149479708058
@@ -1104,7 +1104,7 @@
           },
           "width": 99,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 1138.2995568577444,
             "y": 100.92061888365939
@@ -1147,7 +1147,7 @@
           },
           "width": 112,
           "height": 86,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
             "x": 618.6513358406135,
             "y": 98.38550915824203

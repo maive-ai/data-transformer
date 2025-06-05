@@ -1,21 +1,20 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
 const STORAGE_FILE = path.join(process.cwd(), 'data', 'pipelines.json');
 
 // Ensure the data directory exists
-if (!fs.existsSync(path.join(process.cwd(), 'data'))) {
-  fs.mkdirSync(path.join(process.cwd(), 'data'));
-}
+const dataDir = path.join(process.cwd(), 'data');
+fs.mkdir(dataDir, { recursive: true }).catch(() => {});
 
 // Initialize storage file if it doesn't exist
-if (!fs.existsSync(STORAGE_FILE)) {
-  fs.writeFileSync(STORAGE_FILE, JSON.stringify({}));
-}
+fs.access(STORAGE_FILE).catch(async () => {
+  await fs.writeFile(STORAGE_FILE, JSON.stringify({}));
+});
 
-export function getPipelines() {
+export async function getPipelines() {
   try {
-    const data = fs.readFileSync(STORAGE_FILE, 'utf-8');
+    const data = await fs.readFile(STORAGE_FILE, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     console.error('Error reading pipelines:', error);
@@ -23,11 +22,11 @@ export function getPipelines() {
   }
 }
 
-export function savePipeline(id: string, pipeline: any) {
+export async function savePipeline(id: string, pipeline: any) {
   try {
-    const pipelines = getPipelines();
+    const pipelines = await getPipelines();
     pipelines[id] = pipeline;
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(pipelines, null, 2));
+    await fs.writeFile(STORAGE_FILE, JSON.stringify(pipelines, null, 2));
     return true;
   } catch (error) {
     console.error('Error saving pipeline:', error);
@@ -35,19 +34,19 @@ export function savePipeline(id: string, pipeline: any) {
   }
 }
 
-export function getPipeline(id: string) {
-  const pipelines = getPipelines();
+export async function getPipeline(id: string) {
+  const pipelines = await getPipelines();
   return pipelines[id];
 }
 
-export function deletePipeline(id: string) {
+export async function deletePipeline(id: string) {
   try {
-    const pipelines = getPipelines();
+    const pipelines = await getPipelines();
     delete pipelines[id];
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(pipelines, null, 2));
+    await fs.writeFile(STORAGE_FILE, JSON.stringify(pipelines, null, 2));
     return true;
   } catch (error) {
     console.error('Error deleting pipeline:', error);
     return false;
   }
-} 
+}

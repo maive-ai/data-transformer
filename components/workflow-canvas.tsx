@@ -27,11 +27,12 @@ import { WorkflowHttpTriggerNode } from './workflow-http-trigger-node';
 import { WorkflowHttpResponseNode } from './workflow-http-response-node';
 import { WorkflowAiOperatorNode } from './workflow-ai-operator-node';
 import { WorkflowLoopNode } from './workflow-loop-node';
-import { WorkflowErpLookupNode } from './workflow-erp-lookup-node';
+import { WorkflowErpNode } from './workflow-erp-node';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Upload, X } from "lucide-react";
-import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType } from "@/types/enums";
+import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType, ErpAction, IntegrationSubType } from "@/types/enums";
+import { WorkflowIntegrationNode } from './workflow-integration-node';
 
 // Add File System Access API type declarations
 declare global {
@@ -57,7 +58,8 @@ const nodeTypes = {
   httpResponse: WorkflowHttpResponseNode,
   aiOperator: WorkflowAiOperatorNode,
   loop: WorkflowLoopNode,
-  erpLookup: WorkflowErpLookupNode,
+  erpLookup: WorkflowErpNode,
+  integration: WorkflowIntegrationNode,
 };
 
 const edgeTypes = {
@@ -447,7 +449,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;
-      } else if (node.type === NodeType.ERP_LOOKUP) {
+      } else if (node.type === NodeType.ERP_LOOKUP || (node.type === NodeType.ACTION && node.data.label === 'ERP') || (node.type === NodeType.INTEGRATION && node.data.integrationType === IntegrationSubType.ERP)) {
         try {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           
@@ -456,6 +458,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const upstreamData = nodeData.get(upstreamId);
           if (!upstreamData?.file) throw new Error('No input file available');
           
+          // Get ERP configuration - handle both legacy and new integration node formats
+          const erpAction = node.data.erpAction || ErpAction.BOM_LOOKUP;
+          const useMockData = node.data.useMockData !== false;
+          const mockDistribution = node.data.mockDistribution || { directMatch: 80, substitution: 10, notFound: 10 };
+          
           // Read the input file
           const inputText = await upstreamData.file.text();
           const lines = inputText.split('\n').filter(line => line.trim());
@@ -463,61 +470,171 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           // Skip header line
           const dataLines = lines.slice(1);
           
-          // Process each line
+          // Process each line based on ERP action
           const processedLines = dataLines.map(line => {
             const parts = line.match(/\S+/g) || [];
-            const refDes = parts[0] || "";
-            const mpn = parts[1] || "";
-            const manufacturer = parts[2] || "";
-            const quantity = parts[3] || "";
-            const description = parts[4] || "";
-            const package_ = parts[5] || "";
-
-            // Mock ERP lookup
-            const rand = Math.random();
-            let status = "Direct Match";
-            let substitution = undefined;
             
-            if (rand < 0.8) {
-              status = "Direct Match";
-            } else if (rand < 0.9) {
-              status = "Substitution Found";
-              substitution = `${mpn}-ALT`;
-            } else {
-              status = "Not Found in ERP";
-            }
+            if (erpAction === ErpAction.BOM_LOOKUP) {
+              const refDes = parts[0] || "";
+              const mpn = parts[1] || "";
+              const manufacturer = parts[2] || "";
+              const quantity = parts[3] || "";
+              const description = parts[4] || "";
+              const package_ = parts[5] || "";
 
-            return {
-              mpn,
-              description,
-              manufacturer,
-              quantity,
-              refDes,
-              package: package_,
-              status,
-              substitution
-            };
+              let status = "Direct Match";
+              let substitution = undefined;
+
+              if (useMockData) {
+                // Use configured mock distribution
+                const rand = Math.random() * 100;
+                if (rand < mockDistribution.directMatch) {
+                  status = "Direct Match";
+                } else if (rand < mockDistribution.directMatch + mockDistribution.substitution) {
+                  status = "Substitution Found";
+                  substitution = `${mpn}-ALT`;
+                } else {
+                  status = "Not Found in ERP";
+                }
+              } else {
+                // Real ERP connection logic would go here
+                status = "Mock Data Disabled";
+              }
+
+              return {
+                mpn,
+                description,
+                manufacturer,
+                quantity,
+                refDes,
+                package: package_,
+                status,
+                substitution
+              };
+            } else {
+              // Handle other ERP actions
+              const baseData = {
+                partNumber: parts[0] || "",
+                description: parts[1] || "",
+                manufacturer: parts[2] || "",
+              };
+
+              let actionResult = {};
+              
+              if (useMockData) {
+                switch (erpAction) {
+                  case ErpAction.INVENTORY_CHECK:
+                    actionResult = {
+                      ...baseData,
+                      stockLevel: Math.floor(Math.random() * 1000),
+                      location: `Bin-${Math.floor(Math.random() * 100)}`,
+                      status: Math.random() > 0.2 ? 'In Stock' : 'Out of Stock'
+                    };
+                    break;
+                  case ErpAction.PRICE_LOOKUP:
+                    actionResult = {
+                      ...baseData,
+                      unitPrice: (Math.random() * 100 + 1).toFixed(2),
+                      currency: 'USD',
+                      priceBreaks: '1-99: $' + (Math.random() * 100 + 1).toFixed(2),
+                      status: 'Price Available'
+                    };
+                    break;
+                  case ErpAction.SUPPLIER_LOOKUP:
+                    actionResult = {
+                      ...baseData,
+                      supplier: `Supplier-${Math.floor(Math.random() * 10) + 1}`,
+                      contactEmail: `contact${Math.floor(Math.random() * 10)}@supplier.com`,
+                      leadTime: Math.floor(Math.random() * 30 + 1) + ' days',
+                      status: 'Supplier Found'
+                    };
+                    break;
+                  case ErpAction.LEAD_TIME_CHECK:
+                    actionResult = {
+                      ...baseData,
+                      leadTime: Math.floor(Math.random() * 30 + 1) + ' days',
+                      supplier: `Supplier-${Math.floor(Math.random() * 10) + 1}`,
+                      status: 'Lead Time Available'
+                    };
+                    break;
+                  case ErpAction.ALTERNATE_PARTS:
+                    actionResult = {
+                      ...baseData,
+                      alternates: `${baseData.partNumber}-ALT1, ${baseData.partNumber}-ALT2`,
+                      alternateCount: Math.floor(Math.random() * 5) + 1,
+                      status: 'Alternates Found'
+                    };
+                    break;
+                  case ErpAction.COMPLIANCE_CHECK:
+                    actionResult = {
+                      ...baseData,
+                      rohsCompliant: Math.random() > 0.1 ? 'Yes' : 'No',
+                      reachCompliant: Math.random() > 0.05 ? 'Yes' : 'No',
+                      status: 'Compliance Checked'
+                    };
+                    break;
+                  default:
+                    actionResult = {
+                      ...baseData,
+                      result: 'Mock response for ' + erpAction,
+                      status: 'Processed'
+                    };
+                }
+              } else {
+                actionResult = {
+                  ...baseData,
+                  status: 'Mock Data Disabled - Configure ERP Connection'
+                };
+              }
+
+              return actionResult;
+            }
           });
 
+          // Generate appropriate headers based on action type
+          let headers = [];
+          if (erpAction === ErpAction.BOM_LOOKUP) {
+            headers = ['Manufacturer Part Number', 'Description', 'Manufacturer', 'Quantity', 'Reference Designators', 'Package', 'Status', 'Substitution'];
+          } else if (erpAction === ErpAction.INVENTORY_CHECK) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Stock Level', 'Location', 'Status'];
+          } else if (erpAction === ErpAction.PRICE_LOOKUP) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Unit Price', 'Currency', 'Price Breaks', 'Status'];
+          } else if (erpAction === ErpAction.SUPPLIER_LOOKUP) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Supplier', 'Contact Email', 'Lead Time', 'Status'];
+          } else if (erpAction === ErpAction.LEAD_TIME_CHECK) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Lead Time', 'Supplier', 'Status'];
+          } else if (erpAction === ErpAction.ALTERNATE_PARTS) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Alternates', 'Alternate Count', 'Status'];
+          } else if (erpAction === ErpAction.COMPLIANCE_CHECK) {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'RoHS Compliant', 'REACH Compliant', 'Status'];
+          } else {
+            headers = ['Part Number', 'Description', 'Manufacturer', 'Result', 'Status'];
+          }
+
           // Convert to CSV
-          const headers = ['Manufacturer Part Number', 'Description', 'Manufacturer', 'Quantity', 'Reference Designators', 'Package', 'Status', 'Substitution'];
           const csvRows = [
             headers.join(','),
-            ...processedLines.map(line => [
-              line.mpn,
-              line.description,
-              line.manufacturer,
-              line.quantity,
-              line.refDes,
-              line.package,
-              line.status,
-              line.substitution || ''
-            ].join(','))
+            ...processedLines.map(line => {
+              if (erpAction === ErpAction.BOM_LOOKUP) {
+                return [
+                  (line as any).mpn,
+                  (line as any).description,
+                  (line as any).manufacturer,
+                  (line as any).quantity,
+                  (line as any).refDes,
+                  (line as any).package,
+                  (line as any).status,
+                  (line as any).substitution || ''
+                ].join(',');
+              } else {
+                return Object.values(line).join(',');
+              }
+            })
           ];
           const csvContent = csvRows.join('\n');
           
           // Create output file
-          const outputFile = new File([csvContent], 'erp-lookup-results.csv', { type: 'text/csv' });
+          const outputFile = new File([csvContent], `erp-${erpAction}-results.csv`, { type: 'text/csv' });
           
           // Update node state
           setNodes(nds => nds.map(n => n.id === nodeId ? {
@@ -544,7 +661,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             await runNode(downstreamId);
           }
         } catch (err) {
-          console.error('Error in ERP Lookup node:', err);
+          console.error('Error in ERP node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         return;

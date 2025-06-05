@@ -11,6 +11,8 @@ import { AiOperatorSidebar } from "./workflow-sidebar-ai-operator";
 import { EventTriggerSidebar } from "./workflow-sidebar-event-trigger";
 import { DecisionSidebar } from "./workflow-sidebar-decision";
 import { DocExportSidebar } from "./workflow-sidebar-doc-export";
+import { ErpSidebar } from "./workflow-sidebar-erp";
+import { IntegrationSidebar } from "./workflow-sidebar-integration";
 import { NodeType, TriggerSubType, OutputSubType, ActionSubType, FileType, NodeLabel } from "@/types/enums";
 
 
@@ -332,27 +334,27 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             </div>
           </div>
         )}
-        {node.type === "httpTrigger" ? (
+        {node.type === NodeType.HTTP_TRIGGER ? (
           <HttpTriggerSidebar 
             node={node} 
             onChange={onChange}
           />
-        ) : node.type === "httpResponse" ? (
+        ) : node.type === NodeType.HTTP_RESPONSE ? (
           <HttpResponseSidebar 
             node={node} 
             onChange={onChange}
           />
-        ) : node.type === "aiOperator" ? (
+        ) : node.type === NodeType.AI_OPERATOR ? (
           <AiOperatorSidebar 
             node={node} 
             onChange={onChange}
           />
-        ) : node.type === "trigger" && node.data.type === "event" ? (
+        ) : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.EVENT ? (
           <EventTriggerSidebar 
             node={node} 
             onChange={onChange}
           />
-        ) : node.type === "trigger" && node.data.type === "manual" ? (
+        ) : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL ? (
           <>
             {/* Only show run history and other relevant sections for manual trigger node */}
             <input
@@ -362,24 +364,34 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               onChange={handleFileUpload}
             />
           </>
-        ) : (node.type === "action" && node.data.type === "decision") ? (
+        ) : (node.type === NodeType.ACTION && node.data.type === ActionSubType.DECISION) ? (
           <DecisionSidebar 
             node={node} 
             onChange={onChange}
           />
-        ) : node.type === "action" && node.data.label === "AI Transform" ? (
+        ) : (node.type === NodeType.ACTION && node.data.label === NodeLabel.ERP) ? (
+          <ErpSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.INTEGRATION ? (
+          <IntegrationSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM ? (
           <AiTransformSidebar 
             node={node} 
             onChange={onChange}
           />
-        ) : node.type === "output" && node.data.type === "excel" ? (
+        ) : node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL ? (
           <ExcelExportSidebar 
             node={node} 
             onChange={onChange}
             edges={edges}
             nodes={nodes}
           />
-        ) : node.type === "output" && node.data.type === "doc" ? (
+        ) : node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC ? (
           <DocExportSidebar 
             node={node} 
             onChange={onChange}
@@ -409,14 +421,16 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         </div>
       </div>
       {/* Save button only shown for node types that use the general reducer */}
-      {!(node.type === "httpTrigger") &&
-       !(node.type === "httpResponse") &&
-       !(node.type === "aiOperator") &&
-       !(node.type === "trigger" && node.data.type === "event") &&
-       !(node.type === "action" && node.data.label === "AI Transform") && 
-       !(node.type === "output" && node.data.type === "excel") &&
-       !(node.type === "action" && node.data.type === "decision") &&
-       !(node.type === "output" && node.data.type === "doc") && (
+      {!(node.type === NodeType.HTTP_TRIGGER) &&
+       !(node.type === NodeType.HTTP_RESPONSE) &&
+       !(node.type === NodeType.AI_OPERATOR) &&
+       !(node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.EVENT) &&
+       !(node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM) && 
+       !(node.type === NodeType.ACTION && node.data.label === NodeLabel.ERP) &&
+       !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) &&
+       !(node.type === NodeType.ACTION && node.data.type === ActionSubType.DECISION) &&
+       !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC) &&
+       !(node.type === NodeType.INTEGRATION) && (
         <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
           <Button
             className="pointer-events-auto px-8 py-2 rounded-xl shadow-lg font-semibold text-base"

@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-05T05:08:24.004Z",
+    "updatedAt": "2025-06-05T17:31:10.546Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -983,7 +983,7 @@
           },
           "width": 192,
           "height": 88,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": -70.5,
             "y": 98.5
@@ -1035,11 +1035,12 @@
           },
           "data": {
             "label": "Loop",
-            "type": "action"
+            "type": "action",
+            "runState": "error"
           },
           "width": 65,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 439.57454757657456,
             "y": 99.42831717539326
@@ -1056,11 +1057,12 @@
           "data": {
             "label": "Decision",
             "iconType": "decision",
-            "type": "action"
+            "type": "action",
+            "runState": "idle"
           },
           "width": 88,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 874.3727288794984,
             "y": 99.25149479708058
@@ -1076,7 +1078,8 @@
           },
           "data": {
             "label": "ERP Write",
-            "type": "erp"
+            "type": "erp",
+            "runState": "idle"
           },
           "width": 99,
           "height": 86,
@@ -1091,19 +1094,20 @@
           "id": "output-1749084507344",
           "type": "output",
           "position": {
-            "x": 1140.9526818026309,
-            "y": 100.03624390203055
+            "x": 1138.2995568577444,
+            "y": 100.92061888365939
           },
           "data": {
             "label": "ERP Write",
-            "type": "erp"
+            "type": "erp",
+            "runState": "idle"
           },
           "width": 99,
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 1140.9526818026309,
-            "y": 100.03624390203055
+            "x": 1138.2995568577444,
+            "y": 100.92061888365939
           },
           "dragging": false
         },
@@ -1116,7 +1120,8 @@
           },
           "data": {
             "label": "ERP Write",
-            "type": "erp"
+            "type": "erp",
+            "runState": "idle"
           },
           "width": 99,
           "height": 86,
@@ -1137,11 +1142,12 @@
           "data": {
             "label": "ERP Lookup",
             "iconType": "erp",
-            "type": "action"
+            "type": "action",
+            "runState": "idle"
           },
           "width": 112,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 618.6513358406135,
             "y": 98.38550915824203

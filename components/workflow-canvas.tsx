@@ -575,6 +575,42 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
         }
         return;
+      } else if (node.type === 'loop') {
+        try {
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
+
+          // Get input file from upstream node
+          const upstreamId = getUpstream(nodeId)[0];
+          const upstreamData = nodeData.get(upstreamId);
+          if (!upstreamData?.file) throw new Error('No input file available');
+
+          // Read the input file
+          const inputText = await upstreamData.file.text();
+          const lines = inputText.split('\n').filter(line => line.trim());
+          if (lines.length < 2) throw new Error('CSV must have at least one data row');
+          const header = lines[0];
+          const dataLines = lines.slice(1);
+
+          // For each data line, create a new CSV file and run downstream nodes
+          for (let i = 0; i < dataLines.length; i++) {
+            const csvContent = `${header}\n${dataLines[i]}`;
+            const rowFile = new File([csvContent], `row_${i + 1}.csv`, { type: 'text/csv' });
+            // For each downstream node, run it with this row file
+            for (const downstreamId of getDownstream(nodeId)) {
+              // Store the row file as the input for the downstream node
+              nodeData.set(nodeId + '_row_' + i, { file: rowFile });
+              // Run the downstream node, passing a special upstream context
+              await runNodeWithInput(downstreamId, rowFile, nodeId + '_row_' + i);
+            }
+          }
+
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'done' } } : n));
+          completedRef.current.add(nodeId);
+        } catch (err) {
+          console.error('Error in Loop node:', err);
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'error' } } : n));
+        }
+        return;
       } else {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: 'running' } } : n));
         try {
@@ -681,6 +717,18 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         });
       }
     };
+
+    // Helper function to run a node with a specific input file and context key
+    async function runNodeWithInput(nodeId: string, file: File, contextKey: string) {
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node || completedRef.current.has(contextKey)) return;
+      // Store the file in nodeData with the context key
+      nodeData.set(contextKey, { file });
+      // Mark as completed for this context
+      completedRef.current.add(contextKey);
+      // Run the node as usual (could be extended for more context-aware logic)
+      await runNode(nodeId);
+    }
 
     // Sequentially prompt for file upload roots in y order, but do not await downstreams
     for (let i = 0; i < fileUploadRoots.length; i++) {

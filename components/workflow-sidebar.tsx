@@ -3,6 +3,8 @@
 import { X, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useMemo, useRef, useReducer } from "react";
+import { AiTransformSidebar } from "./workflow-sidebar-ai-transform";
+import { ExcelExportSidebar } from "./workflow-sidebar-excel-export";
 
 const INTEGRATIONS = [
   { name: "Gmail", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png" alt="Gmail" className="w-7 h-7" /> },
@@ -30,7 +32,7 @@ type NodeState = {
   method: string;
   statusCode: number;
   contentType: string;
-  aiPrompt: string;
+
   decisionConditions: Array<{
     condition: string;
     outputPath: string;
@@ -61,7 +63,7 @@ const initialState: NodeState = {
   method: "POST",
   statusCode: 200,
   contentType: "application/json",
-  aiPrompt: "",
+
   decisionConditions: [],
   defaultOutputPath: "",
 };
@@ -93,6 +95,8 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
   const [showInfoModal, setShowInfoModal] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Node-specific sidebar components will handle their own state
+
   // Update state when node changes
   useEffect(() => {
     dispatch({
@@ -113,7 +117,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         method: node.data.method || "POST",
         statusCode: node.data.statusCode || 200,
         contentType: node.data.contentType || "application/json",
-        aiPrompt: node.data.prompt || "",
+
         decisionConditions: node.data.decisionConditions || [],
         defaultOutputPath: node.data.defaultOutputPath || "",
       }
@@ -249,7 +253,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
     } else if (node.type === "httpResponse") {
       await onChange(node.id, { statusCode: state.statusCode, contentType: state.contentType });
     } else if (node.type === "aiOperator") {
-      await onChange(node.id, { prompt: state.aiPrompt });
+      await onChange(node.id, { prompt: state.prompt });
     } else if (node.type === "trigger" && node.data.type === "event") {
       await onChange(node.id, { integration: state.integration, description: state.description });
     } else if (node.type === "trigger" && node.data.type === "manual") {
@@ -269,6 +273,9 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           outputType: { type: "decision" }
         }
       });
+    } else if (node.type === "action" && node.data.label === "AI Transform") {
+      // AI Transform node handles its own save logic
+      return;
     } else if (node.type === "action") {
       if (state.inputTypes[0] === "mp4") {
         await onChange(node.id, { 
@@ -291,14 +298,8 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         });
       }
     } else if (node.type === "output" && node.data.type === "excel") {
-      await onChange(node.id, {
-        fileName: state.fileName,
-        sheetNames: state.sheetNames,
-        ioConfig: {
-          inputTypes: [{ type: "csv" }],
-          outputType: { type: "excel" }
-        }
-      });
+      // Excel Export node handles its own save logic
+      return;
     } else if (node.type === "output" && node.data.type === "doc") {
       await onChange(node.id, {
         fileName: "Standard Operating Procedure_ Toothbrush Holder Assembly.docx",
@@ -456,8 +457,8 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               <textarea
                 className="w-full min-h-[120px] border rounded-lg p-2 text-sm"
                 placeholder="Describe what the AI should do on the GUI..."
-                value={state.aiPrompt}
-                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { aiPrompt: e.target.value } })}
+                value={state.prompt}
+                onChange={(e) => dispatch({ type: 'UPDATE_NODE', payload: { prompt: e.target.value } })}
               />
             </div>
             {node.data.runState === "running" && (
@@ -511,6 +512,18 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               onChange={handleFileUpload}
             />
           </>
+        ) : node.type === "action" && node.data.label === "AI Transform" ? (
+          <AiTransformSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === "output" && node.data.type === "excel" ? (
+          <ExcelExportSidebar 
+            node={node} 
+            onChange={onChange}
+            edges={edges}
+            nodes={nodes}
+          />
         ) : node.type === "action" && node.data.type === "decision" ? (
           <div className="space-y-6">
             {/* Decision Conditions Section */}
@@ -573,88 +586,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               <p className="text-xs text-gray-500 mt-1">This path will be used when no conditions are met</p>
             </div>
           </div>
-        ) : node.type === "output" && node.data.type === "excel" ? (
-          <div className="space-y-6">
-            <div>
-              <div className="font-medium mb-2">Output File Name</div>
-              <input
-                type="text"
-                className="w-full border rounded-lg p-2 text-sm"
-                placeholder="output.xlsx"
-                value={state.fileName}
-                onChange={handleFileNameChange}
-              />
-              <p className="text-xs text-gray-500 mt-1">Enter the name for your Excel file (e.g., report.xlsx)</p>
-            </div>
-            {/* Sheet name configuration for Excel Export node */}
-            {node.type === 'output' && node.data.type === 'excel' && (
-              <div className="mt-4">
-                <div className="font-medium mb-2">Sheet Names</div>
-                <div className="space-y-2">
-                  {state.sheetNames.map((name, idx) => (
-                    <input
-                      key={idx}
-                      type="text"
-                      className="w-full border rounded-lg p-2 text-sm"
-                      value={name}
-                      onChange={(e) => {
-                        const newNames = [...state.sheetNames];
-                        newNames[idx] = e.target.value;
-                        dispatch({ type: 'UPDATE_NODE', payload: { sheetNames: newNames } });
-                      }}
-                      placeholder={`Sheet${idx + 1}`}
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">You can customize the name of each sheet in the final Excel file. The number of sheets matches the number of inbound CSV files.</p>
-              </div>
-            )}
-            {/* Download section for Excel output node after run */}
-            {runHistory.length > 0 && node.data.fileUrl && (
-              <div className="flex flex-col items-start gap-2 p-4 border rounded-lg bg-green-50">
-                <div className="font-medium text-sm">Download Output</div>
-                <div className="text-xs text-gray-700 mb-2">{state.fileName || "output.xlsx"}</div>
-                <button
-                  onClick={async () => {
-                    try {
-                      // Try to use the File System Access API if available
-                      if ('showSaveFilePicker' in window) {
-                        const handle = await window.showSaveFilePicker({
-                          suggestedName: state.fileName || 'output.xlsx',
-                          types: [{
-                            description: 'Excel Spreadsheet',
-                            accept: {
-                              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
-                            }
-                          }]
-                        });
-                        const writable = await handle.createWritable();
-                        const response = await fetch(node.data.fileUrl);
-                        const blob = await response.blob();
-                        await writable.write(blob);
-                        await writable.close();
-                      } else {
-                        // Fallback for browsers that don't support File System Access API
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = node.data.fileUrl;
-                        downloadLink.download = state.fileName || 'output.xlsx';
-                        downloadLink.click();
-                      }
-                    } catch (err) {
-                      // If user cancels or there's an error, fall back to standard download
-                      const downloadLink = document.createElement('a');
-                      downloadLink.href = node.data.fileUrl;
-                      downloadLink.download = state.fileName || 'output.xlsx';
-                      downloadLink.click();
-                    }
-                  }}
-                  className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold shadow hover:bg-green-700 transition"
-                >
-                  Download File
-                </button>
-              </div>
-            )}
-          </div>
+
         ) : node.type === "output" && node.data.type === "doc" ? (
           <div className="space-y-6">
             <div>
@@ -732,15 +664,19 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           )}
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
-        <Button
-          className="pointer-events-auto px-8 py-2 rounded-xl shadow-lg font-semibold text-base"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          {saving ? "Saving..." : "Save"}
-        </Button>
-      </div>
+      {/* Save button only shown for node types that use the general reducer */}
+      {!(node.type === "action" && node.data.label === "AI Transform") && 
+       !(node.type === "output" && node.data.type === "excel") && (
+        <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
+          <Button
+            className="pointer-events-auto px-8 py-2 rounded-xl shadow-lg font-semibold text-base"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 } 

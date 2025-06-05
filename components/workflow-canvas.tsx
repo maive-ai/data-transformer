@@ -335,6 +335,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return;
       }
       if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL) {
+        // Set node to PROMPT (waiting for upload)
         setNodes(nds => nds.map(n =>
           n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL
             ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.PROMPT : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
@@ -342,6 +343,53 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         ));
         setCurrentUploadNode(nodeId);
         setShowFileUpload(true);
+
+        // Wait for file upload to complete
+        const uploadedFiles = await new Promise<File[]>((resolve) => {
+          fileUploadResolver.current = resolve;
+        });
+
+        // Clean up modal immediately after upload
+        setShowFileUpload(false);
+        setCurrentUploadNode(null);
+
+        // Process the uploaded files
+        if (uploadedFiles && uploadedFiles.length > 0) {
+          const file = uploadedFiles[0]; // Take first file for now
+          nodeData.set(nodeId, { file });
+
+          // Set node to RUNNING while processing
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: RunState.RUNNING,
+              file,
+              uploadedFileNames: uploadedFiles.map(f => f.name),
+            }
+          } : n));
+
+          // Now mark as DONE
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: RunState.DONE,
+            }
+          } : n));
+
+          // Mark as completed and trigger downstream nodes
+          completedRef.current.add(nodeId);
+          for (const downstreamId of getDownstream(nodeId)) {
+            await runNode(downstreamId);
+          }
+        } else {
+          // Handle case where no files were uploaded
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: { ...n.data, runState: RunState.ERROR }
+          } : n));
+        }
         return;
       } else if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));

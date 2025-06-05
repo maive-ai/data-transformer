@@ -954,42 +954,11 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-05T20:55:08.790Z",
+    "updatedAt": "2025-06-05T22:16:19.258Z",
     "steps": [],
     "runs": [],
     "workflow": {
       "nodes": [
-        {
-          "id": "trigger-1748919226147",
-          "type": "trigger",
-          "position": {
-            "x": -70.5,
-            "y": 98.5
-          },
-          "data": {
-            "label": "Manual Upload",
-            "type": "manual",
-            "runState": "done",
-            "uploadedFileName": "",
-            "ioConfig": {
-              "inputTypes": [],
-              "outputType": {
-                "type": "csv"
-              }
-            },
-            "uploadedFileNames": [
-              "space-delimited-bom.txt"
-            ]
-          },
-          "width": 135,
-          "height": 88,
-          "selected": false,
-          "positionAbsolute": {
-            "x": -70.5,
-            "y": 98.5
-          },
-          "dragging": false
-        },
         {
           "id": "action-1748919230696",
           "type": "action",
@@ -1038,7 +1007,8 @@
             "type": "integration",
             "integrationType": "erp",
             "erpAction": "bom-lookup",
-            "direction": "both"
+            "direction": "both",
+            "runState": "idle"
           },
           "width": 104,
           "height": 134,
@@ -1077,7 +1047,8 @@
               "outputType": {
                 "type": "csv"
               }
-            }
+            },
+            "runState": "idle"
           },
           "width": 125,
           "height": 134,
@@ -1097,7 +1068,8 @@
           },
           "data": {
             "label": "CSV Append",
-            "type": "action"
+            "type": "action",
+            "runState": "idle"
           },
           "width": 117,
           "height": 86,
@@ -1117,7 +1089,8 @@
           },
           "data": {
             "label": "Loop",
-            "type": "action"
+            "type": "action",
+            "runState": "idle"
           },
           "width": 67,
           "height": 86,
@@ -1127,16 +1100,34 @@
             "y": 97.9044819960802
           },
           "dragging": false
+        },
+        {
+          "id": "trigger-1749161575123",
+          "type": "trigger",
+          "position": {
+            "x": -1.2412456513016537,
+            "y": 97.57021010436875
+          },
+          "data": {
+            "label": "Manual Upload",
+            "type": "manual",
+            "runState": "done",
+            "file": {},
+            "uploadedFileNames": [
+              "space-delimited-bom.txt"
+            ]
+          },
+          "width": 135,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": -1.2412456513016537,
+            "y": 97.57021010436875
+          },
+          "dragging": false
         }
       ],
       "edges": [
-        {
-          "source": "trigger-1748919226147",
-          "sourceHandle": null,
-          "target": "action-1748919230696",
-          "targetHandle": null,
-          "id": "reactflow__edge-trigger-1748919226147-action-1748919230696"
-        },
         {
           "type": "step",
           "style": {
@@ -1184,6 +1175,30 @@
           "target": "integration-1749147713399",
           "targetHandle": null,
           "id": "loop-1749153936964-integration-1749147713399"
+        },
+        {
+          "type": "feedback",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749153925654",
+          "sourceHandle": "bottom",
+          "target": "loop-1749153936964",
+          "targetHandle": "bottom",
+          "id": "action-1749153925654-loop-1749153936964"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "trigger-1749161575123",
+          "sourceHandle": null,
+          "target": "action-1748919230696",
+          "targetHandle": null,
+          "id": "trigger-1749161575123-action-1748919230696"
         }
       ]
     }

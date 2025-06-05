@@ -1,7 +1,8 @@
 import { Node, Edge } from "reactflow";
+import { FileType, PipelineRunStatus } from "./enums";
 
 export interface NodeIOType {
-  type: string;  // e.g., "csv", "json", "excel"
+  type: FileType;  // Now using enum instead of string
   schema?: Record<string, any>;  // Optional schema for validation
   description?: string;
 }
@@ -30,7 +31,7 @@ export interface PipelineRun {
   id: string
   pipelineId: string
   timestamp: string
-  status: "success" | "error" | "running"
+  status: PipelineRunStatus  // Now using enum instead of union type
   inputFile?: string
   outputFile?: string
   error?: string

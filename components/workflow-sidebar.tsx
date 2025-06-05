@@ -11,6 +11,7 @@ import { AiOperatorSidebar } from "./workflow-sidebar-ai-operator";
 import { EventTriggerSidebar } from "./workflow-sidebar-event-trigger";
 import { DecisionSidebar } from "./workflow-sidebar-decision";
 import { DocExportSidebar } from "./workflow-sidebar-doc-export";
+import { NodeType, TriggerSubType, OutputSubType, ActionSubType, FileType, NodeLabel } from "@/types/enums";
 
 
 
@@ -131,7 +132,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   // Ensure inputTypes array matches number of input connections
   useEffect(() => {
-    if (node.type === "action") {
+    if (node.type === NodeType.ACTION) {
       const currentTypes = [...state.inputTypes];
       while (currentTypes.length < inputConnections) {
         currentTypes.push("");
@@ -145,12 +146,12 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   // For Excel Export node: compute inbound CSV count based on actual edges
   const inboundCsvCount = useMemo(() => {
-    if (node.type !== 'output' || node.data.type !== 'excel') return 0;
+    if (node.type !== NodeType.OUTPUT || node.data.type !== OutputSubType.EXCEL) return 0;
     const inboundEdges = edges.filter(e => e.target === node.id);
     let count = 0;
     for (const edge of inboundEdges) {
       const sourceNode = nodes.find(n => n.id === edge.source);
-      if (sourceNode && sourceNode.data?.ioConfig?.outputType?.type === 'csv') {
+      if (sourceNode && sourceNode.data?.ioConfig?.outputType?.type === FileType.CSV) {
         count++;
       }
     }
@@ -159,7 +160,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   // Ensure sheetNames array matches inboundCsvCount
   useEffect(() => {
-    if (node.type === 'output' && node.data.type === 'excel') {
+    if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
       let names = state.sheetNames.slice();
       while (names.length < inboundCsvCount) names.push(`Sheet${names.length + 1}`);
       if (names.length > inboundCsvCount) names = names.slice(0, inboundCsvCount);
@@ -241,25 +242,25 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
   const handleSave = async () => {
     setSaving(true);
-    if (node.type === "trigger" && node.data.type === "manual") {
+    if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL) {
       await onChange(node.id, { 
         uploadedFileName: state.uploadedFileName,
         ioConfig: {
           inputTypes: [],
-          outputType: { type: uploadedFile?.name.split('.')?.pop()?.toLowerCase() || "csv" }
+          outputType: { type: uploadedFile?.name.split('.')?.pop()?.toLowerCase() || FileType.CSV }
         }
       });
-    } else if (node.type === "action" && node.data.label === "AI Transform") {
+    } else if (node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM) {
       // AI Transform node handles its own save logic
       return;
-    } else if (node.type === "action") {
-      if (state.inputTypes[0] === "mp4") {
+    } else if (node.type === NodeType.ACTION) {
+      if (state.inputTypes[0] === FileType.MP4) {
         await onChange(node.id, { 
           prompt: state.prompt,
           outputFileName: "P-650-WTH-BKM.json",
           ioConfig: {
-            inputTypes: [{ type: "mp4" }],
-            outputType: { type: "json" }
+            inputTypes: [{ type: FileType.MP4 }],
+            outputType: { type: FileType.JSON }
           }
         });
       } else {
@@ -273,7 +274,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           }
         });
       }
-    } else if (node.type === "output" && node.data.type === "excel") {
+    } else if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
       // Excel Export node handles its own save logic
       return;
     }

@@ -131,20 +131,6 @@ export function DashboardSidebar() {
         </div>
         <ScrollArea className="h-[calc(100vh-4rem)] py-6" data-oid="0l.n27i">
           <div className="px-4" data-oid="qp1kobx">
-            <div className="mb-6" data-oid="c9yvzi9">
-              <Link href="/dashboard/pipelines/new" data-oid="v.-1gu:">
-                <Button 
-                  className={cn(
-                    "w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium",
-                    collapsed && "justify-center px-2"
-                  )}
-                  data-oid="ux58-jr"
-                >
-                  <PlusCircle className="h-4 w-4" data-oid="8uibz_a" />
-                  {!collapsed && 'New Pipeline'}
-                </Button>
-              </Link>
-            </div>
             <div className="space-y-6" data-oid="rb293g9">
               <nav className="flex flex-col space-y-1" data-oid=".a1jnvk">
                 {mainLinks.map((link) => (
@@ -152,14 +138,15 @@ export function DashboardSidebar() {
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                      "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
                       pathname === link.href ||
                         (link.href !== "/dashboard" &&
                           pathname.startsWith(link.href))
-                        ? "bg-accent text-accent-foreground shadow-sm"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                        ? "bg-black/5 text-foreground rounded-md"
+                        : "text-sidebar-foreground hover:bg-black/5 hover:text-foreground rounded-md",
                       collapsed && 'justify-center px-2'
                     )}
+                    style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}
                     data-oid="wfdp29x"
                   >
                     {link.icon}
@@ -170,10 +157,10 @@ export function DashboardSidebar() {
                   <button
                     key={link.title}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-150",
+                      "flex items-center gap-3 px-3 py-2 text-sm font-medium w-full text-sidebar-foreground hover:bg-black/5 hover:text-foreground rounded-md transition-colors",
                       collapsed && 'justify-center px-2'
                     )}
-                    style={{ outline: 'none', border: 'none', background: 'none' }}
+                    style={{ outline: 'none', border: 'none', background: 'transparent' }}
                     tabIndex={0}
                     type="button"
                     onClick={() => setIsSettingsOpen(true)}

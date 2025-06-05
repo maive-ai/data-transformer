@@ -4,7 +4,7 @@
     "name": "Vial Wash data to Excel",
     "description": "",
     "createdAt": "2025-05-24T00:37:32.757Z",
-    "updatedAt": "2025-05-30T18:39:21.516Z",
+    "updatedAt": "2025-06-05T20:55:02.141Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-05T20:44:45.147Z",
+    "updatedAt": "2025-06-05T20:55:08.790Z",
     "steps": [],
     "runs": [],
     "workflow": {

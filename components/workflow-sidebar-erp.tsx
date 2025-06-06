@@ -125,6 +125,14 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
         </div>
       )}
 
+      {/* CSV Preview for BOM Generation */}
+      {erpAction === ErpAction.BOM_GENERATION && node.data && (node.data.file || (node.data.files && node.data.files[0])) && (
+        <div className="border rounded-lg p-3 bg-gray-50">
+          <div className="font-medium mb-2">Upstream CSV Preview</div>
+          <CsvPreview file={node.data.file || (node.data.files && node.data.files[0])} />
+        </div>
+      )}
+
       {/* Save Button */}
       <button
         onClick={handleSave}
@@ -132,6 +140,40 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
       >
         Save Configuration
       </button>
+    </div>
+  );
+}
+
+// Helper component to preview a CSV file as a table
+function CsvPreview({ file }: { file: File }) {
+  const [rows, setRows] = useState<string[][]>([]);
+  useEffect(() => {
+    if (!file) return;
+    file.text().then(text => {
+      const lines = text.split('\n').filter(Boolean);
+      const parsed = lines.map(line => line.split(','));
+      setRows(parsed.slice(0, 11)); // header + 10 rows
+    });
+  }, [file]);
+  if (!file) return null;
+  if (rows.length === 0) return <div className="text-xs text-gray-400">Loading preview...</div>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="text-xs border w-full">
+        <thead>
+          <tr>
+            {rows[0]?.map((cell, i) => <th key={i} className="border px-2 py-1 bg-gray-100">{cell}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(1).map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => <td key={j} className="border px-2 py-1">{cell}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {rows.length === 11 && <div className="text-xs text-gray-400 mt-1">Showing first 10 rows</div>}
     </div>
   );
 } 

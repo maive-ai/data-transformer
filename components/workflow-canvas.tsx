@@ -574,7 +574,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const newRows = dataLines.map((row, idx) => row + `,Status: ${statusCount}/${totalRows}`);
           const csvContent = [newHeader, ...newRows].join('\n');
           const outputFile = new File([csvContent], `erp-bom-lookup.csv`, { type: 'text/csv' });
-          nodeData.set(nodeId, { file: outputFile });
+          nodeData.set(nodeId, { file: outputFile, files: [outputFile] });
 
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE, file: outputFile } } : n));
           completedRef.current.add(nodeId);
@@ -635,9 +635,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             return n;
           }));
 
-          nodeData.set(nodeId, { file: upstreamData.file });
-          nodeData.set(erpNodeId, { file: erpOutputFile });
-          nodeData.set(csvAppendNodeId, { file: csvAppendOutputFile });
+          nodeData.set(nodeId, { file: upstreamData.file, files: [upstreamData.file] });
+          nodeData.set(erpNodeId, { file: erpOutputFile, files: [erpOutputFile] });
+          nodeData.set(csvAppendNodeId, { file: csvAppendOutputFile, files: [csvAppendOutputFile] });
           completedRef.current.add(nodeId);
           completedRef.current.add(erpNodeId);
           completedRef.current.add(csvAppendNodeId);
@@ -667,7 +667,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const upstreamId = getUpstream(nodeId)[0];
           const upstreamData = nodeData.get(upstreamId);
           if (!upstreamData?.file) throw new Error('No input file available');
-          nodeData.set(nodeId, { file: upstreamData.file });
+          nodeData.set(nodeId, { file: upstreamData.file, files: [upstreamData.file] });
 
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE, file: upstreamData.file } } : n));
           completedRef.current.add(nodeId);
@@ -762,7 +762,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
             // Always pass only the first CSV file as 'file' (not 'files')
             if (csvFiles.length > 0) {
-              nodeData.set(nodeId, { file: csvFiles[0] });
+              nodeData.set(nodeId, { file: csvFiles[0], files: csvFiles });
             } else {
               nodeData.set(nodeId, {});
             }

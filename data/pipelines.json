@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-06T18:55:46.114Z",
+    "updatedAt": "2025-06-06T18:58:33.178Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1021,8 +1021,8 @@
               }
             }
           },
-          "width": 106,
-          "height": 136,
+          "width": 104,
+          "height": 134,
           "selected": false,
           "positionAbsolute": {
             "x": 617.4090851452934,
@@ -1062,8 +1062,8 @@
             "runState": "done",
             "file": {}
           },
-          "width": 127,
-          "height": 136,
+          "width": 125,
+          "height": 134,
           "selected": true,
           "positionAbsolute": {
             "x": 1093.6380047820046,
@@ -1087,8 +1087,8 @@
               "completed_bom.csv"
             ]
           },
-          "width": 135,
-          "height": 88,
+          "width": 133,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
             "x": 92.12216169947129,
@@ -1109,8 +1109,8 @@
             "runState": "done",
             "file": {}
           },
-          "width": 69,
-          "height": 88,
+          "width": 67,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
             "x": 372.9951852993164,
@@ -1145,8 +1145,8 @@
             "runState": "done",
             "file": {}
           },
-          "width": 119,
-          "height": 88,
+          "width": 118,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
             "x": 823.3669064671232,

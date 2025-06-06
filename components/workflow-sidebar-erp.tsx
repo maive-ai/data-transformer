@@ -156,10 +156,7 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
           <Dialog open={showCsvModal} onOpenChange={setShowCsvModal}>
             <DialogContent className="max-w-4xl w-full h-[80vh] flex flex-col">
               <div className="flex items-center justify-between mb-2">
-                <div className="font-semibold text-lg">Full CSV Preview</div>
-                <button onClick={() => setShowCsvModal(false)} className="p-1 text-gray-500 hover:text-gray-800 rounded" title="Close">
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="font-semibold text-lg">Data Added to ERP</div>
               </div>
               <div className="flex-1 overflow-auto">
                 <CsvPreview file={hardcodedCsvFile} full />

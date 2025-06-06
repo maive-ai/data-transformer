@@ -131,6 +131,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const completedRef = useRef(new Set<string>());
   // Add a ref to store the resolver for the file upload promise
   const fileUploadResolver = useRef<((files: File[]) => void) | null>(null);
+  // Dedicated accumulator for CSV template mode
+  const csvTemplateAccumulators: Map<string, { csv: string }> = new Map();
 
   // Update local name when prop changes
   useEffect(() => {
@@ -408,23 +410,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
           if (!inputFiles.length) throw new Error('No input files available');
 
-          // Log each input CSV as a trace
-          for (let i = 0; i < inputFiles.length; i++) {
-            const file = inputFiles[i];
-            if (file.type === MimeType.TEXT_CSV) {
-              const labelSlug = slugify(node.data.label || nodeId);
-              const timestamp = getReadableTimestamp();
-              const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-              const ext = file.name.split('.').pop() || 'csv';
-              const traceName = `${labelSlug}-input-${timestamp}-${i + 1}-${uuid}.${ext}`;
-              const inputFormData = new FormData();
-              inputFormData.append('nodeId', nodeId);
-              inputFormData.append('type', 'input');
-              inputFormData.append('file', file, traceName);
-              await fetch('/api/trace', { method: 'POST', body: inputFormData });
-            }
-          }
-
           // Merge all input CSVs into a single multi-sheet XLSX file
           const wb = XLSX.utils.book_new();
           let sheetCount = 1;
@@ -476,30 +461,21 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             },
           } : n));
 
-          // Log trace for the single merged Excel file
-          const labelSlug = slugify(node.data.label || nodeId);
-          const timestamp = getReadableTimestamp();
-          const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-          const traceName = `${labelSlug}-output-${timestamp}-1-${uuid}.xlsx`;
-          const outputFormData = new FormData();
-          outputFormData.append('nodeId', nodeId);
-          outputFormData.append('type', 'output');
-          outputFormData.append('file', mergedExcelFile, traceName);
-          await fetch('/api/trace', { method: 'POST', body: outputFormData });
-
-          // Log the conversion in run history
-          setNodeRunHistory(history => {
-            const entry = {
-              timestamp: new Date().toISOString(),
-              status: RunState.DONE,
-              inputFile: inputFiles.map(f => f.name).join(','),
-              outputFile: mergedExcelFile.name,
-            };
-            return {
-              ...history,
-              [nodeId]: [...(history[nodeId] || []), entry],
-            };
-          });
+          // Log output trace for ERP node
+          try {
+            const labelSlug = slugify(node.data.label || nodeId);
+            const timestamp = getReadableTimestamp();
+            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+            const ext = mergedExcelFile.name.split('.').pop() || 'csv';
+            const traceName = `${labelSlug}-output-${timestamp}-${uuid}.${ext}`;
+            const outputFormData = new FormData();
+            outputFormData.append('nodeId', nodeId);
+            outputFormData.append('type', 'output');
+            outputFormData.append('file', mergedExcelFile, traceName);
+            await fetch('/api/trace', { method: 'POST', body: outputFormData });
+          } catch (traceErr) {
+            console.error('Trace logging error (ERP node):', traceErr);
+          }
 
         } catch (error) {
           console.error(`Error running Excel export node ${nodeId}:`, error);
@@ -752,6 +728,22 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           // Store the output file
           nodeData.set(nodeId, { file: outputFile });
           
+          // Log output trace for ERP node
+          try {
+            const labelSlug = slugify(node.data.label || nodeId);
+            const timestamp = getReadableTimestamp();
+            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+            const ext = outputFile.name.split('.').pop() || 'csv';
+            const traceName = `${labelSlug}-output-${timestamp}-${uuid}.${ext}`;
+            const outputFormData = new FormData();
+            outputFormData.append('nodeId', nodeId);
+            outputFormData.append('type', 'output');
+            outputFormData.append('file', outputFile, traceName);
+            await fetch('/api/trace', { method: 'POST', body: outputFormData });
+          } catch (traceErr) {
+            console.error('Trace logging error (ERP node):', traceErr);
+          }
+
           // Mark as completed
           completedRef.current.add(nodeId);
           
@@ -777,6 +769,22 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             console.log(`[Loop Node] Detected feedback loop for nodeId: ${nodeId}`);
             // Handle feedback loop: accumulate results iteratively
             await handleFeedbackLoop(nodeId, nodeData, getUpstream, getDownstream, runNode);
+
+            // Mark loop node as done once feedback processing completes
+            const finalData = nodeData.get(nodeId);
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: RunState.DONE,
+                ...(finalData?.file ? { file: finalData.file } : {})
+              }
+            } : n));
+            completedRef.current.add(nodeId);
+            // Notify any downstream nodes that are not part of the feedback edge (rare but future-proof)
+            for (const downstreamId of getDownstream(nodeId)) {
+              await runNode(downstreamId);
+            }
           } else {
             // Original loop logic: process each row sequentially
             const upstreamId = getUpstream(nodeId)[0];
@@ -844,68 +852,119 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             if (upstreamData?.files) inputFiles.push(...upstreamData.files);
             else if (upstreamData?.file) inputFiles.push(upstreamData.file);
           }
-          
           if (inputFiles.length === 0) throw new Error('No input files available for CSV append');
-          
-          // Filter for CSV files only
-          const csvFiles = inputFiles.filter(file => file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv'));
-          if (csvFiles.length === 0) throw new Error('No CSV files found in input');
 
-          let allRows: string[] = [];
-          let headers: string | null = null;
-          
-          // Process each CSV file
-          for (const csvFile of csvFiles) {
-            const csvContent = await csvFile.text();
-            const lines = csvContent.split('\n').filter(line => line.trim());
-            
-            if (lines.length === 0) continue;
-            
-            const fileHeaders = lines[0];
-            const fileDataRows = lines.slice(1);
-            
-            // Use headers from first file, validate subsequent files have same structure
-            if (headers === null) {
-              headers = fileHeaders;
-              allRows.push(headers);
-            } else if (headers !== fileHeaders) {
-              console.warn(`CSV file ${csvFile.name} has different headers, skipping data rows`);
-              continue;
-            }
-            
-            // Append data rows (skip header)
-            allRows.push(...fileDataRows);
-          }
-          
-          if (headers === null) throw new Error('No valid CSV headers found');
-          
-          // Create the merged CSV content
-          const mergedCsvContent = allRows.join('\n');
-          const outputFileName = node.data.outputFileName || 'merged_data.csv';
-          const outputFile = new File([mergedCsvContent], outputFileName, { type: 'text/csv' });
-          
-          // Store the output file
-          nodeData.set(nodeId, { file: outputFile });
-          
-          // Update node state
-          setNodes(nds => nds.map(n => n.id === nodeId ? {
-            ...n,
-            data: {
-              ...n.data,
-              runState: RunState.DONE,
-              file: outputFile,
-              ioConfig: {
-                inputTypes: [{ type: FileType.CSV }],
-                outputType: { type: FileType.CSV }
+          // Template mode: if templateFile or templateFileUrl is present, use it
+          if (node.data.templateFile || node.data.templateFileUrl) {
+            // Use a persistent accumulator for the template content
+            if (!csvTemplateAccumulators.has(nodeId)) {
+              // First iteration: load template
+              let templateText = '';
+              if (node.data.templateFile) {
+                templateText = await node.data.templateFile.text();
+              } else if (node.data.templateFileUrl) {
+                const resp = await fetch(node.data.templateFileUrl);
+                templateText = await resp.text();
               }
+              csvTemplateAccumulators.set(nodeId, { csv: templateText });
             }
-          } : n));
-          
-          completedRef.current.add(nodeId);
-          
-          // Process downstream nodes
-          for (const downstreamId of getDownstream(nodeId)) {
-            await runNode(downstreamId);
+            // Get accumulator
+            const acc = csvTemplateAccumulators.get(nodeId);
+            if (!acc) throw new Error('CSV template accumulator missing');
+            let csv = acc.csv;
+            // Append the single row from the input file (skip header)
+            const inputText = await inputFiles[0].text();
+            const lines = inputText.split('\n').filter(l => l.trim());
+            if (lines.length < 2) throw new Error('Input file must have at least one data row');
+            const row = lines[1];
+            // If accumulator only has header, just append row
+            if (csv.trim().endsWith('\n')) {
+              csv += row + '\n';
+            } else {
+              csv += '\n' + row + '\n';
+            }
+            csvTemplateAccumulators.set(nodeId, { csv });
+            // For this iteration, output nothing (or a temp file if needed)
+            // Only after the loop is done, the final CSV will be passed downstream
+            // So, do not set nodeData.set(nodeId, ...) here
+          } else {
+            // No template: existing behavior
+            // Filter for CSV files only
+            const csvFiles = inputFiles.filter(file => file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv'));
+            if (csvFiles.length === 0) throw new Error('No CSV files found in input');
+
+            let allRows: string[] = [];
+            let headers: string | null = null;
+            
+            // Process each CSV file
+            for (const csvFile of csvFiles) {
+              const csvContent = await csvFile.text();
+              const lines = csvContent.split('\n').filter(line => line.trim());
+              
+              if (lines.length === 0) continue;
+              
+              const fileHeaders = lines[0];
+              const fileDataRows = lines.slice(1);
+              
+              // Use headers from first file, validate subsequent files have same structure
+              if (headers === null) {
+                headers = fileHeaders;
+                allRows.push(headers);
+              } else if (headers !== fileHeaders) {
+                console.warn(`CSV file ${csvFile.name} has different headers, skipping data rows`);
+                continue;
+              }
+              
+              // Append data rows (skip header)
+              allRows.push(...fileDataRows);
+            }
+            
+            if (headers === null) throw new Error('No valid CSV headers found');
+            
+            // Create the merged CSV content
+            const mergedCsvContent = allRows.join('\n');
+            const outputFileName = node.data.outputFileName || 'merged_data.csv';
+            const outputFile = new File([mergedCsvContent], outputFileName, { type: 'text/csv' });
+            
+            // Store the output file
+            nodeData.set(nodeId, { file: outputFile });
+            
+            // Log output trace for CSV Append node
+            try {
+              const labelSlug = slugify(node.data.label || nodeId);
+              const timestamp = getReadableTimestamp();
+              const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+              const ext = outputFile.name.split('.').pop() || 'csv';
+              const traceName = `${labelSlug}-output-${timestamp}-${uuid}.${ext}`;
+              const outputFormData = new FormData();
+              outputFormData.append('nodeId', nodeId);
+              outputFormData.append('type', 'output');
+              outputFormData.append('file', outputFile, traceName);
+              await fetch('/api/trace', { method: 'POST', body: outputFormData });
+            } catch (traceErr) {
+              console.error('Trace logging error (CSV Append node):', traceErr);
+            }
+            
+            // Update node state
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: RunState.DONE,
+                file: outputFile,
+                ioConfig: {
+                  inputTypes: [{ type: FileType.CSV }],
+                  outputType: { type: FileType.CSV }
+                }
+              }
+            } : n));
+            
+            completedRef.current.add(nodeId);
+            
+            // Process downstream nodes
+            for (const downstreamId of getDownstream(nodeId)) {
+              await runNode(downstreamId);
+            }
           }
         } catch (err) {
           console.error('Error in CSV Append node:', err);
@@ -1111,11 +1170,23 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       const startNode = nodes.find(n => n.id === startNodeId);
       if (!startNode) return;
       
+      // Allow this node to run again in a new iteration
+      completedRef.current.delete(startNodeId);
+
+      // Ensure the parent loop node is considered completed for this iteration
+      const loopIdMatch = contextKey.match(/(.+?)_iteration_\d+/);
+      if (loopIdMatch) {
+        const parentLoopId = loopIdMatch[1];
+        if (!completedRef.current.has(parentLoopId)) {
+          completedRef.current.add(parentLoopId);
+        }
+      }
+      
       // Store input for this chain
       nodeData.set(contextKey, { file: inputFile });
       
-      // Run the starting node
-      await runNode(startNodeId);
+      // Run the starting node with unique context key
+      await runNodeWithInput(startNodeId, inputFile, contextKey);
       
       // Continue with its downstream nodes
       const nextDownstream = getDownstream(startNodeId);

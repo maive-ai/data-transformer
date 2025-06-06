@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-06T16:17:14.004Z",
+    "updatedAt": "2025-06-06T16:55:18.418Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -984,7 +984,7 @@
             },
             "outputTemplateUrl": "/templates/9dbb4056-9df5-4efd-bc96-accb018034f5-bom-import-template.csv",
             "outputTemplateName": "bom-import-template.csv",
-            "runState": "idle"
+            "runState": "error"
           },
           "width": 118,
           "height": 86,
@@ -1008,10 +1008,21 @@
             "integrationType": "erp",
             "erpAction": "bom-lookup",
             "direction": "both",
-            "runState": "idle"
+            "runState": "done",
+            "file": {},
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            }
           },
-          "width": 104,
-          "height": 134,
+          "width": 106,
+          "height": 136,
           "selected": true,
           "positionAbsolute": {
             "x": 617.4090851452934,
@@ -1048,11 +1059,12 @@
                 "type": "csv"
               }
             },
-            "runState": "idle"
+            "runState": "idle",
+            "file": {}
           },
           "width": 125,
           "height": 134,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
             "x": 1085.849397444539,
             "y": 74.42376228435751
@@ -1069,11 +1081,26 @@
           "data": {
             "label": "CSV Append",
             "type": "action",
-            "runState": "idle"
+            "runState": "error",
+            "file": {},
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "outputFileName": "merged_data.csv",
+            "templateFile": {},
+            "templateFileUrl": "/templates/52f5cdaf-bc37-4d8e-bdfb-50035d38ac80-bom-import-template.csv",
+            "templateFileName": "bom-import-template.csv"
           },
           "width": 117,
           "height": 86,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
             "x": 838.9846961476603,
             "y": 99.34317203615399
@@ -1115,10 +1142,11 @@
           "data": {
             "label": "Loop",
             "type": "action",
-            "runState": "running"
+            "runState": "done",
+            "file": {}
           },
-          "width": 66,
-          "height": 86,
+          "width": 68,
+          "height": 88,
           "selected": true,
           "positionAbsolute": {
             "x": 372.0216093821332,
@@ -1139,18 +1167,6 @@
           "target": "action-1749153925654",
           "targetHandle": null,
           "id": "integration-1749147713399-action-1749153925654"
-        },
-        {
-          "type": "step",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
-          "source": "action-1749153925654",
-          "sourceHandle": null,
-          "target": "integration-1749149343043",
-          "targetHandle": null,
-          "id": "action-1749153925654-integration-1749149343043"
         },
         {
           "type": "step",
@@ -1187,6 +1203,18 @@
           "target": "loop-1749182499752",
           "targetHandle": null,
           "id": "trigger-1749181187007-loop-1749182499752"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749153925654",
+          "sourceHandle": null,
+          "target": "integration-1749149343043",
+          "targetHandle": null,
+          "id": "action-1749153925654-integration-1749149343043"
         }
       ]
     }

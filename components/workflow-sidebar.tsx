@@ -320,16 +320,32 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onClick={() => setShowInfoModal(false)}><X className="w-5 h-5" /></button>
               <div className="font-semibold text-lg mb-4">{node.data.label || state.fileName || 'Node'}</div>
               <p className="text-base text-gray-800">
-                {node.type === "output" && node.data.type === "excel"
+                {node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL
                   ? "This node accepts CSV files as input and converts them to Excel format."
-                  : node.type === "trigger" && node.data.type === "event"
+                  : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.EVENT
                   ? "This node triggers when an event occurs in the selected integration."
-                  : node.type === "trigger" && node.data.type === "manual"
+                  : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL
                   ? "This node will prompt for one or more PDF uploads when the pipeline runs."
-                  : node.type === "action"
+                  : node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND
+                  ? "This node takes multiple CSV files as input and combines them into a single CSV file. All input CSV files must have the same column headers. Data rows from all files will be appended together."
+                  : node.type === NodeType.ACTION && node.data.label === NodeLabel.ERP
+                  ? "This node performs an ERP lookup or transformation on the input file(s)."
+                  : node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM
                   ? "This node performs an AI-powered transformation on the input file(s)."
-                  : node.type === "output" && node.data.type === "doc"
+                  : node.type === NodeType.ACTION && node.data.label === NodeLabel.DECISION
+                  ? "This node routes data based on conditions you define."
+                  : node.type === NodeType.ACTION && node.data.label === NodeLabel.LOOP
+                  ? "This node iterates over each row in the input file(s) and runs downstream nodes for each row."
+                  : node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC
                   ? "This node will generate a Word document from the input file(s)."
+                  : node.type === NodeType.INTEGRATION
+                  ? "This node integrates with an external system (ERP, email, file storage, etc.)."
+                  : node.type === NodeType.AI_OPERATOR
+                  ? "This node runs an AI operator on the input data."
+                  : node.type === NodeType.HTTP_TRIGGER
+                  ? "This node triggers when an HTTP request is received."
+                  : node.type === NodeType.HTTP_RESPONSE
+                  ? "This node sends an HTTP response."
                   : "No additional details for this node type."}
               </p>
             </div>

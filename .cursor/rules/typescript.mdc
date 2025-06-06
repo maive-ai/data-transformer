@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *.ts*
+globs: app/**/*.ts*,components/**/*.ts*
 alwaysApply: false
 ---
 # 🧠 TypeScript Best Practices

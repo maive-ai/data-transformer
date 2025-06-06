@@ -153,3 +153,9 @@ export enum IntegrationDirection {
   WRITE = 'write',
   BOTH = 'both'
 }
+
+// Edge type enums
+export enum EdgeType {
+  STEP = 'step',
+  FEEDBACK = 'feedback',
+}

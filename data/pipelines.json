@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-06T16:55:18.418Z",
+    "updatedAt": "2025-06-06T18:23:30.916Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -986,7 +986,7 @@
             "outputTemplateName": "bom-import-template.csv",
             "runState": "error"
           },
-          "width": 118,
+          "width": 119,
           "height": 86,
           "selected": true,
           "positionAbsolute": {
@@ -1072,42 +1072,6 @@
           "dragging": false
         },
         {
-          "id": "action-1749153925654",
-          "type": "action",
-          "position": {
-            "x": 838.9846961476603,
-            "y": 99.34317203615399
-          },
-          "data": {
-            "label": "CSV Append",
-            "type": "action",
-            "runState": "error",
-            "file": {},
-            "ioConfig": {
-              "inputTypes": [
-                {
-                  "type": "csv"
-                }
-              ],
-              "outputType": {
-                "type": "csv"
-              }
-            },
-            "outputFileName": "merged_data.csv",
-            "templateFile": {},
-            "templateFileUrl": "/templates/52f5cdaf-bc37-4d8e-bdfb-50035d38ac80-bom-import-template.csv",
-            "templateFileName": "bom-import-template.csv"
-          },
-          "width": 117,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": 838.9846961476603,
-            "y": 99.34317203615399
-          },
-          "dragging": false
-        },
-        {
           "id": "trigger-1749181187007",
           "type": "trigger",
           "position": {
@@ -1123,7 +1087,7 @@
               "completed_bom.csv"
             ]
           },
-          "width": 134,
+          "width": 135,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
@@ -1145,12 +1109,47 @@
             "runState": "done",
             "file": {}
           },
-          "width": 68,
+          "width": 69,
           "height": 88,
           "selected": true,
           "positionAbsolute": {
             "x": 372.0216093821332,
             "y": 97.99964623901715
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1749231435617",
+          "type": "action",
+          "position": {
+            "x": 823.3669064671232,
+            "y": 96.10569633126715
+          },
+          "data": {
+            "label": "CSV Append",
+            "type": "action",
+            "templateFile": {},
+            "templateFileUrl": "/templates/8847b151-77ce-4447-8ecd-a140ecf08e77-bom-import-template-with-status.csv",
+            "templateFileName": "bom-import-template-with-status.csv",
+            "outputFileName": "merged_data.csv",
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "done"
+          },
+          "width": 119,
+          "height": 88,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 823.3669064671232,
+            "y": 96.10569633126715
           },
           "dragging": false
         }
@@ -1162,35 +1161,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "integration-1749147713399",
-          "sourceHandle": null,
-          "target": "action-1749153925654",
-          "targetHandle": null,
-          "id": "integration-1749147713399-action-1749153925654"
-        },
-        {
-          "type": "step",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
           "source": "loop-1749182499752",
           "sourceHandle": null,
           "target": "integration-1749147713399",
           "targetHandle": null,
           "id": "loop-1749182499752-integration-1749147713399"
-        },
-        {
-          "type": "feedback",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
-          "source": "action-1749153925654",
-          "sourceHandle": "bottom",
-          "target": "loop-1749182499752",
-          "targetHandle": "bottom",
-          "id": "action-1749153925654-loop-1749182499752"
         },
         {
           "type": "step",
@@ -1210,11 +1185,36 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "action-1749153925654",
+          "source": "integration-1749147713399",
+          "sourceHandle": null,
+          "target": "action-1749231435617",
+          "targetHandle": null,
+          "id": "integration-1749147713399-action-1749231435617"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749231435617",
           "sourceHandle": null,
           "target": "integration-1749149343043",
           "targetHandle": null,
-          "id": "action-1749153925654-integration-1749149343043"
+          "id": "action-1749231435617-integration-1749149343043",
+          "selected": false
+        },
+        {
+          "type": "feedback",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749231435617",
+          "sourceHandle": "bottom",
+          "target": "loop-1749182499752",
+          "targetHandle": "bottom",
+          "id": "action-1749231435617-loop-1749182499752"
         }
       ]
     }

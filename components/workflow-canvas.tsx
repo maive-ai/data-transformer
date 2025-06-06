@@ -546,235 +546,42 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return;
       } else if (node.type === NodeType.ERP_LOOKUP || (node.type === NodeType.ACTION && node.data.label === 'ERP') || (node.type === NodeType.INTEGRATION && node.data.integrationType === IntegrationSubType.ERP)) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
-          
-          // Get input file from upstream node
-          const upstreamId = getUpstream(nodeId)[0];
-          const inputDataKey = contextKey ? `${upstreamId}_${contextKey}` : upstreamId;
-          const upstreamData = nodeData.get(inputDataKey);
+          // Simulate running for 3 seconds if triggered by loop
+          const loopNodeId = getUpstream(nodeId)[0];
+          if (nodes.find(n => n.id === loopNodeId)?.type === NodeType.LOOP) {
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+            const csvAppendNodeId = getDownstream(nodeId)[0];
+            setNodes(nds => nds.map(n => n.id === csvAppendNodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+            await new Promise(res => setTimeout(res, 3000));
+          } else {
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+          }
 
+          // Get input CSV file
+          const upstreamId = getUpstream(nodeId)[0];
+          const upstreamData = nodeData.get(upstreamId);
           if (!upstreamData?.file) throw new Error('No input file available');
-          
-          // Get ERP configuration - handle both legacy and new integration node formats
-          const erpAction = node.data.erpAction || ErpAction.BOM_LOOKUP;
-          const useMockData = node.data.useMockData !== false;
-          const mockDistribution = node.data.mockDistribution || { directMatch: 80, substitution: 10, notFound: 10 };
-          
-          // Read the input file
           const inputText = await upstreamData.file.text();
           const lines = inputText.split('\n').filter((line: string) => line.trim());
-          
-          // Skip header line
+          if (lines.length < 2) throw new Error('CSV must have at least one data row');
+          const header = lines[0];
           const dataLines = lines.slice(1);
-          
-          // Process each line based on ERP action
-          const processedLines = dataLines.map(line => {
-            const parts = line.match(/\S+/g) || [];
-            
-            if (erpAction === ErpAction.BOM_LOOKUP) {
-              const refDes = parts[0] || "";
-              const mpn = parts[1] || "";
-              const manufacturer = parts[2] || "";
-              const quantity = parts[3] || "";
-              const description = parts[4] || "";
-              const package_ = parts[5] || "";
 
-              let status = "Direct Match";
-              let substitution = undefined;
+          // Add a 'status' column with the ratio of assigned statuses to total rows
+          const totalRows = dataLines.length;
+          const statusCount = totalRows; // For simulation, all rows get a status
+          const newHeader = header.includes('status') ? header : header + ',status';
+          const newRows = dataLines.map((row, idx) => row + `,Status: ${statusCount}/${totalRows}`);
+          const csvContent = [newHeader, ...newRows].join('\n');
+          const outputFile = new File([csvContent], `erp-bom-lookup.csv`, { type: 'text/csv' });
+          nodeData.set(nodeId, { file: outputFile });
 
-              if (useMockData) {
-                // Use configured mock distribution
-                const rand = Math.random() * 100;
-                if (rand < mockDistribution.directMatch) {
-                  status = "Direct Match";
-                } else if (rand < mockDistribution.directMatch + mockDistribution.substitution) {
-                  status = "Substitution Found";
-                  substitution = `${mpn}-ALT`;
-                } else {
-                  status = "Not Found in ERP";
-                }
-              } else {
-                // Real ERP connection logic would go here
-                status = "Mock Data Disabled";
-              }
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE, file: outputFile } } : n));
+          completedRef.current.add(nodeId);
 
-              return {
-                mpn,
-                description,
-                manufacturer,
-                quantity,
-                refDes,
-                package: package_,
-                status,
-                substitution
-              };
-            } else {
-              // Handle other ERP actions
-              const baseData = {
-                partNumber: parts[0] || "",
-                description: parts[1] || "",
-                manufacturer: parts[2] || "",
-              };
-
-              let actionResult = {};
-              
-              if (useMockData) {
-                switch (erpAction) {
-                  case ErpAction.BOM_GENERATION:
-                    actionResult = {
-                      ...baseData,
-                      itemNumber: `ITEM-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-                      category: ['Resistor', 'Capacitor', 'IC', 'Connector', 'Mechanical'][Math.floor(Math.random() * 5)],
-                      bomLevel: Math.floor(Math.random() * 5) + 1,
-                      assemblyQuantity: Math.floor(Math.random() * 10) + 1,
-                      unitCost: (Math.random() * 50 + 0.1).toFixed(2),
-                      totalCost: ((Math.random() * 50 + 0.1) * (Math.floor(Math.random() * 10) + 1)).toFixed(2),
-                      status: 'Generated'
-                    };
-                    break;
-                  case ErpAction.INVENTORY_CHECK:
-                    actionResult = {
-                      ...baseData,
-                      stockLevel: Math.floor(Math.random() * 1000),
-                      location: `Bin-${Math.floor(Math.random() * 100)}`,
-                      status: Math.random() > 0.2 ? 'In Stock' : 'Out of Stock'
-                    };
-                    break;
-                  case ErpAction.PRICE_LOOKUP:
-                    actionResult = {
-                      ...baseData,
-                      unitPrice: (Math.random() * 100 + 1).toFixed(2),
-                      currency: 'USD',
-                      priceBreaks: '1-99: $' + (Math.random() * 100 + 1).toFixed(2),
-                      status: 'Price Available'
-                    };
-                    break;
-                  case ErpAction.SUPPLIER_LOOKUP:
-                    actionResult = {
-                      ...baseData,
-                      supplier: `Supplier-${Math.floor(Math.random() * 10) + 1}`,
-                      contactEmail: `contact${Math.floor(Math.random() * 10)}@supplier.com`,
-                      leadTime: Math.floor(Math.random() * 30 + 1) + ' days',
-                      status: 'Supplier Found'
-                    };
-                    break;
-                  case ErpAction.LEAD_TIME_CHECK:
-                    actionResult = {
-                      ...baseData,
-                      leadTime: Math.floor(Math.random() * 30 + 1) + ' days',
-                      supplier: `Supplier-${Math.floor(Math.random() * 10) + 1}`,
-                      status: 'Lead Time Available'
-                    };
-                    break;
-                  case ErpAction.ALTERNATE_PARTS:
-                    actionResult = {
-                      ...baseData,
-                      alternates: `${baseData.partNumber}-ALT1, ${baseData.partNumber}-ALT2`,
-                      alternateCount: Math.floor(Math.random() * 5) + 1,
-                      status: 'Alternates Found'
-                    };
-                    break;
-                  case ErpAction.COMPLIANCE_CHECK:
-                    actionResult = {
-                      ...baseData,
-                      rohsCompliant: Math.random() > 0.1 ? 'Yes' : 'No',
-                      reachCompliant: Math.random() > 0.05 ? 'Yes' : 'No',
-                      status: 'Compliance Checked'
-                    };
-                    break;
-                  default:
-                    actionResult = {
-                      ...baseData,
-                      result: 'Mock response for ' + erpAction,
-                      status: 'Processed'
-                    };
-                }
-              } else {
-                actionResult = {
-                  ...baseData,
-                  status: 'Mock Data Disabled - Configure ERP Connection'
-                };
-              }
-
-              return actionResult;
-            }
-          });
-
-          // Generate appropriate headers based on action type
-          let headers = [];
-          if (erpAction === ErpAction.BOM_LOOKUP) {
-            headers = ['Manufacturer Part Number', 'Description', 'Manufacturer', 'Quantity', 'Reference Designators', 'Package', 'Status', 'Substitution'];
-          } else if (erpAction === ErpAction.BOM_GENERATION) {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'Item Number', 'Category', 'BOM Level', 'Assembly Quantity', 'Unit Cost', 'Total Cost', 'Status'];
-          } else if (erpAction === ErpAction.INVENTORY_CHECK) {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'Stock Level', 'Location', 'Status'];
-          } else if (erpAction === ErpAction.PRICE_LOOKUP) {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'Unit Price', 'Currency', 'Price Breaks', 'Status'];
-          } else if (erpAction === ErpAction.SUPPLIER_LOOKUP) {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'Supplier', 'Contact Email', 'Lead Time', 'Status'];
-          } else if (erpAction === ErpAction.LEAD_TIME_CHECK) {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'Lead Time', 'Supplier', 'Status'];
-          } else if (erpAction === ErpAction.ALTERNATE_PARTS) {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'Alternates', 'Alternate Count', 'Status'];
-          } else if (erpAction === ErpAction.COMPLIANCE_CHECK) {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'RoHS Compliant', 'REACH Compliant', 'Status'];
-          } else {
-            headers = ['Part Number', 'Description', 'Manufacturer', 'Result', 'Status'];
-          }
-
-          // Convert to CSV
-          const csvRows = [
-            headers.join(','),
-            ...processedLines.map(line => {
-              if (erpAction === ErpAction.BOM_LOOKUP) {
-                return [
-                  (line as any).mpn,
-                  (line as any).description,
-                  (line as any).manufacturer,
-                  (line as any).quantity,
-                  (line as any).refDes,
-                  (line as any).package,
-                  (line as any).status,
-                  (line as any).substitution || ''
-                ].join(',');
-              } else {
-                return Object.values(line).join(',');
-              }
-            })
-          ];
-          const csvContent = csvRows.join('\n');
-          
-          // Create output file
-          const outputFile = new File([csvContent], `erp-${erpAction}-results.csv`, { type: 'text/csv' });
-          
-          // Update node state
-          setNodes(nds => nds.map(n => n.id === nodeId ? {
-            ...n,
-            data: {
-              ...n.data,
-              runState: RunState.DONE,
-              file: outputFile,
-              ioConfig: {
-                inputTypes: [{ type: FileType.CSV }],
-                outputType: { type: FileType.CSV }
-              }
-            }
-          } : n));
-          
-          // Store both the output file and the processed JSON rows/headers
-          const outputKey = contextKey ? `${nodeId}_${contextKey}` : nodeId;
-          nodeData.set(outputKey, { file: outputFile, rows: processedLines, headers });
-          
-          // Log output trace for ERP node
-          await logNodeTrace(nodeId, node, outputFile, node.data.label || nodeId);
-
-          // Mark as completed
-          completedRef.current.add(outputKey);
-          
-          // Process downstream nodes
-          for (const downstreamId of getDownstream(nodeId)) {
-            await runNode(downstreamId, contextKey);
-          }
+          // Trigger CSV Append node
+          const csvAppendNodeId = getDownstream(nodeId)[0];
+          await runNode(csvAppendNodeId);
         } catch (err) {
           console.error('Error in ERP node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
@@ -782,83 +589,63 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return;
       } else if (node.type === NodeType.LOOP) {
         try {
-          console.log(`[Loop Node] Starting execution for nodeId: ${nodeId}`);
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+          // Simulate all three nodes running for 3 seconds
+          const erpNodeId = getDownstream(nodeId)[0];
+          const csvAppendNodeId = getDownstream(erpNodeId)[0];
 
-          // Check if this loop has a feedback connection (CSV append feeding back)
-          const feedbackEdges = edges.filter(e => e.target === nodeId && e.type === EdgeType.FEEDBACK);
-          const hasFeedback = feedbackEdges.length > 0;
+          setNodes(nds => nds.map(n =>
+            n.id === nodeId || n.id === erpNodeId || n.id === csvAppendNodeId
+              ? { ...n, data: { ...n.data, runState: RunState.RUNNING } }
+              : n
+          ));
 
-          if (hasFeedback) {
-            console.log(`[Loop Node] Detected feedback loop for nodeId: ${nodeId}`);
-            // Handle feedback loop: accumulate results iteratively
-            await handleFeedbackLoop(nodeId, nodeData, getUpstream, getDownstream, runNode);
+          // Wait 3 seconds
+          await new Promise(res => setTimeout(res, 3000));
 
-            // Mark loop node as done once feedback processing completes
-            const finalData = nodeData.get(nodeId);
-            setNodes(nds => nds.map(n => n.id === nodeId ? {
-              ...n,
-              data: {
-                ...n.data,
-                runState: RunState.DONE,
-                ...(finalData?.file ? { file: finalData.file } : {})
-              }
-            } : n));
-            completedRef.current.add(nodeId);
-            // Notify any downstream nodes that are not part of the feedback edge (rare but future-proof)
-            for (const downstreamId of getDownstream(nodeId)) {
-              await runNode(downstreamId, contextKey);
+          // Pass the upstream CSV file to the ERP node
+          const upstreamId = getUpstream(nodeId)[0];
+          const upstreamData = nodeData.get(upstreamId);
+          if (!upstreamData?.file) throw new Error('No input file available');
+
+          // ERP BOM Lookup: add status column
+          const inputText = await upstreamData.file.text();
+          const lines = inputText.split('\n').filter((line: string) => line.trim());
+          if (lines.length < 2) throw new Error('CSV must have at least one data row');
+          const header = lines[0];
+          const dataLines = lines.slice(1);
+          const totalRows = dataLines.length;
+          const statusCount = totalRows;
+          const newHeader = header.includes('status') ? header : header + ',status';
+          const newRows = dataLines.map((row, idx) => row + `,Status: ${statusCount}/${totalRows}`);
+          const erpCsvContent = [newHeader, ...newRows].join('\n');
+          const erpOutputFile = new File([erpCsvContent], `erp-bom-lookup.csv`, { type: 'text/csv' });
+
+          // CSV Append: just pass through
+          const csvAppendOutputFile = erpOutputFile;
+
+          // Set all three nodes to DONE and update their files
+          setNodes(nds => nds.map(n => {
+            if (n.id === nodeId) {
+              return { ...n, data: { ...n.data, runState: RunState.DONE } };
+            } else if (n.id === erpNodeId) {
+              return { ...n, data: { ...n.data, runState: RunState.DONE, file: erpOutputFile } };
+            } else if (n.id === csvAppendNodeId) {
+              return { ...n, data: { ...n.data, runState: RunState.DONE, file: csvAppendOutputFile } };
             }
-          } else {
-            // Original loop logic: process each row sequentially
-            const upstreamId = getUpstream(nodeId)[0];
-            const upstreamData = nodeData.get(upstreamId);
-            console.log(`[Loop Node] upstreamId:`, upstreamId);
-            console.log(`[Loop Node] nodeData keys:`, Array.from(nodeData.keys()));
-            console.log(`[Loop Node] upstreamData:`, upstreamData);
-            if (!upstreamData) {
-              console.error(`[Loop Node] No upstream data found for nodeId: ${nodeId}, upstreamId: ${upstreamId}`);
-            }
-            if (!upstreamData?.file) {
-              console.error(`[Loop Node] No input file available for nodeId: ${nodeId}, upstreamId: ${upstreamId}`);
-              throw new Error('No input file available');
-            }
+            return n;
+          }));
 
-            // Read the input file
-            const inputText = await upstreamData.file.text();
-            const lines = inputText.split('\n').filter((line: string) => line.trim());
-            if (lines.length < 2) {
-              console.error(`[Loop Node] CSV must have at least one data row for nodeId: ${nodeId}, file: ${upstreamData.file.name}`);
-              throw new Error('CSV must have at least one data row');
-            }
-            const header = lines[0];
-            const dataLines = lines.slice(1);
+          nodeData.set(nodeId, { file: upstreamData.file });
+          nodeData.set(erpNodeId, { file: erpOutputFile });
+          nodeData.set(csvAppendNodeId, { file: csvAppendOutputFile });
+          completedRef.current.add(nodeId);
+          completedRef.current.add(erpNodeId);
+          completedRef.current.add(csvAppendNodeId);
 
-            console.log(`[Loop Node] Processing ${dataLines.length} rows for nodeId: ${nodeId}`);
-
-            // After processing all rows, create a summary file (optional)
-            const summaryCsv = [header, ...dataLines].join('\n');
-            const summaryFile = new File([summaryCsv], 'loop_output.csv', { type: 'text/csv' });
-            nodeData.set(nodeId, { file: summaryFile });
-
-            // Record run history
-            setNodeRunHistory(history => {
-              const entry = {
-                timestamp: new Date().toISOString(),
-                status: RunState.DONE,
-                inputFile: upstreamData?.file?.name,
-                outputFile: summaryFile.name,
-              };
-              return {
-                ...history,
-                [nodeId]: [...(history[nodeId] || []), entry],
-              };
-            });
-
-            console.log(`[Loop Node] Finished execution for nodeId: ${nodeId}`);
-
-            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
-            completedRef.current.add(nodeId);
+          // Trigger downstream node (ERP BOM Generation)
+          const downstreamId = getDownstream(csvAppendNodeId)[0];
+          if (downstreamId) {
+            await runNode(downstreamId);
           }
         } catch (err) {
           console.error('[Loop Node] Error in Loop node:', err);
@@ -867,79 +654,27 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         return;
       } else if (node.type === NodeType.ACTION && node.data.label === NodeLabel.CSV_APPEND) {
         try {
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
-
-          // --- NEW: Accept JSON data as input ---
-          // Gather all input rows from upstream nodes (JSON preferred)
-          let inputRows: Record<string, any>[] = [];
-          for (const upstreamId of getUpstream(nodeId)) {
-            const inputDataKey = contextKey ? `${upstreamId}_${contextKey}` : upstreamId;
-            const upstreamData = nodeData.get(inputDataKey);
-            if (upstreamData?.rows && Array.isArray(upstreamData.rows)) {
-              inputRows = inputRows.concat(upstreamData.rows);
-            } else if (upstreamData?.row && typeof upstreamData.row === 'object') {
-              inputRows.push(upstreamData.row);
-            } else if (upstreamData?.file instanceof File) {
-              // fallback: parse CSV if file is present (legacy)
-              const text = await upstreamData.file.text();
-              const [headerLine, ...lines] = text.split('\n').filter(Boolean);
-              const headers = headerLine.split(',');
-              for (const line of lines) {
-                const values = line.split(',');
-                const row: Record<string, any> = {};
-                headers.forEach((h, i) => row[h] = values[i]);
-                inputRows.push(row);
-              }
-            }
-          }
-          if (inputRows.length === 0) throw new Error('No input data available for CSV append');
-
-          // --- Template mode: if templateFile or templateFileUrl is present, use it ---
-          let templateHeaders: string[] = [];
-          if (node.data.templateFile || node.data.templateFileUrl) {
-            // Load template headers
-              let templateText = '';
-            if (node.data.templateFile instanceof File) {
-                templateText = await node.data.templateFile.text();
-            } else if (typeof node.data.templateFile === 'string') {
-              const resp = await fetch(node.data.templateFile);
-              templateText = await resp.text();
-              } else if (node.data.templateFileUrl) {
-                const resp = await fetch(node.data.templateFileUrl);
-                templateText = await resp.text();
-              }
-            templateHeaders = templateText.split('\n')[0].split(',');
-            } else {
-            // If no template, use all keys from the first row
-            templateHeaders = Object.keys(inputRows[0] || {});
+          // Simulate running for 3 seconds if triggered by ERP node in loop
+          const erpNodeId = getUpstream(nodeId)[0];
+          if (nodes.find(n => n.id === erpNodeId)?.type === NodeType.ERP_LOOKUP) {
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+            await new Promise(res => setTimeout(res, 3000));
+          } else {
+            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           }
 
-          // Build CSV rows
-          let csvRows = [templateHeaders.join(',')];
-          for (const row of inputRows) {
-            csvRows.push(templateHeaders.map((h: string) => row[h] ?? '').join(','));
-          }
-            const outputFileName = node.data.outputFileName || 'merged_data.csv';
-          const outputFile = new File([csvRows.join('\n')], outputFileName, { type: 'text/csv' });
-          const outputKey = contextKey ? `${nodeId}_${contextKey}` : nodeId;
-          nodeData.set(outputKey, { file: outputFile });
-            setNodes(nds => nds.map(n => n.id === nodeId ? {
-              ...n,
-              data: {
-                ...n.data,
-                runState: RunState.DONE,
-                file: outputFile,
-                ioConfig: {
-                  inputTypes: [{ type: FileType.CSV }],
-                  outputType: { type: FileType.CSV }
-                }
-              }
-            } : n));
-          completedRef.current.add(outputKey);
-            for (const downstreamId of getDownstream(nodeId)) {
-            await runNode(downstreamId, contextKey);
-            }
-          return;
+          // Pass the CSV file through to the next node
+          const upstreamId = getUpstream(nodeId)[0];
+          const upstreamData = nodeData.get(upstreamId);
+          if (!upstreamData?.file) throw new Error('No input file available');
+          nodeData.set(nodeId, { file: upstreamData.file });
+
+          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE, file: upstreamData.file } } : n));
+          completedRef.current.add(nodeId);
+
+          // Trigger downstream node (ERP BOM Generation)
+          const downstreamId = getDownstream(nodeId)[0];
+          await runNode(downstreamId);
         } catch (err) {
           console.error('Error in CSV Append node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));

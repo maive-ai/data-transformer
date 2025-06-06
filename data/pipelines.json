@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-06T18:23:30.916Z",
+    "updatedAt": "2025-06-06T18:55:46.114Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1023,7 +1023,7 @@
           },
           "width": 106,
           "height": 136,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 617.4090851452934,
             "y": 73.55888685210383
@@ -1034,8 +1034,8 @@
           "id": "integration-1749149343043",
           "type": "integration",
           "position": {
-            "x": 1085.849397444539,
-            "y": 74.42376228435751
+            "x": 1093.6380047820046,
+            "y": 72.47661044999109
           },
           "data": {
             "label": "ERP",
@@ -1059,15 +1059,15 @@
                 "type": "csv"
               }
             },
-            "runState": "idle",
+            "runState": "done",
             "file": {}
           },
-          "width": 125,
-          "height": 134,
+          "width": 127,
+          "height": 136,
           "selected": true,
           "positionAbsolute": {
-            "x": 1085.849397444539,
-            "y": 74.42376228435751
+            "x": 1093.6380047820046,
+            "y": 72.47661044999109
           },
           "dragging": false
         },
@@ -1100,7 +1100,7 @@
           "id": "loop-1749182499752",
           "type": "loop",
           "position": {
-            "x": 372.0216093821332,
+            "x": 372.9951852993164,
             "y": 97.99964623901715
           },
           "data": {
@@ -1113,7 +1113,7 @@
           "height": 88,
           "selected": true,
           "positionAbsolute": {
-            "x": 372.0216093821332,
+            "x": 372.9951852993164,
             "y": 97.99964623901715
           },
           "dragging": false
@@ -1142,7 +1142,8 @@
                 "type": "csv"
               }
             },
-            "runState": "done"
+            "runState": "done",
+            "file": {}
           },
           "width": 119,
           "height": 88,

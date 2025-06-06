@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ErpAction, ErpActionLabel, FileType } from "@/types/enums";
-import { Info, X } from "lucide-react";
+import { Info, X, Maximize2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ErpSidebarProps {
   node: any;
@@ -28,11 +29,24 @@ const HARDCODED_MOCK_DISTRIBUTION = {
 export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
   const [erpAction, setErpAction] = useState(node.data.erpAction || ErpAction.BOM_LOOKUP);
   const [showActionInfo, setShowActionInfo] = useState(false);
+  const [showCsvModal, setShowCsvModal] = useState(false);
+  const [hardcodedCsvFile, setHardcodedCsvFile] = useState<File | null>(null);
 
   // Update state when node changes
   useEffect(() => {
     setErpAction(node.data.erpAction || ErpAction.BOM_LOOKUP);
   }, [node]);
+
+  // Fetch the hardcoded CSV file when in BOM Generation mode
+  useEffect(() => {
+    if (erpAction === ErpAction.BOM_GENERATION) {
+      fetch('/artifacts/completed_bom_with_status.csv')
+        .then(res => res.blob())
+        .then(blob => {
+          setHardcodedCsvFile(new File([blob], 'completed_bom_with_status.csv', { type: 'text/csv' }));
+        });
+    }
+  }, [erpAction]);
 
   const handleSave = async () => {
     await onChange(node.id, {
@@ -126,10 +140,32 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
       )}
 
       {/* CSV Preview for BOM Generation */}
-      {erpAction === ErpAction.BOM_GENERATION && node.data && (node.data.file || (node.data.files && node.data.files[0])) && (
-        <div className="border rounded-lg p-3 bg-gray-50">
-          <div className="font-medium mb-2">Upstream CSV Preview</div>
-          <CsvPreview file={node.data.file || (node.data.files && node.data.files[0])} />
+      {erpAction === ErpAction.BOM_GENERATION && hardcodedCsvFile && (
+        <div className="border rounded-lg p-3 bg-gray-50 relative">
+          <div className="font-medium mb-2 flex items-center justify-between">
+            <span>Data Added to ERP</span>
+            <button
+              className="p-1 text-gray-500 hover:text-gray-800 rounded transition absolute right-2 top-2 bg-white"
+              title="Expand preview"
+              onClick={() => setShowCsvModal(true)}
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+          </div>
+          <CsvPreview file={hardcodedCsvFile} />
+          <Dialog open={showCsvModal} onOpenChange={setShowCsvModal}>
+            <DialogContent className="max-w-4xl w-full h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between mb-2">
+                <div className="font-semibold text-lg">Full CSV Preview</div>
+                <button onClick={() => setShowCsvModal(false)} className="p-1 text-gray-500 hover:text-gray-800 rounded" title="Close">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-auto">
+                <CsvPreview file={hardcodedCsvFile} full />
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       )}
 
@@ -145,16 +181,16 @@ export function ErpSidebar({ node, onChange }: ErpSidebarProps) {
 }
 
 // Helper component to preview a CSV file as a table
-function CsvPreview({ file }: { file: File }) {
+function CsvPreview({ file, full = false }: { file: File, full?: boolean }) {
   const [rows, setRows] = useState<string[][]>([]);
   useEffect(() => {
     if (!file) return;
     file.text().then(text => {
       const lines = text.split('\n').filter(Boolean);
       const parsed = lines.map(line => line.split(','));
-      setRows(parsed.slice(0, 11)); // header + 10 rows
+      setRows(full ? parsed : parsed.slice(0, 11)); // header + 10 rows unless full
     });
-  }, [file]);
+  }, [file, full]);
   if (!file) return null;
   if (rows.length === 0) return <div className="text-xs text-gray-400">Loading preview...</div>;
   return (
@@ -173,7 +209,7 @@ function CsvPreview({ file }: { file: File }) {
           ))}
         </tbody>
       </table>
-      {rows.length === 11 && <div className="text-xs text-gray-400 mt-1">Showing first 10 rows</div>}
+      {!full && rows.length === 11 && <div className="text-xs text-gray-400 mt-1">Showing first 10 rows</div>}
     </div>
   );
 } 

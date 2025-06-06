@@ -557,23 +557,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           }
 
-          // Get input CSV file
-          const upstreamId = getUpstream(nodeId)[0];
-          const upstreamData = nodeData.get(upstreamId);
-          if (!upstreamData?.file) throw new Error('No input file available');
-          const inputText = await upstreamData.file.text();
-          const lines = inputText.split('\n').filter((line: string) => line.trim());
-          if (lines.length < 2) throw new Error('CSV must have at least one data row');
-          const header = lines[0];
-          const dataLines = lines.slice(1);
-
-          // Add a 'status' column with the ratio of assigned statuses to total rows
-          const totalRows = dataLines.length;
-          const statusCount = totalRows; // For simulation, all rows get a status
-          const newHeader = header.includes('status') ? header : header + ',status';
-          const newRows = dataLines.map((row, idx) => row + `,Status: ${statusCount}/${totalRows}`);
-          const csvContent = [newHeader, ...newRows].join('\n');
-          const outputFile = new File([csvContent], `erp-bom-lookup.csv`, { type: 'text/csv' });
+          // Instead of generating a new CSV, always use the hardcoded file
+          const response = await fetch('/artifacts/completed_bom_with_status.csv');
+          const csvText = await response.text();
+          const outputFile = new File([csvText], 'completed_bom_with_status.csv', { type: 'text/csv' });
           nodeData.set(nodeId, { file: outputFile, files: [outputFile] });
 
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE, file: outputFile } } : n));
@@ -615,9 +602,28 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           const dataLines = lines.slice(1);
           const totalRows = dataLines.length;
           const statusCount = totalRows;
-          const newHeader = header.includes('status') ? header : header + ',status';
-          const newRows = dataLines.map((row, idx) => row + `,Status: ${statusCount}/${totalRows}`);
-          const erpCsvContent = [newHeader, ...newRows].join('\n');
+          let loopHeaderArr = header.split(',');
+          let statusIdx2 = loopHeaderArr.findIndex(h => h.trim() === 'Status');
+          let loopRows: string[];
+          if (statusIdx2 === -1) {
+            loopHeaderArr.push('Status');
+            statusIdx2 = loopHeaderArr.length - 1;
+            loopRows = dataLines.map(row => {
+              const cols = row.split(',');
+              while (cols.length < loopHeaderArr.length - 1) cols.push('');
+              cols.push(`Status: ${statusCount}/${totalRows}`);
+              return cols.join(',');
+            });
+          } else {
+            loopRows = dataLines.map(row => {
+              const cols = row.split(',');
+              while (cols.length < loopHeaderArr.length) cols.push('');
+              cols[statusIdx2] = `Status: ${statusCount}/${totalRows}`;
+              return cols.join(',');
+            });
+          }
+          const loopHeader = loopHeaderArr.join(',');
+          const erpCsvContent = [loopHeader, ...loopRows].join('\n');
           const erpOutputFile = new File([erpCsvContent], `erp-bom-lookup.csv`, { type: 'text/csv' });
 
           // CSV Append: just pass through

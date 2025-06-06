@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-06T18:58:33.178Z",
+    "updatedAt": "2025-06-06T19:27:02.152Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1128,9 +1128,8 @@
           "data": {
             "label": "CSV Append",
             "type": "action",
-            "templateFile": {},
-            "templateFileUrl": "/templates/8847b151-77ce-4447-8ecd-a140ecf08e77-bom-import-template-with-status.csv",
-            "templateFileName": "bom-import-template-with-status.csv",
+            "templateFileUrl": "",
+            "templateFileName": "",
             "outputFileName": "merged_data.csv",
             "ioConfig": {
               "inputTypes": [

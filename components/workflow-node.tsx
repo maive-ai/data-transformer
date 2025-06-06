@@ -16,7 +16,7 @@ interface WorkflowNodeData {
 export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData>) => {
   let borderClass = "";
   if (data.runState === RunState.PROMPT) borderClass = "border-2 border-blue-400 animate-pulse";
-  else if (data.runState === RunState.RUNNING) borderClass = "";
+  else if (data.runState === RunState.RUNNING) borderClass = "rainbow-outline";
   else if (data.runState === RunState.DONE) borderClass = "border-2 border-green-500";
   else borderClass = "border border-gray-200";
 

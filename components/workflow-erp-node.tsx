@@ -3,7 +3,6 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { Database } from "lucide-react";
 
 interface WorkflowErpNodeData {
   label: string;
@@ -35,7 +34,14 @@ export const WorkflowErpNode = memo(({ data }: NodeProps<WorkflowErpNodeData & {
     <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} bg-white`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
-        <div className="text-2xl"><Database className="w-6 h-6" /></div>
+        <div className="flex items-center justify-center h-10 w-full">
+          <img 
+            src="https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg" 
+            alt="SAP" 
+            className="max-h-full object-contain"
+            style={{ maxWidth: '56%' }}
+          />
+        </div>
         <div className="text-sm font-medium text-center">{data.label}</div>
         {data.erpAction && (
           <div className="text-xs text-gray-500 text-center">{data.erpAction}</div>

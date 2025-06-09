@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { Brain } from "lucide-react";
+import { Brain, FileSpreadsheet, Plus } from "lucide-react";
 import { RunState, ActionSubType, NodeLabel } from "@/types/enums";
 
 interface WorkflowNodeData {
@@ -28,6 +28,14 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData>) => {
 
   const getIcon = () => {
     if (data.type === ActionSubType.DECISION) return <div className="text-2xl">🔀</div>;
+    if (data.label === NodeLabel.CSV_APPEND) {
+      return (
+        <span className="relative inline-block w-7 h-7">
+          <FileSpreadsheet className="w-7 h-7 text-green-700" />
+          <Plus className="absolute w-3 h-3 text-blue-600 bottom-0 right-0 bg-white rounded-full border border-white" style={{ boxShadow: '0 0 0 1px #e5e7eb' }} />
+        </span>
+      );
+    }
     return <Brain className="w-6 h-6" />;
   };
 

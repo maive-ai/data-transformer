@@ -241,7 +241,7 @@
     "name": "SOP from Video",
     "description": "",
     "createdAt": "2025-05-30T07:43:14.781Z",
-    "updatedAt": "2025-06-03T02:41:53.171Z",
+    "updatedAt": "2025-06-09T17:01:25.010Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -378,8 +378,8 @@
           "id": "output-1748591025822",
           "type": "output",
           "position": {
-            "x": 558.3999999999999,
-            "y": 70.17337184719204
+            "x": 613.8999999999999,
+            "y": 68.17337184719204
           },
           "data": {
             "label": "Doc Export",
@@ -399,8 +399,8 @@
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 558.3999999999999,
-            "y": 70.17337184719204
+            "x": 613.8999999999999,
+            "y": 68.17337184719204
           },
           "dragging": false
         },
@@ -954,7 +954,7 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-06T20:46:22.192Z",
+    "updatedAt": "2025-06-09T17:17:33.145Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -963,8 +963,8 @@
           "id": "action-1748919230696",
           "type": "action",
           "position": {
-            "x": 171.4195810067468,
-            "y": 97.77319044243694
+            "x": 178.30537875465888,
+            "y": 97.14720882899039
           },
           "data": {
             "label": "AI Transform",
@@ -988,10 +988,10 @@
           },
           "width": 119,
           "height": 86,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
-            "x": 171.4195810067468,
-            "y": 97.77319044243694
+            "x": 178.30537875465888,
+            "y": 97.14720882899039
           },
           "dragging": false
         },
@@ -1021,8 +1021,8 @@
               }
             }
           },
-          "width": 104,
-          "height": 134,
+          "width": 115,
+          "height": 150,
           "selected": true,
           "positionAbsolute": {
             "x": 590.03248086914,
@@ -1062,8 +1062,8 @@
             "runState": "done",
             "file": {}
           },
-          "width": 125,
-          "height": 134,
+          "width": 126,
+          "height": 150,
           "selected": true,
           "positionAbsolute": {
             "x": 1091.8978896924189,
@@ -1120,7 +1120,7 @@
             "file": {}
           },
           "width": 118,
-          "height": 86,
+          "height": 97,
           "selected": true,
           "positionAbsolute": {
             "x": 826.6852827430206,
@@ -1129,27 +1129,22 @@
           "dragging": false
         },
         {
-          "id": "trigger-1749242181242",
+          "id": "trigger-1749489439000",
           "type": "trigger",
           "position": {
-            "x": -26.098298484100383,
-            "y": 112.44391103461518
+            "x": 15.492482184714959,
+            "y": 97.49607354621378
           },
           "data": {
-            "label": "Manual Upload",
-            "type": "manual",
-            "runState": "done",
-            "file": {},
-            "uploadedFileNames": [
-              "space-delimited-bom.txt"
-            ]
+            "label": "File Upload",
+            "type": "manual"
           },
-          "width": 133,
+          "width": 108,
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": -26.098298484100383,
-            "y": 112.44391103461518
+            "x": 15.492482184714959,
+            "y": 97.49607354621378
           },
           "dragging": false
         }
@@ -1222,11 +1217,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "trigger-1749242181242",
+          "source": "trigger-1749489439000",
           "sourceHandle": null,
           "target": "action-1748919230696",
           "targetHandle": null,
-          "id": "trigger-1749242181242-action-1748919230696"
+          "id": "trigger-1749489439000-action-1748919230696"
         }
       ]
     }

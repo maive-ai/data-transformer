@@ -97,7 +97,7 @@ export enum NodeLabel {
   EXCEL_EXPORT = 'Excel Export',
   EXCEL_TRANSFORM = 'Excel Transform',
   DOC_EXPORT = 'Doc Export',
-  MANUAL_UPLOAD = 'Manual Upload',
+  FILE_UPLOAD = 'File Upload',
   SCHEDULE = 'Schedule',
   HTTP_ENDPOINT = 'HTTP Endpoint',
   HTTP_RESPONSE = 'HTTP Response',

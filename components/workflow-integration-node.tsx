@@ -27,7 +27,16 @@ export const WorkflowIntegrationNode = memo(({ data }: NodeProps<WorkflowIntegra
   const getIcon = () => {
     switch (data.integrationType) {
       case IntegrationSubType.ERP:
-        return <Database className="w-6 h-6" />;
+        return (
+          <div className="flex items-center justify-center h-10 w-full">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg"
+              alt="SAP"
+              className="max-h-full object-contain"
+              style={{ maxWidth: '56%' }}
+            />
+          </div>
+        );
       case IntegrationSubType.EMAIL:
         return <Mail className="w-6 h-6" />;
       case IntegrationSubType.FILE_STORAGE:

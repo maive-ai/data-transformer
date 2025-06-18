@@ -67,7 +67,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                   size="icon"
                   onClick={() =>
                     handleAddNode(NodeType.TRIGGER, {
-                      label: NodeLabel.MANUAL_UPLOAD,
+                      label: NodeLabel.FILE_UPLOAD,
                       type: TriggerSubType.MANUAL,
                     })
                   }
@@ -75,7 +75,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                   <FileUp className="w-6 h-6" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{NodeLabel.MANUAL_UPLOAD}</TooltipContent>
+              <TooltipContent>{NodeLabel.FILE_UPLOAD}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>

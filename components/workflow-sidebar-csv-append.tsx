@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { OutputTemplateUpload } from "./output-template-upload";
 
 interface CsvAppendSidebarProps {
   node: any;
@@ -7,6 +8,7 @@ interface CsvAppendSidebarProps {
 
 export function CsvAppendSidebar({ node, onChange }: CsvAppendSidebarProps) {
   const [outputFileName, setOutputFileName] = useState(node.data.outputFileName || 'merged_data.csv');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Update state when node changes
   useEffect(() => {
@@ -23,23 +25,15 @@ export function CsvAppendSidebar({ node, onChange }: CsvAppendSidebarProps) {
     });
   };
 
+  const handleTemplateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    onChange(node.id, { templateFile: file, templateFileUrl: url, templateFileName: file.name });
+  };
+
   return (
     <div className="space-y-4">
-      <div>
-        <div className="font-medium mb-2">Output Configuration</div>
-        <div className="space-y-2">
-          <div>
-            <label className="text-sm text-gray-600 mb-1 block">Output Filename</label>
-            <input
-              type="text"
-              className="w-full border rounded-lg p-2 text-sm"
-              placeholder="merged_data.csv"
-              value={outputFileName}
-              onChange={(e) => setOutputFileName(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
       <div>
         <div className="font-medium mb-2">Description</div>
         <p className="text-sm text-gray-600">
@@ -47,7 +41,18 @@ export function CsvAppendSidebar({ node, onChange }: CsvAppendSidebarProps) {
           All input CSV files must have the same column headers. Data rows from all files will be appended together.
         </p>
       </div>
-      
+      <OutputTemplateUpload
+        templateName={node.data.templateFileName || ""}
+        templateUrl={node.data.templateFileUrl || ""}
+        accept={".csv"}
+        onTemplateChange={(url, name, file) => {
+          onChange(node.id, { templateFile: file, templateFileUrl: url, templateFileName: name });
+        }}
+        onRemove={() => {
+          onChange(node.id, { templateFile: undefined, templateFileUrl: "", templateFileName: "" });
+        }}
+        helpText="If provided, each row will be appended to this template and the final CSV will be passed to the next node after the loop completes. Only CSV files are allowed."
+      />
       {/* Save Button */}
       <button
         onClick={handleSave}

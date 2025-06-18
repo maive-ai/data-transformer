@@ -241,7 +241,7 @@
     "name": "SOP from Video",
     "description": "",
     "createdAt": "2025-05-30T07:43:14.781Z",
-    "updatedAt": "2025-06-03T02:41:53.171Z",
+    "updatedAt": "2025-06-09T17:01:25.010Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -378,8 +378,8 @@
           "id": "output-1748591025822",
           "type": "output",
           "position": {
-            "x": 558.3999999999999,
-            "y": 70.17337184719204
+            "x": 613.8999999999999,
+            "y": 68.17337184719204
           },
           "data": {
             "label": "Doc Export",
@@ -399,8 +399,8 @@
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 558.3999999999999,
-            "y": 70.17337184719204
+            "x": 613.8999999999999,
+            "y": 68.17337184719204
           },
           "dragging": false
         },
@@ -954,48 +954,17 @@
     "name": "BOM Generation",
     "description": "",
     "createdAt": "2025-06-03T02:53:34.360Z",
-    "updatedAt": "2025-06-05T20:55:08.790Z",
+    "updatedAt": "2025-06-09T17:17:33.145Z",
     "steps": [],
     "runs": [],
     "workflow": {
       "nodes": [
         {
-          "id": "trigger-1748919226147",
-          "type": "trigger",
-          "position": {
-            "x": -70.5,
-            "y": 98.5
-          },
-          "data": {
-            "label": "Manual Upload",
-            "type": "manual",
-            "runState": "done",
-            "uploadedFileName": "",
-            "ioConfig": {
-              "inputTypes": [],
-              "outputType": {
-                "type": "csv"
-              }
-            },
-            "uploadedFileNames": [
-              "space-delimited-bom.txt"
-            ]
-          },
-          "width": 135,
-          "height": 88,
-          "selected": false,
-          "positionAbsolute": {
-            "x": -70.5,
-            "y": 98.5
-          },
-          "dragging": false
-        },
-        {
           "id": "action-1748919230696",
           "type": "action",
           "position": {
-            "x": 217.68762980306764,
-            "y": 99.04307453399846
+            "x": 178.30537875465888,
+            "y": 97.14720882899039
           },
           "data": {
             "label": "AI Transform",
@@ -1017,12 +986,12 @@
             "outputTemplateName": "bom-import-template.csv",
             "runState": "done"
           },
-          "width": 121,
-          "height": 88,
+          "width": 119,
+          "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 217.68762980306764,
-            "y": 99.04307453399846
+            "x": 178.30537875465888,
+            "y": 97.14720882899039
           },
           "dragging": false
         },
@@ -1030,22 +999,34 @@
           "id": "integration-1749147713399",
           "type": "integration",
           "position": {
-            "x": 650.0025143490134,
-            "y": 75.78116611599384
+            "x": 590.03248086914,
+            "y": 23.78324271364312
           },
           "data": {
             "label": "ERP",
             "type": "integration",
             "integrationType": "erp",
             "erpAction": "bom-lookup",
-            "direction": "both"
+            "direction": "both",
+            "runState": "done",
+            "file": {},
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            }
           },
-          "width": 104,
-          "height": 134,
+          "width": 115,
+          "height": 150,
           "selected": true,
           "positionAbsolute": {
-            "x": 650.0025143490134,
-            "y": 75.78116611599384
+            "x": 590.03248086914,
+            "y": 23.78324271364312
           },
           "dragging": false
         },
@@ -1053,8 +1034,8 @@
           "id": "integration-1749149343043",
           "type": "integration",
           "position": {
-            "x": 1085.849397444539,
-            "y": 74.42376228435751
+            "x": 1091.8978896924189,
+            "y": 74.21672553957674
           },
           "data": {
             "label": "ERP",
@@ -1077,65 +1058,109 @@
               "outputType": {
                 "type": "csv"
               }
-            }
+            },
+            "runState": "done",
+            "file": {}
           },
-          "width": 125,
-          "height": 134,
+          "width": 126,
+          "height": 150,
           "selected": true,
           "positionAbsolute": {
-            "x": 1085.849397444539,
-            "y": 74.42376228435751
+            "x": 1091.8978896924189,
+            "y": 74.21672553957674
           },
           "dragging": false
         },
         {
-          "id": "action-1749153925654",
-          "type": "action",
-          "position": {
-            "x": 838.9846961476603,
-            "y": 99.34317203615399
-          },
-          "data": {
-            "label": "CSV Append",
-            "type": "action"
-          },
-          "width": 117,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": 838.9846961476603,
-            "y": 99.34317203615399
-          },
-          "dragging": false
-        },
-        {
-          "id": "loop-1749153936964",
+          "id": "loop-1749182499752",
           "type": "loop",
           "position": {
-            "x": 448.17869214613796,
-            "y": 97.9044819960802
+            "x": 373.8247793682907,
+            "y": 74.7710123077355
           },
           "data": {
             "label": "Loop",
-            "type": "action"
+            "type": "action",
+            "runState": "done",
+            "file": {}
           },
           "width": 67,
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 448.17869214613796,
-            "y": 97.9044819960802
+            "x": 373.8247793682907,
+            "y": 74.7710123077355
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1749231435617",
+          "type": "action",
+          "position": {
+            "x": 826.6852827430206,
+            "y": 82.00259715870328
+          },
+          "data": {
+            "label": "CSV Append",
+            "type": "action",
+            "templateFileUrl": "",
+            "templateFileName": "",
+            "outputFileName": "merged_data.csv",
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "done",
+            "file": {}
+          },
+          "width": 118,
+          "height": 97,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 826.6852827430206,
+            "y": 82.00259715870328
+          },
+          "dragging": false
+        },
+        {
+          "id": "trigger-1749489439000",
+          "type": "trigger",
+          "position": {
+            "x": 15.492482184714959,
+            "y": 97.49607354621378
+          },
+          "data": {
+            "label": "File Upload",
+            "type": "manual"
+          },
+          "width": 108,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 15.492482184714959,
+            "y": 97.49607354621378
           },
           "dragging": false
         }
       ],
       "edges": [
         {
-          "source": "trigger-1748919226147",
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "loop-1749182499752",
           "sourceHandle": null,
-          "target": "action-1748919230696",
+          "target": "integration-1749147713399",
           "targetHandle": null,
-          "id": "reactflow__edge-trigger-1748919226147-action-1748919230696"
+          "id": "loop-1749182499752-integration-1749147713399"
         },
         {
           "type": "step",
@@ -1145,9 +1170,9 @@
           },
           "source": "integration-1749147713399",
           "sourceHandle": null,
-          "target": "action-1749153925654",
+          "target": "action-1749231435617",
           "targetHandle": null,
-          "id": "integration-1749147713399-action-1749153925654"
+          "id": "integration-1749147713399-action-1749231435617"
         },
         {
           "type": "step",
@@ -1155,11 +1180,24 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "action-1749153925654",
+          "source": "action-1749231435617",
           "sourceHandle": null,
           "target": "integration-1749149343043",
           "targetHandle": null,
-          "id": "action-1749153925654-integration-1749149343043"
+          "id": "action-1749231435617-integration-1749149343043",
+          "selected": false
+        },
+        {
+          "type": "feedback",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1749231435617",
+          "sourceHandle": "bottom",
+          "target": "loop-1749182499752",
+          "targetHandle": "bottom",
+          "id": "action-1749231435617-loop-1749182499752"
         },
         {
           "type": "step",
@@ -1169,9 +1207,9 @@
           },
           "source": "action-1748919230696",
           "sourceHandle": null,
-          "target": "loop-1749153936964",
+          "target": "loop-1749182499752",
           "targetHandle": null,
-          "id": "action-1748919230696-loop-1749153936964"
+          "id": "action-1748919230696-loop-1749182499752"
         },
         {
           "type": "step",
@@ -1179,67 +1217,13 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "loop-1749153936964",
+          "source": "trigger-1749489439000",
           "sourceHandle": null,
-          "target": "integration-1749147713399",
+          "target": "action-1748919230696",
           "targetHandle": null,
-          "id": "loop-1749153936964-integration-1749147713399"
+          "id": "trigger-1749489439000-action-1748919230696"
         }
       ]
-    }
-  },
-  "pipeline-1749007485678": {
-    "id": "pipeline-1749007485678",
-    "name": "BOM to CSV with ERP Lookup",
-    "description": "",
-    "createdAt": "2025-06-04T03:24:45.678Z",
-    "updatedAt": "2025-06-04T03:25:15.639Z",
-    "steps": [],
-    "runs": [],
-    "workflow": {
-      "nodes": [
-        {
-          "id": "trigger-1749007497185",
-          "type": "trigger",
-          "position": {
-            "x": -92.5,
-            "y": 96.5
-          },
-          "data": {
-            "label": "Manual Upload",
-            "type": "manual"
-          },
-          "width": 192,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": -92.5,
-            "y": 96.5
-          },
-          "dragging": false
-        },
-        {
-          "id": "action-1749007503301",
-          "type": "action",
-          "position": {
-            "x": 182.90654134399784,
-            "y": 97.09345865600218
-          },
-          "data": {
-            "label": "AI Transform",
-            "type": "action"
-          },
-          "width": 114,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": 182.90654134399784,
-            "y": 97.09345865600218
-          },
-          "dragging": false
-        }
-      ],
-      "edges": []
     }
   }
 }

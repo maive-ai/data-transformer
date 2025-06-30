@@ -68,7 +68,7 @@ export function PipelineDashboard() {
           />
         </div>
         <Link href="/dashboard/pipelines/new">
-          <Button className="h-11 px-5 flex items-center text-base bg-gradient-to-r from-maive-orange to-maive-yellow hover:from-maive-orange/90 hover:to-maive-yellow/90 text-maive-darker-gray font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
+          <Button variant="primary" className="h-11 px-5 flex items-center text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
             <PlusCircle className="mr-2 h-5 w-5" />
             New Pipeline
           </Button>
@@ -112,7 +112,7 @@ export function PipelineDashboard() {
                 Create your first data pipeline to start transforming your data with AI-powered workflows.
               </p>
               <Link href="/dashboard/pipelines/new">
-                <Button className="bg-gradient-to-r from-maive-orange to-maive-yellow text-maive-darker-gray font-semibold">
+                <Button variant="primary" className="font-semibold">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create Your First Pipeline
                 </Button>

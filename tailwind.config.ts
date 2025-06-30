@@ -23,6 +23,9 @@ const config: Config = {
           'darker-gray': '#0E1317',
           cream: '#FFF9EF',
         },
+        // Aliases for button styling
+        'midnight-onix': '#0E1317',
+        'frosted-silk': '#FFF9EF',
         // Theme colors using brand palette
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

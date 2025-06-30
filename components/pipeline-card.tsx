@@ -100,7 +100,7 @@ export function PipelineCard({ pipeline, onDelete }: PipelineCardProps) {
           data-oid="2b:t:.l"
         >
           <Button
-            variant="outline"
+            variant="secondary"
             className="w-full justify-between"
             data-oid="08gv044"
           >

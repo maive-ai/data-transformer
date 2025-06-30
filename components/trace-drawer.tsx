@@ -17,18 +17,21 @@ const demoTrace = [
   {
     node: 'Loop',
     output: 'Processed 10 items',
+    substeps: [
+      {
+        node: 'AI Web Search',
+        output: '{\n  "status": "success",\n  "found": 8\n}',
+      },
+      {
+        node: 'CSV Append',
+        output: 'Appended 8 rows to output.csv',
+        data: completedBomCsv,
+      },
+    ],
   },
   {
-    node: 'AI Web Search',
-    output: '{\n  "status": "success",\n  "found": 8\n}',
-  },
-  {
-    node: 'CSV Append',
-    output: 'Appended 8 rows to output.csv',
-  },
-  {
-    node: 'ERP BOM Generation',
-    output: 'Wrote Data',
+    node: 'ERP Bom Generation',
+    output: '{\n  "bom": "generated"\n}',
   },
 ];
 
@@ -111,7 +114,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
           </div>
         ) : (
           demoTrace.slice(0, stepsRevealed).map((step, idx) => (
-            <div key={idx} className="border rounded-lg p-4 bg-gray-50">
+            <div key={idx} className="border rounded-lg p-4 bg-gray-50 mb-4">
               <div className="font-medium text-gray-700 mb-2">{step.node}</div>
               <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800 mb-2">
                 {step.output}
@@ -119,12 +122,32 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
               {step.data && (
                 <div>
                   <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
-                  {/* If data looks like CSV, render as table; else fallback to code block */}
                   {step.data.includes(',') && step.data.includes('\n') ? (
                     <CsvTable csv={step.data} />
                   ) : (
                     <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{step.data}</pre>
                   )}
+                </div>
+              )}
+              {/* Render substeps if present */}
+              {Array.isArray(step.substeps) && (
+                <div className="pl-6 mt-4 border-l-2 border-gray-300">
+                  {step.substeps.map((sub, subIdx) => (
+                    <div key={subIdx} className="mb-4">
+                      <div className="font-medium text-gray-700 mb-2">{sub.node}</div>
+                      <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800 mb-2">{sub.output}</pre>
+                      {sub.data && (
+                        <div>
+                          <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
+                          {sub.data.includes(',') && sub.data.includes('\n') ? (
+                            <CsvTable csv={sub.data} />
+                          ) : (
+                            <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{sub.data}</pre>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

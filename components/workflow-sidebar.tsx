@@ -14,6 +14,7 @@ import { DocExportSidebar } from "./workflow-sidebar-doc-export";
 import { ErpSidebar } from "./workflow-sidebar-erp";
 import { IntegrationSidebar } from "./workflow-sidebar-integration";
 import { CsvAppendSidebar } from "./workflow-sidebar-csv-append";
+import { AiWebSearchSidebar } from './workflow-sidebar-ai-web-search';
 import { NodeType, TriggerSubType, OutputSubType, ActionSubType, FileType, NodeLabel } from "@/types/enums";
 
 
@@ -254,7 +255,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         }
       });
     } else if (node.type === NodeType.ACTION && node.data.label === NodeLabel.AI_TRANSFORM) {
-      // AI Transform node handles its own save logic
+      // Structured Generation node handles its own save logic
       return;
     } else if (node.type === NodeType.ACTION) {
       if (state.inputTypes[0] === FileType.MP4) {
@@ -399,6 +400,11 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           />
         ) : node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC ? (
           <DocExportSidebar 
+            node={node} 
+            onChange={onChange}
+          />
+        ) : node.type === NodeType.AI_WEB_SEARCH ? (
+          <AiWebSearchSidebar 
             node={node} 
             onChange={onChange}
           />

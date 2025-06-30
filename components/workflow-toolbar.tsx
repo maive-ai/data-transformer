@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot, Repeat, Signpost, Server, Cloud } from "lucide-react";
+import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot, Repeat, Signpost, Server, Cloud, Split, Search } from "lucide-react";
 import { Node } from "reactflow";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { 
@@ -29,6 +29,21 @@ interface WorkflowToolbarProps {
 
 // We'll keep a simple counter in closure to offset nodes
 let nodeCount = 0;
+
+// Custom OneToMany icon: single line from left, splitting into three lines to the right
+function OneToManyIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width="20" height="16" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <line x1="4" y1="16" x2="16" y2="16" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
+      <line x1="16" y1="16" x2="36" y2="6" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
+      <line x1="16" y1="16" x2="36" y2="16" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
+      <line x1="16" y1="16" x2="36" y2="26" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="36" cy="6" r="2" fill="#2563eb" />
+      <circle cx="36" cy="16" r="2" fill="#2563eb" />
+      <circle cx="36" cy="26" r="2" fill="#2563eb" />
+    </svg>
+  );
+}
 
 export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
   const getNextPosition = () => {
@@ -196,6 +211,16 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               {NodeLabel.CSV_APPEND}
             </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode(NodeType.ONE_TO_MANY, { 
+                label: "One to Many" 
+              })}
+            >
+              <OneToManyIcon className="w-4 h-4 mr-2" />
+              One to Many
+            </Button>
           </div>
         </PopoverContent>
       </Popover>
@@ -356,6 +381,16 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
             >
               <Cloud className="w-4 h-4 mr-2" />
               Webhook
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
+              onClick={() => handleAddNode(NodeType.AI_WEB_SEARCH, { 
+                label: "AI Web Search" 
+              })}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              AI Web Search
             </Button>
           </div>
         </PopoverContent>

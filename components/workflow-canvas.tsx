@@ -34,6 +34,8 @@ import { Upload, X } from "lucide-react";
 import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType, ErpAction, IntegrationSubType, NodeLabel } from "@/types/enums";
 import { WorkflowIntegrationNode } from './workflow-integration-node';
 import CurvedFeedbackEdge from './workflow-curved-edge';
+import { WorkflowOneToManyNode } from './workflow-one-to-many-node';
+import { WorkflowAiWebSearchNode } from './workflow-ai-web-search-node';
 
 // Add File System Access API type declarations
 declare global {
@@ -61,6 +63,8 @@ const nodeTypes = {
   loop: WorkflowLoopNode,
   erpLookup: WorkflowErpNode,
   integration: WorkflowIntegrationNode,
+  one_to_many: WorkflowOneToManyNode,
+  ai_web_search: WorkflowAiWebSearchNode,
 };
 
 const edgeTypes = {
@@ -253,7 +257,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     const getUpstream = (nodeId: string) => edges.filter(e => e.target === nodeId).map(e => e.source);
 
     // Helper: run a node if all its dependencies are satisfied
-    const runNode = async (nodeId: string) => {
+    const runNode = async (nodeId: string): Promise<void> => {
       const node = nodes.find(n => n.id === nodeId);
       if (!node || completedRef.current.has(nodeId)) return;
       // Check if all upstream nodes are completed
@@ -342,6 +346,30 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         ));
         setCurrentUploadNode(nodeId);
         setShowFileUpload(true);
+
+        // Wait for file selection
+        const files = await new Promise<File[]>((resolve) => {
+          fileUploadResolver.current = resolve;
+        });
+
+        // Store the file in nodeData
+        nodeData.set(nodeId, { file: files[0] });
+
+        // Mark node as done and continue pipeline
+        setNodes(nds => nds.map(n => n.id === nodeId ? {
+          ...n,
+          data: {
+            ...n.data,
+            runState: RunState.DONE,
+            uploadedFileNames: [files[0].name],
+          }
+        } : n));
+        completedRef.current.add(nodeId);
+
+        // Continue to downstream nodes
+        for (const downstreamId of getDownstream(nodeId)) {
+          await runNode(downstreamId);
+        }
         return;
       } else if (node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
@@ -1220,6 +1248,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                       fileUploadResolver.current(Array.from(e.target.files));
                       fileUploadResolver.current = null;
                     }
+                    setShowFileUpload(false);
+                    setCurrentUploadNode(null);
                     e.target.value = '';
                   }
                 }}

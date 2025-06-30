@@ -9,6 +9,8 @@ export enum NodeType {
   ERP_LOOKUP = 'erpLookup',
   LOOP = 'loop',
   INTEGRATION = 'integration',
+  ONE_TO_MANY = 'one_to_many',
+  AI_WEB_SEARCH = 'ai_web_search',
 }
 
 // Node sub-type enums
@@ -92,7 +94,7 @@ export enum ContentType {
 
 // Node labels that are frequently used
 export enum NodeLabel {
-  AI_TRANSFORM = 'AI Transform',
+  AI_TRANSFORM = 'Structured Generation',
   AI_OPERATOR = 'AI Operator',
   EXCEL_EXPORT = 'Excel Export',
   EXCEL_TRANSFORM = 'Excel Transform',

@@ -36,6 +36,7 @@ import { WorkflowIntegrationNode } from './workflow-integration-node';
 import CurvedFeedbackEdge from './workflow-curved-edge';
 import { WorkflowOneToManyNode } from './workflow-one-to-many-node';
 import { WorkflowAiWebSearchNode } from './workflow-ai-web-search-node';
+import { TraceDrawer } from './trace-drawer';
 
 // Add File System Access API type declarations
 declare global {
@@ -129,12 +130,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [nodeRunHistory, setNodeRunHistory] = useState<Record<string, Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>>>({});
-  const [showFileUpload, setShowFileUpload] = useState(false);
-  const [currentUploadNode, setCurrentUploadNode] = useState<string | null>(null);
   const [localPipelineName, setLocalPipelineName] = useState(pipelineName);
   const completedRef = useRef(new Set<string>());
-  // Add a ref to store the resolver for the file upload promise
-  const fileUploadResolver = useRef<((files: File[]) => void) | null>(null);
+  const [traceOpen, setTraceOpen] = useState(false);
 
   // Update local name when prop changes
   useEffect(() => {
@@ -230,6 +228,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   // Run pipeline animation logic
   const runPipeline = async () => {
+    setTraceOpen(true);
     // Reset all nodes to idle state at the start of each run
     setNodes(nds =>
       nds.map(n => ({
@@ -247,7 +246,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     const fileUploadRoots = rootNodes.filter(n => n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL);
     const otherRoots = rootNodes.filter(n => !(n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL));
     // Track node completion and outputs
-    const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[] }> = new Map();
+    const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[]; fileUploadResolver?: (files: File[]) => void }> = new Map();
     completedRef.current = new Set();
     const waiting: Record<string, (() => void)[]> = {};
 
@@ -344,18 +343,13 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.PROMPT : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
             : n
         ));
-        setCurrentUploadNode(nodeId);
-        setShowFileUpload(true);
-
-        // Wait for file selection
+        // Wait for file selection via sidebar (handled by a global resolver for demo)
         const files = await new Promise<File[]>((resolve) => {
-          fileUploadResolver.current = resolve;
+          if (typeof window !== 'undefined') {
+            (window as any).__fileUploadResolver = resolve;
+          }
         });
-
-        // Store the file in nodeData
         nodeData.set(nodeId, { file: files[0] });
-
-        // Mark node as done and continue pipeline
         setNodes(nds => nds.map(n => n.id === nodeId ? {
           ...n,
           data: {
@@ -365,8 +359,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
         } : n));
         completedRef.current.add(nodeId);
-
-        // Continue to downstream nodes
         for (const downstreamId of getDownstream(nodeId)) {
           await runNode(downstreamId);
         }
@@ -546,7 +538,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 } else if (rand < mockDistribution.directMatch + mockDistribution.substitution) {
                   status = "Substitution Found";
                   substitution = `${mpn}-ALT`;
-      } else {
+                } else {
                   status = "Not Found in ERP";
                 }
               } else {
@@ -1157,7 +1149,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         runState: RunState.IDLE,
       },
     })));
-    setCurrentUploadNode(null);
     // Optionally clear other state if needed
   }, [setNodes]);
 
@@ -1168,7 +1159,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   }));
 
   return (
-    <div className="w-full h-full flex flex-col relative">
+    <div className={"w-full h-full flex flex-col relative" + (traceOpen ? ' mr-[400px]' : '')}>
+      {/* Floating Show Trace Button for Demo */}
+      <button
+        className="fixed bottom-8 right-8 z-50 bg-white border border-gray-300 shadow-lg rounded-full w-14 h-14 flex items-center justify-center text-lg font-bold hover:bg-gray-100 transition"
+        onClick={() => setTraceOpen(true)}
+        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+      >
+        Show Trace
+      </button>
+      <TraceDrawer open={traceOpen} onClose={() => setTraceOpen(false)} />
       {/* Top bar: pipeline name, toolbar, play/stop button, absolutely positioned */}
       <div className="absolute left-0 right-0 top-6 z-40 flex flex-row items-center justify-between px-8 pointer-events-none">
         {/* Pipeline name input, left */}
@@ -1194,7 +1194,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           nodes={nodes.map(n => {
             let isHighlighted = false;
             if (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) {
-              isHighlighted = n.id === currentUploadNode;
+              isHighlighted = n.id === selectedNodeId;
             } else if (n.data.runState === RunState.RUNNING) {
               isHighlighted = true;
             }
@@ -1231,32 +1231,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             nodes={nodes}
             edges={edges}
           />
-        )}
-        {showFileUpload && currentUploadNode && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl">
-              <h3 className="text-lg font-semibold mb-4">Upload File</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Please select a file to continue the pipeline execution.
-              </p>
-              <input
-                type="file"
-                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4,.txt"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                    if (fileUploadResolver.current) {
-                      fileUploadResolver.current(Array.from(e.target.files));
-                      fileUploadResolver.current = null;
-                    }
-                    setShowFileUpload(false);
-                    setCurrentUploadNode(null);
-                    e.target.value = '';
-                  }
-                }}
-                className="block w-full"
-              />
-            </div>
-          </div>
         )}
       </div>
     </div>

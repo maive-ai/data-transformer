@@ -1304,7 +1304,7 @@
     "name": "BOM Coding",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-06-30T18:58:17.390Z",
+    "updatedAt": "2025-06-30T19:13:23.268Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1318,7 +1318,11 @@
           },
           "data": {
             "label": "Manual Upload",
-            "type": "manual"
+            "type": "manual",
+            "runState": "prompt",
+            "uploadedFileNames": [
+              "space-delimited-bom.txt"
+            ]
           },
           "width": 133,
           "height": 86,
@@ -1338,7 +1342,8 @@
           },
           "data": {
             "label": "Loop",
-            "type": "action"
+            "type": "action",
+            "runState": "idle"
           },
           "width": 67,
           "height": 86,
@@ -1358,7 +1363,8 @@
           },
           "data": {
             "label": "Structured Generation",
-            "type": "action"
+            "type": "action",
+            "runState": "idle"
           },
           "width": 182,
           "height": 86,
@@ -1373,8 +1379,8 @@
           "id": "ai_web_search-1751308153360",
           "type": "ai_web_search",
           "position": {
-            "x": 512.0946643432275,
-            "y": 72.30864344281676
+            "x": 527.1466294317058,
+            "y": 71.4232337317298
           },
           "data": {
             "label": "AI Web Search",
@@ -1383,14 +1389,15 @@
               "digikey.com",
               "mouser.com",
               "lcsc.com"
-            ]
+            ],
+            "runState": "idle"
           },
           "width": 160,
           "height": 112,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
-            "x": 512.0946643432275,
-            "y": 72.30864344281676
+            "x": 527.1466294317058,
+            "y": 71.4232337317298
           },
           "dragging": false
         },
@@ -1398,18 +1405,19 @@
           "id": "action-1751309647642",
           "type": "action",
           "position": {
-            "x": 782.1309036876861,
+            "x": 784.7871328209469,
             "y": 84.5467701957383
           },
           "data": {
             "label": "CSV Append",
-            "type": "action"
+            "type": "action",
+            "runState": "idle"
           },
           "width": 118,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
-            "x": 782.1309036876861,
+            "x": 784.7871328209469,
             "y": 84.5467701957383
           },
           "dragging": false
@@ -1425,12 +1433,29 @@
             "label": "ERP",
             "type": "integration",
             "integrationType": "erp",
-            "erpAction": "bom-lookup",
-            "direction": "both"
+            "erpAction": "bom-generation",
+            "direction": "both",
+            "mockDistribution": {
+              "directMatch": 80,
+              "substitution": 10,
+              "notFound": 10
+            },
+            "useMockData": true,
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": "csv"
+                }
+              ],
+              "outputType": {
+                "type": "csv"
+              }
+            },
+            "runState": "idle"
           },
-          "width": 105,
+          "width": 126,
           "height": 134,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": 1017.6915042175885,
             "y": 60.20648603871405

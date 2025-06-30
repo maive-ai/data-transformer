@@ -358,6 +358,27 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           />
         ) : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL ? (
           <>
+            {/* File upload prompt when running */}
+            {node.data.runState === 'prompt' ? (
+              <div className="mb-6">
+                <div className="font-medium mb-2">Upload File</div>
+                <div className="text-sm text-gray-600 mb-4">Please select a file to continue the pipeline execution.</div>
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4,.txt"
+                  className="block w-full mb-2"
+                  onChange={e => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      // For demo: use a global resolver set by the canvas
+                      if (typeof window !== 'undefined' && (window as any).__fileUploadResolver) {
+                        (window as any).__fileUploadResolver(Array.from(e.target.files));
+                        (window as any).__fileUploadResolver = null;
+                      }
+                    }
+                  }}
+                />
+              </div>
+            ) : null}
             {/* Only show run history and other relevant sections for manual trigger node */}
             <input
               type="file"

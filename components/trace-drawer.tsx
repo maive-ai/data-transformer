@@ -67,10 +67,56 @@ function CsvTable({ csv }: { csv: string }) {
   );
 }
 
+// Render JSON as fields for non-technical users
+function JsonFields({ json }: { json: string }) {
+  let obj: any = null;
+  try {
+    obj = JSON.parse(json);
+  } catch {
+    return <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800 mb-2">{json}</pre>;
+  }
+  if (!obj || typeof obj !== 'object') return null;
+  return (
+    <div className="mb-2">
+      {Object.entries(obj).map(([key, value]) => (
+        <div key={key} className="text-xs mb-1 text-gray-800">
+          <span className="font-semibold text-gray-700">{key}:</span> {String(value)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [stepsRevealed, setStepsRevealed] = useState(0);
+  const [width, setWidth] = useState(400);
   const revealTimer = useRef<NodeJS.Timeout | null>(null);
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const startWidth = useRef(400);
+
+  // Mouse event handlers for resizing
+  const onMouseDown = (e: React.MouseEvent) => {
+    dragging.current = true;
+    startX.current = e.clientX;
+    startWidth.current = width;
+    document.body.style.cursor = 'ew-resize';
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  };
+  const onMouseMove = (e: MouseEvent) => {
+    if (!dragging.current) return;
+    let newWidth = startWidth.current + (startX.current - e.clientX);
+    newWidth = Math.max(320, Math.min(700, newWidth));
+    setWidth(newWidth);
+  };
+  const onMouseUp = () => {
+    dragging.current = false;
+    document.body.style.cursor = '';
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+  };
 
   // When file is uploaded, start revealing steps one by one
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,9 +137,16 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
 
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-[400px] bg-white shadow-2xl z-50 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
-      style={{ boxShadow: 'rgba(0,0,0,0.08) -8px 0px 24px' }}
+      className={`fixed top-0 right-0 h-full bg-white shadow-2xl z-50 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
+      style={{ boxShadow: 'rgba(0,0,0,0.08) -8px 0px 24px', width }}
     >
+      {/* Drag handle */}
+      <div
+        onMouseDown={onMouseDown}
+        className="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-50 bg-transparent hover:bg-gray-200 transition"
+        style={{ marginLeft: '-8px' }}
+        title="Drag to resize"
+      />
       <div className="flex items-center justify-between px-6 py-4 border-b">
         <div className="text-lg font-semibold">Trace</div>
         <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close trace">
@@ -116,9 +169,8 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
           demoTrace.slice(0, stepsRevealed).map((step, idx) => (
             <div key={idx} className="border rounded-lg p-4 bg-gray-50 mb-4">
               <div className="font-medium text-gray-700 mb-2">{step.node}</div>
-              <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800 mb-2">
-                {step.output}
-              </pre>
+              {/* If output is JSON, render as fields; else fallback to code block */}
+              <JsonFields json={step.output} />
               {step.data && (
                 <div>
                   <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
@@ -135,7 +187,8 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   {step.substeps.map((sub, subIdx) => (
                     <div key={subIdx} className="mb-4">
                       <div className="font-medium text-gray-700 mb-2">{sub.node}</div>
-                      <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800 mb-2">{sub.output}</pre>
+                      {/* If output is JSON, render as fields; else fallback to code block */}
+                      <JsonFields json={sub.output} />
                       {sub.data && (
                         <div>
                           <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>

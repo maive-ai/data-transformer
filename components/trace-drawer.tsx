@@ -2,28 +2,67 @@ import { useState, useRef } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quantity,Reference Designators\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R1,\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R2,\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,1,C1,\nAS1115-BSST,LED Driver 24-QSOP,ams,1,U1,\n1N4148-T,Switching Diode,Diodes_Inc,1,D1,`;
+
 const demoTrace = [
   {
     node: 'Manual Upload',
-    output: 'Uploaded file: data.csv',
+    output: 'Uploaded file: space-delimited-bom.txt',
   },
   {
-    node: 'AI Transform',
+    node: 'Structured Generation',
     output: '{\n  "transformed": true,\n  "rows": 123\n}',
+    data: completedBomCsv,
   },
   {
     node: 'Loop',
     output: 'Processed 10 items',
   },
   {
-    node: 'ERP Lookup',
+    node: 'AI Web Search',
     output: '{\n  "status": "success",\n  "found": 8\n}',
   },
   {
     node: 'CSV Append',
     output: 'Appended 8 rows to output.csv',
   },
+  {
+    node: 'ERP BOM Generation',
+    output: 'Wrote Data',
+  },
 ];
+
+// Simple CSV parser for demo (no quoted fields)
+function parseCsv(csv: string): string[][] {
+  return csv.trim().split(/\r?\n/).map(line => line.split(','));
+}
+
+function CsvTable({ csv }: { csv: string }) {
+  const rows = parseCsv(csv);
+  if (!rows.length) return null;
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full border text-xs">
+        <thead>
+          <tr>
+            {rows[0].map((cell, i) => (
+              <th key={i} className="border px-2 py-1 bg-gray-100 text-left font-semibold">{cell}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(1).map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => (
+                <td key={j} className="border px-2 py-1">{cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [fileUploaded, setFileUploaded] = useState(false);
@@ -74,9 +113,20 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
           demoTrace.slice(0, stepsRevealed).map((step, idx) => (
             <div key={idx} className="border rounded-lg p-4 bg-gray-50">
               <div className="font-medium text-gray-700 mb-2">{step.node}</div>
-              <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">
+              <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800 mb-2">
                 {step.output}
               </pre>
+              {step.data && (
+                <div>
+                  <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
+                  {/* If data looks like CSV, render as table; else fallback to code block */}
+                  {step.data.includes(',') && step.data.includes('\n') ? (
+                    <CsvTable csv={step.data} />
+                  ) : (
+                    <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{step.data}</pre>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}

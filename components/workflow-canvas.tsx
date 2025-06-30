@@ -114,6 +114,9 @@ function getPdtTimestamp() {
   }).replace(/[/:]/g, '-').replace(/, /g, '_').replace(/ /g, '');
 }
 
+// Config: disable node outlines/highlights
+const HIGHLIGHT_NODES_WHEN_RUNNING = false;
+
 export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   initialNodes = [],
   initialEdges = [],
@@ -1160,14 +1163,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   return (
     <div className={"w-full h-full flex flex-col relative" + (traceOpen ? ' mr-[400px]' : '')}>
-      {/* Floating Show Trace Button for Demo */}
-      <button
-        className="fixed bottom-8 right-8 z-50 bg-white border border-gray-300 shadow-lg rounded-full w-14 h-14 flex items-center justify-center text-lg font-bold hover:bg-gray-100 transition"
-        onClick={() => setTraceOpen(true)}
-        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
-      >
-        Show Trace
-      </button>
       <TraceDrawer open={traceOpen} onClose={() => setTraceOpen(false)} />
       {/* Top bar: pipeline name, toolbar, play/stop button, absolutely positioned */}
       <div className="absolute left-0 right-0 top-6 z-40 flex flex-row items-center justify-between px-8 pointer-events-none">
@@ -1193,10 +1188,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         <ReactFlow
           nodes={nodes.map(n => {
             let isHighlighted = false;
-            if (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) {
-              isHighlighted = n.id === selectedNodeId;
-            } else if (n.data.runState === RunState.RUNNING) {
-              isHighlighted = true;
+            if (HIGHLIGHT_NODES_WHEN_RUNNING) {
+              if (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) {
+                isHighlighted = n.id === selectedNodeId;
+              } else if (n.data.runState === RunState.RUNNING) {
+                isHighlighted = true;
+              }
             }
             return {
               ...n,

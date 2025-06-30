@@ -28,12 +28,19 @@ const INTEGRATIONS = [
   { name: "Custom API", icon: "🔌" },
 ];
 
+// Config: disable node outlines/highlights
+const HIGHLIGHT_NODES_WHEN_RUNNING = false;
+
 export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNodeData>) => {
   let borderClass = "";
-  if (data.runState === RunState.PROMPT) borderClass = "border-2 border-blue-400 animate-pulse";
-  else if (data.runState === RunState.RUNNING) borderClass = "";
-  else if (data.runState === RunState.DONE) borderClass = "border-2 border-green-500";
-  else borderClass = "border border-gray-200";
+  if (HIGHLIGHT_NODES_WHEN_RUNNING) {
+    if (data.runState === RunState.PROMPT) borderClass = "border-2 border-blue-400 animate-pulse";
+    else if (data.runState === RunState.RUNNING) borderClass = "";
+    else if (data.runState === RunState.DONE) borderClass = "border-2 border-green-500";
+    else borderClass = "border border-gray-200";
+  } else {
+    borderClass = "border border-gray-200";
+  }
 
   const highlighted = data.highlighted && data.runState !== RunState.PROMPT;
   if (highlighted) {

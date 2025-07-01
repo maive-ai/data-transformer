@@ -8,8 +8,6 @@ const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quant
 
 const bomNiceCsv = `RefDes,MPN,Manufacturer,Qty,Description,Notes\nR1,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,-\nR2,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,-\nC1,C0805C103K1RACTU,KEMET,1,10nF 50V X7R 0805 Capacitor,Alternate for C1\nU1,AS1115-BSST,ams,1,LED Driver 24-QSOP,-\nD1,1N4148-T,Diodes_Inc,1,Switching Diode,Fast\nR3,-,-,1,1kΩ 0603 Resistor,No PN provided`;
 
-const bomFinalCsv = `RefDes,MPN,Manufacturer,Qty,Description,Alternate,Supplier,Quote,Link\nR1,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,No,Digi-Key,$0.00696,https://www.digikey.com/en/products/detail/te-connectivity-passive-product/CRG0603F10K/2055639\nR2,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,No,Digi-Key,$0.00696,https://www.digikey.com/en/products/detail/te-connectivity-passive-product/CRG0603F10K/2055639\nC1,C0805C103K1RACTU,KEMET,1,10nF 50V X7R 0805 Capacitor,No,Micro-Semiconductor,$0.007000,https://www.micro-semiconductor.com/products/KEMET/C0805C103K1RACTU\nU1,AS1115-BSST,ams,1,LED Driver 24-QSOP,No,Mouser,$1.540000,https://www.mouser.com/ProductDetail/ams-OSRAM/AS1115-BSST?qs=jMXWnm70%252BC%2FTIBNsbFwa8Q%3D%3D\nD1,1N4148WX-TP,Diodes_Inc,1,Switching Diode,Yes,Digi-Key,$0.023340,https://www.digikey.com/en/products/detail/mcc-micro-commercial-components/1N4148WX-TP/717197\nR3,-,-,1,1kΩ 0603 Resistor,Yes,Digi-Key,$0.133170,https://www.digikey.com/en/products/detail/vishay-dale/TNPW06031K00BEEA/1606767`;
-
 const supplierFiles = [
   'artifacts/supplier/CRG0603F10K.csv',
   'artifacts/supplier/CRG0603F10K.csv',
@@ -139,27 +137,34 @@ function TraceStep({ nodeName, output, data, isLoading, loadingMessage, children
   );
 }
 
-const demoTrace = [
-  {
-    node: 'BOM Upload',
-    output: 'Uploaded file: BOM-messy.csv',
-  },
-  {
-    node: 'BOM Reformatting',
-    output: '{\n  "Transformed": true}',
-    data: bomNiceCsv,
-  },
-  {
-    node: 'AI Web Scrape',
-    output: '{\n  "Status": "success"}',
-    data: bomNiceCsv,
-  },
-  {
-    node: 'BOM Optimization',
-    output: '{\n  "Status": "success"}',
-    data: bomFinalCsv,
-  },
-];
+function getDemoTrace(bomFinalCsv: string) {
+  return [
+    {
+      node: 'BOM Upload',
+      output: 'Uploaded file: BOM-messy.csv',
+    },
+    {
+      node: 'BOM Reformatting',
+      output: '{\n  "Transformed": true}',
+      data: bomNiceCsv,
+    },
+    {
+      node: 'AI Web Scrape',
+      output: '{\n  "Status": "success"}',
+      data: bomNiceCsv,
+    },
+    {
+      node: 'BOM Optimization',
+      output: '{\n  "Status": "success"}',
+      data: bomFinalCsv,
+    },
+    {
+      node: 'CSV Export',
+      output: '{\n  "Exported": true}',
+      data: completedBomCsv,
+    },
+  ];
+}
 
 // Robust CSV parser that handles quoted fields and commas inside quotes
 function parseCsv(csv: string): string[][] {
@@ -350,6 +355,22 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
   const [selectedFileName, setSelectedFileName] = useState<string>("");
   const [showSearchComplete, setShowSearchComplete] = useState(false);
   const [aiWebScrapeCsvOpen, setAiWebScrapeCsvOpen] = useState(false);
+  const [bomFinalCsv, setBomFinalCsv] = useState<string>('');
+  const [bomFinalCsvLoading, setBomFinalCsvLoading] = useState(false);
+  const [bomFinalCsvError, setBomFinalCsvError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setBomFinalCsvLoading(true);
+    setBomFinalCsvError(null);
+    fetch('/artifacts/BOM-final.csv')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch BOM-final.csv');
+        return res.text();
+      })
+      .then(setBomFinalCsv)
+      .catch(e => setBomFinalCsvError(e.message))
+      .finally(() => setBomFinalCsvLoading(false));
+  }, []);
 
   // Mouse event handlers for resizing
   const onMouseDown = (e: React.MouseEvent) => {
@@ -489,11 +510,39 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             </div>
           </div>
         ) : (
-          demoTrace.slice(0, Math.max(stepsRevealed, loadingStep2 ? 3 : loadingStep3 ? 4 : 2)).map((step, idx) => {
-            // For AI Web Scrape, only show the table after loadingStep2 is false and showSearchComplete is false
+          getDemoTrace(bomFinalCsv).slice(0, Math.max(stepsRevealed, loadingStep2 ? 3 : loadingStep3 ? 4 : 2)).map((step, idx) => {
             const isAIWebScrape = step.node === 'AI Web Scrape';
             const shouldShowTable = isAIWebScrape && !loadingStep2 && !showSearchComplete;
-            const isBomOptimization = step.node === 'BOM Optimization';
+            // For BOM Optimization, show loading or error if BOM-final.csv is not loaded
+            if (step.node === 'BOM Optimization') {
+              if (bomFinalCsvLoading) {
+                return (
+                  <TraceStep key={idx} nodeName={step.node} output={step.output} isLoading loadingMessage="Loading BOM-final.csv..." />
+                );
+              }
+              if (bomFinalCsvError) {
+                return (
+                  <TraceStep key={idx} nodeName={step.node} output={step.output}>
+                    <div className="text-red-600">{bomFinalCsvError}</div>
+                  </TraceStep>
+                );
+              }
+            }
+            // For BOM Reformatting, show only the CSV table without extra columns
+            if (step.node === 'BOM Reformatting' && step.data) {
+              return (
+                <TraceStep
+                  key={idx}
+                  nodeName={step.node}
+                  output={step.output}
+                  data={step.data}
+                  isLoading={step.node === 'BOM Reformatting' && idx === 1 ? loadingStep1 : false}
+                  loadingMessage={step.node === 'BOM Reformatting' && idx === 1 ? 'Reformatting BOM...' : undefined}
+                >
+                  <CsvTable csv={step.data} />
+                </TraceStep>
+              );
+            }
             return (
               <TraceStep
                 key={idx}
@@ -536,8 +585,6 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                       <CsvTableWithLinks csv={step.data!} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
                     ) : null}
                   </div>
-                ) : isBomOptimization && step.data ? (
-                  <CsvTable csv={step.data} />
                 ) : null}
               </TraceStep>
             );

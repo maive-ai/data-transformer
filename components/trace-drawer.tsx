@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -90,6 +90,7 @@ function JsonFields({ json }: { json: string }) {
 export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [stepsRevealed, setStepsRevealed] = useState(0);
+  const [loadingStep, setLoadingStep] = useState<string | null>(null);
   const [width, setWidth] = useState(400);
   const revealTimer = useRef<NodeJS.Timeout | null>(null);
   const dragging = useRef(false);
@@ -123,17 +124,28 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
     if (e.target.files && e.target.files.length > 0) {
       setFileUploaded(true);
       setStepsRevealed(1);
-      // Reveal each step every 1s for demo
-      if (revealTimer.current) clearInterval(revealTimer.current);
-      revealTimer.current = setInterval(() => {
-        setStepsRevealed(prev => {
-          if (prev < demoTrace.length) return prev + 1;
-          if (revealTimer.current) clearInterval(revealTimer.current);
-          return prev;
-        });
-      }, 1000);
+      setLoadingStep('Structured Generation');
     }
   };
+
+  // Effect to handle loading for Structured Generation
+  useEffect(() => {
+    if (loadingStep === 'Structured Generation') {
+      const timer = setTimeout(() => {
+        setLoadingStep(null);
+        // Continue revealing the rest after loading completes
+        if (revealTimer.current) clearInterval(revealTimer.current);
+        revealTimer.current = setInterval(() => {
+          setStepsRevealed(prev => {
+            if (prev < demoTrace.length) return prev + 1;
+            if (revealTimer.current) clearInterval(revealTimer.current);
+            return prev;
+          });
+        }, 1000);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [loadingStep]);
 
   return (
     <div
@@ -166,42 +178,53 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             />
           </div>
         ) : (
-          demoTrace.slice(0, stepsRevealed).map((step, idx) => (
+          demoTrace.slice(0, Math.max(stepsRevealed, 2)).map((step, idx) => (
             <div key={idx} className="border rounded-lg p-4 bg-gray-50 mb-4">
               <div className="font-medium text-gray-700 mb-2">{step.node}</div>
-              {/* If output is JSON, render as fields; else fallback to code block */}
-              <JsonFields json={step.output} />
-              {step.data && (
-                <div>
-                  <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
-                  {step.data.includes(',') && step.data.includes('\n') ? (
-                    <CsvTable csv={step.data} />
-                  ) : (
-                    <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{step.data}</pre>
-                  )}
+              {/* Show loading spinner for Structured Generation if loading */}
+              {step.node === loadingStep ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                  <svg className="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  Running Structured Generation…
                 </div>
-              )}
-              {/* Render substeps if present */}
-              {Array.isArray(step.substeps) && (
-                <div className="pl-6 mt-4 border-l-2 border-gray-300">
-                  {step.substeps.map((sub, subIdx) => (
-                    <div key={subIdx} className="mb-4">
-                      <div className="font-medium text-gray-700 mb-2">{sub.node}</div>
-                      {/* If output is JSON, render as fields; else fallback to code block */}
-                      <JsonFields json={sub.output} />
-                      {sub.data && (
-                        <div>
-                          <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
-                          {sub.data.includes(',') && sub.data.includes('\n') ? (
-                            <CsvTable csv={sub.data} />
-                          ) : (
-                            <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{sub.data}</pre>
-                          )}
-                        </div>
+              ) : (
+                <>
+                  <JsonFields json={step.output} />
+                  {step.data && (
+                    <div>
+                      <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
+                      {step.data.includes(',') && step.data.includes('\n') ? (
+                        <CsvTable csv={step.data} />
+                      ) : (
+                        <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{step.data}</pre>
                       )}
                     </div>
-                  ))}
-                </div>
+                  )}
+                  {/* Render substeps if present */}
+                  {Array.isArray(step.substeps) && (
+                    <div className="pl-6 mt-4 border-l-2 border-gray-300">
+                      {step.substeps.map((sub, subIdx) => (
+                        <div key={subIdx} className="mb-4">
+                          <div className="font-medium text-gray-700 mb-2">{sub.node}</div>
+                          <JsonFields json={sub.output} />
+                          {sub.data && (
+                            <div>
+                              <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
+                              {sub.data.includes(',') && sub.data.includes('\n') ? (
+                                <CsvTable csv={sub.data} />
+                              ) : (
+                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{sub.data}</pre>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))

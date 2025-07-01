@@ -8,6 +8,8 @@ const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quant
 
 const bomNiceCsv = `RefDes,MPN,Manufacturer,Qty,Description,Notes\nR1,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,-\nR2,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,-\nC1,C0805C103K1RACTU,KEMET,1,10nF 50V X7R 0805 Capacitor,Alternate for C1\nU1,AS1115-BSST,ams,1,LED Driver 24-QSOP,-\nD1,1N4148-T,Diodes_Inc,1,Switching Diode,Fast\nR3,-,-,1,1kΩ 0603 Resistor,No PN provided`;
 
+const bomFinalCsv = `RefDes,MPN,Manufacturer,Qty,Description,Alternate,Supplier,Quote,Link\nR1,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,No,Digi-Key,$0.00696,https://www.digikey.com/en/products/detail/te-connectivity-passive-product/CRG0603F10K/2055639\nR2,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,No,Digi-Key,$0.00696,https://www.digikey.com/en/products/detail/te-connectivity-passive-product/CRG0603F10K/2055639\nC1,C0805C103K1RACTU,KEMET,1,10nF 50V X7R 0805 Capacitor,No,Micro-Semiconductor,$0.007000,https://www.micro-semiconductor.com/products/KEMET/C0805C103K1RACTU\nU1,AS1115-BSST,ams,1,LED Driver 24-QSOP,No,Mouser,$1.540000,https://www.mouser.com/ProductDetail/ams-OSRAM/AS1115-BSST?qs=jMXWnm70%252BC%2FTIBNsbFwa8Q%3D%3D\nD1,1N4148WX-TP,Diodes_Inc,1,Switching Diode,Yes,Digi-Key,$0.023340,https://www.digikey.com/en/products/detail/mcc-micro-commercial-components/1N4148WX-TP/717197\nR3,-,-,1,1kΩ 0603 Resistor,Yes,Digi-Key,$0.133170,https://www.digikey.com/en/products/detail/vishay-dale/TNPW06031K00BEEA/1606767`;
+
 const supplierFiles = [
   'artifacts/supplier/CRG0603F10K.csv',
   'artifacts/supplier/CRG0603F10K.csv',
@@ -155,12 +157,7 @@ const demoTrace = [
   {
     node: 'BOM Optimization',
     output: '{\n  "Status": "success"}',
-    data: completedBomCsv,
-  },
-  {
-    node: 'CSV Export',
-    output: '{\n  "Exported": true}',
-    data: completedBomCsv,
+    data: bomFinalCsv,
   },
 ];
 
@@ -496,6 +493,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             // For AI Web Scrape, only show the table after loadingStep2 is false and showSearchComplete is false
             const isAIWebScrape = step.node === 'AI Web Scrape';
             const shouldShowTable = isAIWebScrape && !loadingStep2 && !showSearchComplete;
+            const isBomOptimization = step.node === 'BOM Optimization';
             return (
               <TraceStep
                 key={idx}
@@ -538,6 +536,8 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                       <CsvTableWithLinks csv={step.data!} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
                     ) : null}
                   </div>
+                ) : isBomOptimization && step.data ? (
+                  <CsvTable csv={step.data} />
                 ) : null}
               </TraceStep>
             );

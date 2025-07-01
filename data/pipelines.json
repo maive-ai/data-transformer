@@ -1301,76 +1301,45 @@
   },
   "pipeline-1751305377923": {
     "id": "pipeline-1751305377923",
-    "name": "BOM Coding",
+    "name": "BOM Coding to CSV",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-06-30T19:13:23.268Z",
+    "updatedAt": "2025-07-01T01:35:42.207Z",
     "steps": [],
     "runs": [],
     "workflow": {
       "nodes": [
         {
-          "id": "trigger-1751305380526",
-          "type": "trigger",
-          "position": {
-            "x": -100,
-            "y": 85
-          },
-          "data": {
-            "label": "Manual Upload",
-            "type": "manual",
-            "runState": "prompt",
-            "uploadedFileNames": [
-              "space-delimited-bom.txt"
-            ]
-          },
-          "width": 133,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": -100,
-            "y": 85
-          },
-          "dragging": false
-        },
-        {
-          "id": "loop-1751306724613",
-          "type": "loop",
-          "position": {
-            "x": 348.0533682477762,
-            "y": 84.58629785452882
-          },
-          "data": {
-            "label": "Loop",
-            "type": "action",
-            "runState": "idle"
-          },
-          "width": 67,
-          "height": 86,
-          "selected": true,
-          "positionAbsolute": {
-            "x": 348.0533682477762,
-            "y": 84.58629785452882
-          },
-          "dragging": false
-        },
-        {
           "id": "action-1751306973030",
           "type": "action",
           "position": {
-            "x": 97.35355256288582,
+            "x": 96.45543664208276,
             "y": 84.65060486473774
           },
           "data": {
             "label": "Structured Generation",
             "type": "action",
-            "runState": "idle"
+            "runState": "idle",
+            "outputTemplateUrl": "/templates/e55de520-2bad-4c94-9a86-72b168f0733a-bom-import-template.csv",
+            "outputTemplateName": "bom-import-template.csv",
+            "useOutputTemplate": true,
+            "prompt": "Please structure the data received into the expected template",
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": ""
+                }
+              ],
+              "outputType": {
+                "type": ""
+              }
+            }
           },
           "width": 182,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
-            "x": 97.35355256288582,
+            "x": 96.45543664208276,
             "y": 84.65060486473774
           },
           "dragging": false
@@ -1379,8 +1348,8 @@
           "id": "ai_web_search-1751308153360",
           "type": "ai_web_search",
           "position": {
-            "x": 527.1466294317058,
-            "y": 71.4232337317298
+            "x": 423.4986105071847,
+            "y": 71.58855633932035
           },
           "data": {
             "label": "AI Web Search",
@@ -1394,71 +1363,31 @@
           },
           "width": 160,
           "height": 112,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
-            "x": 527.1466294317058,
-            "y": 71.4232337317298
+            "x": 423.4986105071847,
+            "y": 71.58855633932035
           },
           "dragging": false
         },
         {
-          "id": "action-1751309647642",
-          "type": "action",
+          "id": "trigger-1751313521051",
+          "type": "trigger",
           "position": {
-            "x": 784.7871328209469,
-            "y": 84.5467701957383
+            "x": -115.1820589943253,
+            "y": 84.86872973289363
           },
           "data": {
-            "label": "CSV Append",
-            "type": "action",
+            "label": "Manual Upload",
+            "type": "manual",
             "runState": "idle"
           },
-          "width": 118,
+          "width": 133,
           "height": 86,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
-            "x": 784.7871328209469,
-            "y": 84.5467701957383
-          },
-          "dragging": false
-        },
-        {
-          "id": "integration-1751309662358",
-          "type": "integration",
-          "position": {
-            "x": 1017.6915042175885,
-            "y": 60.20648603871405
-          },
-          "data": {
-            "label": "ERP",
-            "type": "integration",
-            "integrationType": "erp",
-            "erpAction": "bom-generation",
-            "direction": "both",
-            "mockDistribution": {
-              "directMatch": 80,
-              "substitution": 10,
-              "notFound": 10
-            },
-            "useMockData": true,
-            "ioConfig": {
-              "inputTypes": [
-                {
-                  "type": "csv"
-                }
-              ],
-              "outputType": {
-                "type": "csv"
-              }
-            },
-            "runState": "idle"
-          },
-          "width": 126,
-          "height": 134,
-          "selected": false,
-          "positionAbsolute": {
-            "x": 1017.6915042175885,
-            "y": 60.20648603871405
+            "x": -115.1820589943253,
+            "y": 84.86872973289363
           },
           "dragging": false
         }
@@ -1470,11 +1399,11 @@
             "strokeWidth": 2,
             "stroke": "#222"
           },
-          "source": "trigger-1751305380526",
+          "source": "trigger-1751313521051",
           "sourceHandle": null,
           "target": "action-1751306973030",
           "targetHandle": null,
-          "id": "trigger-1751305380526-action-1751306973030"
+          "id": "trigger-1751313521051-action-1751306973030"
         },
         {
           "type": "step",
@@ -1484,57 +1413,9 @@
           },
           "source": "action-1751306973030",
           "sourceHandle": null,
-          "target": "loop-1751306724613",
-          "targetHandle": null,
-          "id": "action-1751306973030-loop-1751306724613"
-        },
-        {
-          "type": "step",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
-          "source": "loop-1751306724613",
-          "sourceHandle": null,
           "target": "ai_web_search-1751308153360",
           "targetHandle": null,
-          "id": "loop-1751306724613-ai_web_search-1751308153360"
-        },
-        {
-          "type": "step",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
-          "source": "ai_web_search-1751308153360",
-          "sourceHandle": null,
-          "target": "action-1751309647642",
-          "targetHandle": null,
-          "id": "ai_web_search-1751308153360-action-1751309647642"
-        },
-        {
-          "type": "feedback",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
-          "source": "action-1751309647642",
-          "sourceHandle": "bottom",
-          "target": "loop-1751306724613",
-          "targetHandle": "bottom",
-          "id": "action-1751309647642-loop-1751306724613"
-        },
-        {
-          "type": "step",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
-          "source": "action-1751309647642",
-          "sourceHandle": null,
-          "target": "integration-1751309662358",
-          "targetHandle": null,
-          "id": "action-1751309647642-integration-1751309662358"
+          "id": "action-1751306973030-ai_web_search-1751308153360"
         }
       ]
     }

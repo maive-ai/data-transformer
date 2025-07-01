@@ -150,24 +150,12 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
     if (loadingStep === 'Structured Generation') {
       const timer = setTimeout(() => {
         setLoadingStep(null);
-        // Continue revealing the rest after loading completes
-        if (revealTimer.current) clearInterval(revealTimer.current);
-        revealTimer.current = setInterval(() => {
-          setStepsRevealed(prev => {
-            if (prev < demoTrace.length) {
-              const nextStep = prev + 1;
-              // Trigger AI Web Search loading when Loop step is revealed
-              if (nextStep === 2) {
-                setCurrentLoopRow(0);
-                setLoopCompleted(false);
-                setLoadingStep('AI Web Search');
-              }
-              return nextStep;
-            }
-            if (revealTimer.current) clearInterval(revealTimer.current);
-            return prev;
-          });
-        }, 1000);
+        // Reveal Loop step (index 2) immediately and start AI Web Search loading
+        setStepsRevealed(3); // Show Manual Upload, Structured Generation, and Loop
+
+        setCurrentLoopRow(0);
+        setLoopCompleted(false);
+        setLoadingStep('AI Web Search');
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -203,7 +191,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 setLoopCompleted(true);
                 // Reveal the final step after loop completes
                 setTimeout(() => {
-                  setStepsRevealed(3); // Show ERP BOM Generation (index 3)
+                  setStepsRevealed(4); // Reveal all steps including ERP BOM Generation
                 }, 1000);
               } else {
                 // Continue looping - trigger next AI Web Search after a brief pause

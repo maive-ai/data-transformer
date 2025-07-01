@@ -4,6 +4,20 @@ import { Button } from '@/components/ui/button';
 
 const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quantity,Reference Designators\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R1,\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R2,\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,1,C1,\nAS1115-BSST,LED Driver 24-QSOP,ams,1,U1,\n1N4148-T,Switching Diode,Diodes_Inc,1,D1,`;
 
+// Generate progressive CSV data based on current loop row
+function getProgressiveCsvData(currentRow: number): string {
+  const rows = parseCsv(completedBomCsv);
+  if (currentRow === 0) {
+    // Start with only headers
+    return rows[0].join(',');
+  }
+  
+  // Return only headers + rows up to currentRow
+  const headerRow = rows[0];
+  const dataRows = rows.slice(1, currentRow + 1);
+  return [headerRow, ...dataRows].map(row => row.join(',')).join('\n');
+}
+
 const demoTrace = [
   {
     node: 'Manual Upload',
@@ -91,6 +105,9 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
   const [fileUploaded, setFileUploaded] = useState(false);
   const [stepsRevealed, setStepsRevealed] = useState(0);
   const [loadingStep, setLoadingStep] = useState<string | null>(null);
+  const [currentLoopRow, setCurrentLoopRow] = useState(0);
+  const [loopCompleted, setLoopCompleted] = useState(false);
+  const [currentSearchMessage, setCurrentSearchMessage] = useState('');
   const [width, setWidth] = useState(400);
   const revealTimer = useRef<NodeJS.Timeout | null>(null);
   const dragging = useRef(false);
@@ -137,13 +154,72 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
         if (revealTimer.current) clearInterval(revealTimer.current);
         revealTimer.current = setInterval(() => {
           setStepsRevealed(prev => {
-            if (prev < demoTrace.length) return prev + 1;
+            if (prev < demoTrace.length) {
+              const nextStep = prev + 1;
+              // Trigger AI Web Search loading when Loop step is revealed
+              if (nextStep === 2) {
+                setCurrentLoopRow(0);
+                setLoopCompleted(false);
+                setLoadingStep('AI Web Search');
+              }
+              return nextStep;
+            }
             if (revealTimer.current) clearInterval(revealTimer.current);
             return prev;
           });
         }, 1000);
       }, 5000);
       return () => clearTimeout(timer);
+    }
+  }, [loadingStep]);
+
+  // Effect to handle loading for AI Web Search inside Loop
+  useEffect(() => {
+    if (loadingStep === 'AI Web Search') {
+      // Show progressive search messages
+      const searchMessages = [
+        'Searching digikey.com...',
+        'Searching mouser.com...',
+        'Searching lcsc.com...',
+        'Search complete'
+      ];
+      
+      let messageIndex = 0;
+      const messageTimer = setInterval(() => {
+        setCurrentSearchMessage(searchMessages[messageIndex]);
+        messageIndex++;
+        
+        if (messageIndex >= searchMessages.length) {
+          clearInterval(messageTimer);
+          // Wait a bit longer on "Search complete" before moving to next iteration
+          setTimeout(() => {
+            setLoadingStep(null);
+            setCurrentSearchMessage('');
+            
+            // Handle loop progression
+            setCurrentLoopRow(prev => {
+              const nextRow = prev + 1;
+              if (nextRow >= 5) { // Process 5 rows total
+                setLoopCompleted(true);
+                // Reveal the final step after loop completes
+                setTimeout(() => {
+                  setStepsRevealed(3); // Show ERP BOM Generation (index 3)
+                }, 1000);
+              } else {
+                // Continue looping - trigger next AI Web Search after a brief pause
+                setTimeout(() => {
+                  setLoadingStep('AI Web Search');
+                }, 500);
+              }
+              return nextRow;
+            });
+          }, 1000);
+        }
+      }, 800); // Change message every 800ms
+      
+      return () => {
+        clearInterval(messageTimer);
+      };
     }
   }, [loadingStep]);
 
@@ -178,7 +254,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             />
           </div>
         ) : (
-          demoTrace.slice(0, Math.max(stepsRevealed, 2)).map((step, idx) => (
+          demoTrace.slice(0, Math.max(stepsRevealed, loopCompleted ? 4 : loadingStep === 'AI Web Search' ? 3 : 2)).map((step, idx) => (
             <div key={idx} className="border rounded-lg p-4 bg-gray-50 mb-4">
               <div className="font-medium text-gray-700 mb-2">{step.node}</div>
               {/* Show loading spinner for Structured Generation if loading */}
@@ -188,7 +264,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                   </svg>
-                  Running Structured Generation…
+                  Reformating BOM...
                 </div>
               ) : (
                 <>
@@ -209,16 +285,37 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                       {step.substeps.map((sub, subIdx) => (
                         <div key={subIdx} className="mb-4">
                           <div className="font-medium text-gray-700 mb-2">{sub.node}</div>
-                          <JsonFields json={sub.output} />
-                          {sub.data && (
-                            <div>
-                              <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
-                              {sub.data.includes(',') && sub.data.includes('\n') ? (
-                                <CsvTable csv={sub.data} />
-                              ) : (
-                                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{sub.data}</pre>
-                              )}
+                          {/* Show loading spinner for AI Web Search if loading */}
+                          {sub.node === loadingStep ? (
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                              <svg className="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                              </svg>
+                              {currentSearchMessage || 'Running AI Web Search…'}
                             </div>
+                          ) : (
+                            <>
+                              {sub.node === 'AI Web Search' ? (
+                                <div className="text-xs mb-1 text-gray-800">
+                                  <span className="font-semibold text-gray-700">Status:</span> Search completed successfully
+                                </div>
+                              ) : (
+                                <JsonFields json={sub.output} />
+                              )}
+                              {sub.data && (
+                                <div>
+                                  <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
+                                  {sub.node === 'CSV Append' ? (
+                                    <CsvTable csv={getProgressiveCsvData(currentLoopRow)} />
+                                  ) : sub.data.includes(',') && sub.data.includes('\n') ? (
+                                    <CsvTable csv={sub.data} />
+                                  ) : (
+                                    <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{sub.data}</pre>
+                                  )}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       ))}

@@ -150,7 +150,7 @@ const demoTrace = [
   {
     node: 'AI Web Scrape',
     output: '{\n  "Status": "success"}',
-    data: `Part Number,Description,Manufacturer,Price,Stock,Supplier\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.15,1250,DigiKey\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.12,890,Mouser\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,$0.08,2100,LCSC\nAS1115-BSST,LED Driver 24-QSOP,ams,$2.45,156,DigiKey\n1N4148-T,Switching Diode,Diodes_Inc,$0.05,3400,Mouser`,
+    data: bomNiceCsv,
   },
   {
     node: 'BOM Optimization',

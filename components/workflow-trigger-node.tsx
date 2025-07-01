@@ -62,11 +62,11 @@ export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNode
   const getBgColor = () => {
     switch (data.type) {
       case TriggerSubType.MANUAL:
-        return 'bg-blue-50';
+        return 'bg-white';
       case TriggerSubType.EVENT:
         return 'bg-purple-50';
       default:
-        return 'bg-blue-50';
+        return 'bg-white';
     }
   };
 

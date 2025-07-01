@@ -1207,7 +1207,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               },
             };
           })}
-          edges={edges.map(e => ({ ...e, markerEnd: { type: MarkerType.ArrowClosed } }))}
+          edges={edges.map(e => ({
+            ...e,
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#222' }
+          }))}
           onNodesChange={handleNodesChange}
           onEdgesChange={handleEdgesChange}
           onConnect={onConnect}
@@ -1216,7 +1219,11 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           fitView
           onNodeClick={handleNodeClick}
           onPaneClick={handleSidebarClose}
-          defaultEdgeOptions={{ type: 'step', style: { strokeWidth: 2, stroke: '#222' } }}
+          defaultEdgeOptions={{
+            type: 'smoothstep',
+            animated: true,
+            style: { strokeDasharray: '6 3', strokeWidth: 2, stroke: '#222' }
+          }}
         >
           <Background />
           <Controls />

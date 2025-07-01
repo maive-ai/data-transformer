@@ -168,3 +168,7 @@ body {
 .react-flow__viewport, .react-flow {
   background: transparent !important;
 }
+
+.react-flow__handle-connected {
+  display: none !important;
+}

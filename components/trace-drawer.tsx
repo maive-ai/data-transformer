@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, Download, FileUp, Wand2, Globe, FileSpreadsheet, ChevronDown, Table } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import path from 'path';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quantity,Reference Designators\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R1,\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R2,\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,1,C1,\nAS1115-BSST,LED Driver 24-QSOP,ams,1,U1,\n1N4148-T,Switching Diode,Diodes_Inc,1,D1,`;
 
@@ -9,19 +10,19 @@ const bomNiceCsv = `RefDes,MPN,Manufacturer,Qty,Description,Notes\nR1,CRG0603F10
 
 const supplierFiles = [
   'artifacts/supplier/CRG0603F10K.csv',
-  '/public/artifacts/supplier/CRG0603F10K.csv',
-  '/public/artifacts/supplier/C0805C103K1RACTU.csv',
-  '/public/artifacts/supplier/AS1115-BSST.csv',
-  '/public/artifacts/supplier/1N4148-T.csv',
+  'artifacts/supplier/CRG0603F10K.csv',
+  'artifacts/supplier/C0805C103K1RACTU.csv',
+  'artifacts/supplier/AS1115-BSST.csv',
+  'artifacts/supplier/1N4148-T.csv',
   '', // No supplier file for R3
 ];
 const substituteFiles = [
-  '/public/artifacts/substitute/CRG0603F10K.csv',
-  '/public/artifacts/substitute/CRG0603F10K.csv',
-  '/public/artifacts/substitute/C0805C103K1RACTU.csv',
-  '/public/artifacts/substitute/AS1115-BSST.csv',
-  '/public/artifacts/substitute/1N4148-T.csv',
-  '/public/artifacts/substitute/1kΩ 0603 Resistor.csv',
+  'artifacts/substitute/CRG0603F10K.csv',
+  'artifacts/substitute/CRG0603F10K.csv',
+  'artifacts/substitute/C0805C103K1RACTU.csv',
+  'artifacts/substitute/AS1115-BSST.csv',
+  'artifacts/substitute/1N4148-T.csv',
+  'artifacts/substitute/1kΩ 0603 Resistor.csv',
 ];
 
 // Function to download CSV data
@@ -163,16 +164,122 @@ const demoTrace = [
   },
 ];
 
-// Simple CSV parser for demo (no quoted fields)
+// Robust CSV parser that handles quoted fields and commas inside quotes
 function parseCsv(csv: string): string[][] {
-  return csv.trim().split(/\r?\n/).map(line => line.split(','));
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentCell = '';
+  let inQuotes = false;
+  let i = 0;
+  while (i < csv.length) {
+    const char = csv[i];
+    if (char === '"') {
+      if (inQuotes && csv[i + 1] === '"') {
+        // Escaped quote
+        currentCell += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      currentRow.push(currentCell);
+      currentCell = '';
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      if (currentCell !== '' || currentRow.length > 0) {
+        currentRow.push(currentCell);
+        rows.push(currentRow);
+        currentRow = [];
+        currentCell = '';
+      }
+      // Handle \r\n (Windows)
+      if (char === '\r' && csv[i + 1] === '\n') i++;
+    } else {
+      currentCell += char;
+    }
+    i++;
+  }
+  // Add last cell/row
+  if (currentCell !== '' || currentRow.length > 0) {
+    currentRow.push(currentCell);
+    rows.push(currentRow);
+  }
+  // Remove empty trailing rows
+  return rows.filter(row => row.length > 1 || (row.length === 1 && row[0].trim() !== ''));
 }
 
-function CsvTableWithLinks({ csv, supplierFiles, substituteFiles }: { csv: string, supplierFiles: string[], substituteFiles: string[] }) {
+function CsvModal({ open, onClose, filePath }: { open: boolean; onClose: () => void; filePath: string | null }) {
+  const [csv, setCsv] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!filePath) return;
+    setLoading(true);
+    setError(null);
+    setCsv(null);
+    fetch(`/${filePath.replace(/^\/*/, '')}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch CSV');
+        return res.text();
+      })
+      .then(setCsv)
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [filePath]);
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-5xl w-full h-[90vh] flex flex-col">
+        <DialogTitle>CSV Preview: {filePath?.split('/').pop()}</DialogTitle>
+        <div className="flex-1 overflow-auto">
+          {loading ? (
+            <div className="flex items-center justify-center h-full text-gray-500">Loading...</div>
+          ) : error ? (
+            <div className="text-red-600">{error}</div>
+          ) : csv ? (
+            <CsvTable csv={csv} />
+          ) : null}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CsvTable({ csv }: { csv: string }) {
   const rows = parseCsv(csv);
   if (!rows.length) return null;
   return (
     <div className="overflow-x-auto">
+      <table className="min-w-full border text-xs">
+        <thead>
+          <tr>
+            {rows[0].map((cell, i) => (
+              <th key={i} className="border px-2 py-1 bg-gray-100 text-left font-semibold">{cell}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(1).map((row, i) => (
+            <tr key={i}>
+              {row.map((cell, j) => (
+                <td key={j} className="border px-2 py-1">{cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function CsvTableWithLinks({ csv, supplierFiles, substituteFiles }: { csv: string, supplierFiles: string[], substituteFiles: string[] }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalFile, setModalFile] = useState<string | null>(null);
+  const rows = parseCsv(csv);
+  if (!rows.length) return null;
+  return (
+    <div className="overflow-x-auto">
+      <CsvModal open={modalOpen} onClose={() => setModalOpen(false)} filePath={modalFile} />
       <table className="min-w-full border text-xs">
         <thead>
           <tr>
@@ -191,16 +298,16 @@ function CsvTableWithLinks({ csv, supplierFiles, substituteFiles }: { csv: strin
               ))}
               <td className="border px-2 py-1">
                 {supplierFiles[i] ? (
-                  <a href={supplierFiles[i]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  <Button variant="link" className="p-0 h-auto text-blue-600 underline" onClick={() => { setModalFile(supplierFiles[i]); setModalOpen(true); }}>
                     {supplierFiles[i].split('/').pop()}
-                  </a>
+                  </Button>
                 ) : null}
               </td>
               <td className="border px-2 py-1">
                 {substituteFiles[i] ? (
-                  <a href={substituteFiles[i]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  <Button variant="link" className="p-0 h-auto text-blue-600 underline" onClick={() => { setModalFile(substituteFiles[i]); setModalOpen(true); }}>
                     {substituteFiles[i].split('/').pop()}
-                  </a>
+                  </Button>
                 ) : null}
               </td>
             </tr>

@@ -37,6 +37,7 @@ import CurvedFeedbackEdge from './workflow-curved-edge';
 import { WorkflowOneToManyNode } from './workflow-one-to-many-node';
 import { WorkflowAiWebSearchNode } from './workflow-ai-web-search-node';
 import { TraceDrawer } from './trace-drawer';
+import { WorkflowAiAnalysisNode } from "./workflow-ai-analysis-node";
 
 // Add File System Access API type declarations
 declare global {
@@ -66,6 +67,7 @@ const nodeTypes = {
   integration: WorkflowIntegrationNode,
   one_to_many: WorkflowOneToManyNode,
   ai_web_search: WorkflowAiWebSearchNode,
+  aiAnalysis: WorkflowAiAnalysisNode,
 };
 
 const edgeTypes = {

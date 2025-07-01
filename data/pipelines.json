@@ -1304,7 +1304,7 @@
     "name": "BOM Coding to CSV",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-07-01T01:35:42.207Z",
+    "updatedAt": "2025-07-01T01:49:04.947Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1313,8 +1313,8 @@
           "id": "action-1751306973030",
           "type": "action",
           "position": {
-            "x": 96.45543664208276,
-            "y": 84.65060486473774
+            "x": 117.3809042086528,
+            "y": 83.80742855457925
           },
           "data": {
             "label": "Structured Generation",
@@ -1339,8 +1339,8 @@
           "height": 86,
           "selected": false,
           "positionAbsolute": {
-            "x": 96.45543664208276,
-            "y": 84.65060486473774
+            "x": 117.3809042086528,
+            "y": 83.80742855457925
           },
           "dragging": false
         },
@@ -1348,12 +1348,12 @@
           "id": "ai_web_search-1751308153360",
           "type": "ai_web_search",
           "position": {
-            "x": 423.4986105071847,
-            "y": 71.58855633932035
+            "x": 408.44191185359523,
+            "y": 71.58855633932038
           },
           "data": {
             "label": "AI Web Search",
-            "prompt": "Take the supplied input component in the BOM and search for the following information:\n\n- Latest price\n- Quantity available\n- Estimated lead time\n- Any obsolescence notices",
+            "prompt": "Take the supplied input component in the BOM and search for the following information, as well as any potential substitutes.\n\n- Latest price\n- Quantity available\n- Estimated lead time\n- Any obsolescence notices",
             "websites": [
               "digikey.com",
               "mouser.com",
@@ -1363,10 +1363,10 @@
           },
           "width": 160,
           "height": 112,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
-            "x": 423.4986105071847,
-            "y": 71.58855633932035
+            "x": 408.44191185359523,
+            "y": 71.58855633932038
           },
           "dragging": false
         },
@@ -1388,6 +1388,60 @@
           "positionAbsolute": {
             "x": -115.1820589943253,
             "y": 84.86872973289363
+          },
+          "dragging": false
+        },
+        {
+          "id": "action-1751334092984",
+          "type": "action",
+          "position": {
+            "x": 677.9464858811183,
+            "y": 84.3503635295395
+          },
+          "data": {
+            "label": "Structured Generation",
+            "type": "action",
+            "prompt": "Please analyze the passed BOM components and their potential substitutions. Please output a CSV file with the recommended substitution. Substitutions should optimize for the following, in this order:\n\n1. Availability\n3. Price\n4. Lead time",
+            "useOutputTemplate": false,
+            "outputTemplateName": "",
+            "outputTemplateUrl": "",
+            "ioConfig": {
+              "inputTypes": [
+                {
+                  "type": ""
+                }
+              ],
+              "outputType": {
+                "type": ""
+              }
+            }
+          },
+          "width": 182,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 677.9464858811183,
+            "y": 84.3503635295395
+          },
+          "dragging": false
+        },
+        {
+          "id": "output-1751334534475",
+          "type": "output",
+          "position": {
+            "x": 971.2700923512168,
+            "y": 84.2486140644827
+          },
+          "data": {
+            "label": "Excel Export",
+            "type": "excel"
+          },
+          "width": 116,
+          "height": 86,
+          "selected": true,
+          "positionAbsolute": {
+            "x": 971.2700923512168,
+            "y": 84.2486140644827
           },
           "dragging": false
         }
@@ -1416,6 +1470,30 @@
           "target": "ai_web_search-1751308153360",
           "targetHandle": null,
           "id": "action-1751306973030-ai_web_search-1751308153360"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "ai_web_search-1751308153360",
+          "sourceHandle": null,
+          "target": "action-1751334092984",
+          "targetHandle": null,
+          "id": "ai_web_search-1751308153360-action-1751334092984"
+        },
+        {
+          "type": "step",
+          "style": {
+            "strokeWidth": 2,
+            "stroke": "#222"
+          },
+          "source": "action-1751334092984",
+          "sourceHandle": null,
+          "target": "output-1751334534475",
+          "targetHandle": null,
+          "id": "action-1751334092984-output-1751334534475"
         }
       ]
     }

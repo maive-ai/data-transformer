@@ -33,7 +33,7 @@ const demoTrace = [
     output: 'Processed 10 items',
     substeps: [
       {
-        node: 'AI Web Search',
+        node: 'AI Web Scrape',
         output: '{\n  "status": "success",\n  "found": 8\n}',
       },
       {
@@ -150,20 +150,20 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
     if (loadingStep === 'Structured Generation') {
       const timer = setTimeout(() => {
         setLoadingStep(null);
-        // Reveal Loop step (index 2) immediately and start AI Web Search loading
+        // Reveal Loop step (index 2) immediately and start AI Web Scrape loading
         setStepsRevealed(3); // Show Manual Upload, Structured Generation, and Loop
 
         setCurrentLoopRow(0);
         setLoopCompleted(false);
-        setLoadingStep('AI Web Search');
+        setLoadingStep('AI Web Scrape');
       }, 5000);
       return () => clearTimeout(timer);
     }
   }, [loadingStep]);
 
-  // Effect to handle loading for AI Web Search inside Loop
+  // Effect to handle loading for AI Web Scrape inside Loop
   useEffect(() => {
-    if (loadingStep === 'AI Web Search') {
+    if (loadingStep === 'AI Web Scrape') {
       // Show progressive search messages
       const searchMessages = [
         'Searching digikey.com...',
@@ -194,9 +194,9 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   setStepsRevealed(4); // Reveal all steps including ERP BOM Generation
                 }, 1000);
               } else {
-                // Continue looping - trigger next AI Web Search after a brief pause
+                // Continue looping - trigger next AI Web Scrape after a brief pause
                 setTimeout(() => {
-                  setLoadingStep('AI Web Search');
+                  setLoadingStep('AI Web Scrape');
                 }, 500);
               }
               return nextRow;
@@ -242,7 +242,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             />
           </div>
         ) : (
-          demoTrace.slice(0, Math.max(stepsRevealed, loopCompleted ? 4 : loadingStep === 'AI Web Search' ? 3 : 2)).map((step, idx) => (
+          demoTrace.slice(0, Math.max(stepsRevealed, loopCompleted ? 4 : loadingStep === 'AI Web Scrape' ? 3 : 2)).map((step, idx) => (
             <div key={idx} className="border rounded-lg p-4 bg-gray-50 mb-4">
               <div className="font-medium text-gray-700 mb-2">{step.node}</div>
               {/* Show loading spinner for Structured Generation if loading */}
@@ -273,18 +273,18 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                       {step.substeps.map((sub, subIdx) => (
                         <div key={subIdx} className="mb-4">
                           <div className="font-medium text-gray-700 mb-2">{sub.node}</div>
-                          {/* Show loading spinner for AI Web Search if loading */}
+                          {/* Show loading spinner for AI Web Scrape if loading */}
                           {sub.node === loadingStep ? (
                             <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                               <svg className="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                               </svg>
-                              {currentSearchMessage || 'Running AI Web Search…'}
+                              {currentSearchMessage || 'Running AI Web Scrape…'}
                             </div>
                           ) : (
                             <>
-                              {sub.node === 'AI Web Search' ? (
+                              {sub.node === 'AI Web Scrape' ? (
                                 <div className="text-xs mb-1 text-gray-800">
                                   <span className="font-semibold text-gray-700">Status:</span> Search completed successfully
                                 </div>

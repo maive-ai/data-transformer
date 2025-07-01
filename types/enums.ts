@@ -10,7 +10,8 @@ export enum NodeType {
   LOOP = 'loop',
   INTEGRATION = 'integration',
   ONE_TO_MANY = 'one_to_many',
-  AI_WEB_SEARCH = 'ai_web_search',
+  AI_WEB_SCRAPE = 'ai_web_search',
+  AI_ANALYSIS = 'aiAnalysis',
 }
 
 // Node sub-type enums
@@ -96,6 +97,7 @@ export enum ContentType {
 export enum NodeLabel {
   AI_TRANSFORM = 'Structured Generation',
   AI_OPERATOR = 'AI Operator',
+  AI_ANALYSIS = 'AI Analysis',
   EXCEL_EXPORT = 'Excel Export',
   EXCEL_TRANSFORM = 'Excel Transform',
   DOC_EXPORT = 'Doc Export',

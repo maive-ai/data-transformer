@@ -168,6 +168,17 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
             <Button
               variant="ghost"
               className="justify-start"
+              onClick={() => handleAddNode(NodeType.AI_ANALYSIS, { 
+                label: NodeLabel.AI_ANALYSIS, 
+                type: ActionSubType.AI_TRANSFORM 
+              })}
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              {NodeLabel.AI_ANALYSIS}
+            </Button>
+            <Button
+              variant="ghost"
+              className="justify-start"
               onClick={() => handleAddNode(NodeType.ACTION, { 
                 label: NodeLabel.EXCEL_TRANSFORM, 
                 iconType: "excel", 
@@ -385,12 +396,12 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
             <Button
               variant="ghost"
               className="justify-start"
-              onClick={() => handleAddNode(NodeType.AI_WEB_SEARCH, { 
-                label: "AI Web Search" 
+              onClick={() => handleAddNode(NodeType.AI_WEB_SCRAPE, { 
+                label: "AI Web Scrape" 
               })}
             >
               <Search className="w-4 h-4 mr-2" />
-              AI Web Search
+              AI Web Scrape
             </Button>
           </div>
         </PopoverContent>

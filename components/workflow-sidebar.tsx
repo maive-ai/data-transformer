@@ -424,7 +424,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             node={node} 
             onChange={onChange}
           />
-        ) : node.type === NodeType.AI_WEB_SEARCH ? (
+        ) : node.type === NodeType.AI_WEB_SCRAPE ? (
           <AiWebSearchSidebar 
             node={node} 
             onChange={onChange}

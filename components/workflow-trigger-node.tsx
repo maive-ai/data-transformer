@@ -11,6 +11,7 @@ interface WorkflowTriggerNodeData {
   type: string;
   runState?: string;
   highlighted?: boolean;
+  displayName?: string;
 }
 
 const INTEGRATIONS = [
@@ -74,7 +75,7 @@ export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNode
     <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} ${getBgColor()}`}>
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>
-        <div className="text-sm font-medium text-center">{data.label}</div>
+        <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>
       </div>
       <Handle type="source" position={Position.Right} className="w-3 h-3" />
     </Card>

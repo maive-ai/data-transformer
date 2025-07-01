@@ -9,6 +9,7 @@ interface WorkflowHttpResponseNodeData {
   label: string;
   statusCode: number;
   contentType: string;
+  displayName?: string;
 }
 
 export const WorkflowHttpResponseNode = memo(({ data }: NodeProps<WorkflowHttpResponseNodeData & { runState?: string; highlighted?: boolean }>) => {
@@ -27,7 +28,7 @@ export const WorkflowHttpResponseNode = memo(({ data }: NodeProps<WorkflowHttpRe
         <div className="text-2xl">
           <Globe className="w-6 h-6" />
         </div>
-        <div className="text-sm font-medium text-center">{data.label}</div>
+        <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-mono">{data.statusCode}</span>
           <span>{data.contentType}</span>

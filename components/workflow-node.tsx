@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { Brain } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { RunState, ActionSubType, NodeLabel } from "@/types/enums";
 
 interface WorkflowNodeData {
@@ -11,6 +11,7 @@ interface WorkflowNodeData {
   type?: string;
   runState?: string;
   highlighted?: boolean;
+  displayName?: string;
 }
 
 export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData>) => {
@@ -28,7 +29,7 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData>) => {
 
   const getIcon = () => {
     if (data.type === ActionSubType.DECISION) return <div className="text-2xl">🔀</div>;
-    return <Brain className="w-6 h-6" />;
+    return <Wand2 className="w-6 h-6" />;
   };
 
   const getBgColor = () => {
@@ -41,7 +42,7 @@ export const WorkflowNode = memo(({ data }: NodeProps<WorkflowNodeData>) => {
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>
-        <div className="text-sm font-medium text-center">{data.label}</div>
+        <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>
       </div>
       <Handle type="source" position={Position.Right} className="w-3 h-3" />
       {/* Extra bottom handle for feedback from CSV Append */}

@@ -20,6 +20,7 @@ interface WorkflowErpNodeData {
     database?: string;
     port?: number;
   };
+  displayName?: string;
 }
 
 export const WorkflowErpNode = memo(({ data }: NodeProps<WorkflowErpNodeData & { runState?: string, highlighted?: boolean }>) => {
@@ -36,7 +37,7 @@ export const WorkflowErpNode = memo(({ data }: NodeProps<WorkflowErpNodeData & {
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl"><Database className="w-6 h-6" /></div>
-        <div className="text-sm font-medium text-center">{data.label}</div>
+        <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>
         {data.erpAction && (
           <div className="text-xs text-gray-500 text-center">{data.erpAction}</div>
         )}

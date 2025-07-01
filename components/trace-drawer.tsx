@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Download, FileUp, Brain, Globe, FileSpreadsheet } from 'lucide-react';
+import { X, Download, FileUp, Wand2, Globe, FileSpreadsheet, ChevronDown, Table } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quantity,Reference Designators\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R1,\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R2,\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,1,C1,\nAS1115-BSST,LED Driver 24-QSOP,ams,1,U1,\n1N4148-T,Switching Diode,Diodes_Inc,1,D1,`;
@@ -27,6 +27,7 @@ interface TraceStepProps {
 }
 
 function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceStepProps) {
+  const [csvOpen, setCsvOpen] = useState(false);
   const handleDownload = () => {
     if (data && data.includes(',') && data.includes('\n')) {
       const filename = `${nodeName.toLowerCase().replace(/\s+/g, '_')}_data.csv`;
@@ -39,7 +40,7 @@ function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceS
       case 'Manual Upload':
         return <FileUp className="w-5 h-5" />;
       case 'Structured Generation':
-        return <Brain className="w-5 h-5" />;
+        return <Wand2 className="w-5 h-5" />;
       case 'AI Web Scrape':
         return <Globe className="w-5 h-5" />;
       case 'CSV Export':
@@ -69,21 +70,36 @@ function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceS
           {data && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <div className="font-bold text-xs text-gray-600">Data</div>
-                {data.includes(',') && data.includes('\n') && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDownload}
-                    className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
-                    title="Download CSV"
-                  >
-                    <Download className="w-3 h-3" />
-                  </Button>
-                )}
+                <div className="flex items-center gap-1">
+                  {data.includes(',') && data.includes('\n') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCsvOpen((v) => !v)}
+                      className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                      title={csvOpen ? 'Hide CSV' : 'Show CSV'}
+                    >
+                      <ChevronDown className={`w-3 h-3 transition-transform ${csvOpen ? 'rotate-180' : ''}`} />
+                    </Button>
+                  )}
+                  <FileSpreadsheet className="w-4 h-4 text-gray-600" />
+                </div>
+                <div>
+                  {data.includes(',') && data.includes('\n') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDownload}
+                      className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                      title="Download CSV"
+                    >
+                      <Download className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
               </div>
               {data.includes(',') && data.includes('\n') ? (
-                <CsvTable csv={data} />
+                csvOpen && <CsvTable csv={data} />
               ) : (
                 <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{data}</pre>
               )}
@@ -102,22 +118,22 @@ const demoTrace = [
   },
   {
     node: 'Structured Generation',
-    output: '{\n  "transformed": true,\n  "rows": 123\n}',
+    output: '{\n  "Transformed": true}',
     data: completedBomCsv,
   },
   {
     node: 'AI Web Scrape',
-    output: '{\n  "status": "success",\n  "found": 8\n}',
+    output: '{\n  "Status": "success",\n  "found": 8\n}',
     data: `Part Number,Description,Manufacturer,Price,Stock,Supplier\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.15,1250,DigiKey\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.12,890,Mouser\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,$0.08,2100,LCSC\nAS1115-BSST,LED Driver 24-QSOP,ams,$2.45,156,DigiKey\n1N4148-T,Switching Diode,Diodes_Inc,$0.05,3400,Mouser`,
   },
   {
     node: 'Structured Generation',
-    output: '{\n  "processed": true,\n  "enhanced_rows": 8\n}',
+    output: '{\n  "Status": "success"}',
     data: completedBomCsv,
   },
   {
     node: 'CSV Export',
-    output: '{\n  "exported": true,\n  "filename": "processed_bom.csv"\n}',
+    output: '{\n  "Exported": true}',
     data: completedBomCsv,
   },
 ];

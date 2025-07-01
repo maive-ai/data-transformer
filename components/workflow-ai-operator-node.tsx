@@ -9,6 +9,7 @@ interface WorkflowAiOperatorNodeData {
   label: string;
   prompt: string;
   videoUrl?: string;
+  displayName?: string;
 }
 
 export const WorkflowAiOperatorNode = memo(({ data }: NodeProps<WorkflowAiOperatorNodeData & { runState?: string, highlighted?: boolean }>) => {
@@ -26,7 +27,7 @@ export const WorkflowAiOperatorNode = memo(({ data }: NodeProps<WorkflowAiOperat
         <div className="text-2xl">
           <Bot className="w-6 h-6" />
         </div>
-        <div className="text-sm font-medium text-center">{data.label}</div>
+        <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>
         {data.prompt && (
           <div className="text-xs text-muted-foreground text-center line-clamp-2">
             {data.prompt}

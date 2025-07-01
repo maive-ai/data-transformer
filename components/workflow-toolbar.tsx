@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Clock, Zap, Brain, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot, Repeat, Signpost, Server, Cloud, Split, Search } from "lucide-react";
+import { Clock, Zap, Wand2, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot, Repeat, Signpost, Server, Cloud, Split, Search } from "lucide-react";
 import { Node } from "reactflow";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { 
@@ -136,7 +136,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" className="flex items-center gap-2">
-            <Brain className="w-5 h-5" />
+            <Wand2 className="w-5 h-5" />
             Actions
           </Button>
         </PopoverTrigger>
@@ -150,7 +150,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                 type: ActionSubType.AI_TRANSFORM 
               })}
             >
-              <Brain className="w-4 h-4 mr-2" />
+              <Wand2 className="w-4 h-4 mr-2" />
               {NodeLabel.AI_TRANSFORM}
             </Button>
             <Button
@@ -173,7 +173,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                 type: ActionSubType.AI_TRANSFORM 
               })}
             >
-              <Brain className="w-4 h-4 mr-2" />
+              <Wand2 className="w-4 h-4 mr-2" />
               {NodeLabel.AI_ANALYSIS}
             </Button>
             <Button

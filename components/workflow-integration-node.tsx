@@ -13,6 +13,7 @@ interface WorkflowIntegrationNodeData {
   erpAction?: string;
   emailAction?: string;
   direction?: 'read' | 'write' | 'both';
+  displayName?: string;
 }
 
 export const WorkflowIntegrationNode = memo(({ data }: NodeProps<WorkflowIntegrationNodeData & { runState?: string, highlighted?: boolean }>) => {
@@ -58,7 +59,7 @@ export const WorkflowIntegrationNode = memo(({ data }: NodeProps<WorkflowIntegra
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>
-        <div className="text-sm font-medium text-center">{data.label}</div>
+        <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>
         <div className="text-xs text-gray-500 text-center">{getSubLabel()}</div>
         {data.direction && (
           <div className="text-xs text-blue-600 font-medium">

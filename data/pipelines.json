@@ -1304,7 +1304,7 @@
     "name": "BOM Coding to CSV",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-07-01T03:24:08.781Z",
+    "updatedAt": "2025-07-01T03:57:43.034Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1333,9 +1333,10 @@
               "outputType": {
                 "type": ""
               }
-            }
+            },
+            "displayName": "BOM Reformatting"
           },
-          "width": 182,
+          "width": 157,
           "height": 86,
           "selected": false,
           "positionAbsolute": {
@@ -1348,7 +1349,7 @@
           "id": "ai_web_search-1751308153360",
           "type": "ai_web_search",
           "position": {
-            "x": 408.44191185359523,
+            "x": 416.06682070674003,
             "y": 71.58855633932038
           },
           "data": {
@@ -1363,9 +1364,9 @@
           },
           "width": 160,
           "height": 112,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
-            "x": 408.44191185359523,
+            "x": 416.06682070674003,
             "y": 71.58855633932038
           },
           "dragging": false
@@ -1380,11 +1381,12 @@
           "data": {
             "label": "Manual Upload",
             "type": "manual",
-            "runState": "prompt"
+            "runState": "prompt",
+            "displayName": "BOM Upload"
           },
-          "width": 133,
+          "width": 117,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
             "x": -115.1820589943253,
             "y": 83.94335721097875
@@ -1395,8 +1397,8 @@
           "id": "action-1751334092984",
           "type": "action",
           "position": {
-            "x": 677.0211133592035,
-            "y": 54.73844282826377
+            "x": 707.1448114117453,
+            "y": 84.86214088080578
           },
           "data": {
             "label": "Structured Generation",
@@ -1415,14 +1417,15 @@
                 "type": ""
               }
             },
-            "runState": "idle"
+            "runState": "idle",
+            "displayName": "BOM Optimization"
           },
-          "width": 182,
+          "width": 155,
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 677.0211133592035,
-            "y": 54.73844282826377
+            "x": 707.1448114117453,
+            "y": 84.86214088080578
           },
           "dragging": false
         },
@@ -1430,8 +1433,8 @@
           "id": "output-1751334534475",
           "type": "output",
           "position": {
-            "x": 1021.9093608773105,
-            "y": 71.31943912165028
+            "x": 1027.3863968868636,
+            "y": 85.012029145533
           },
           "data": {
             "label": "Excel Export",
@@ -1440,10 +1443,10 @@
           },
           "width": 116,
           "height": 86,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
-            "x": 1021.9093608773105,
-            "y": 71.31943912165028
+            "x": 1027.3863968868636,
+            "y": 85.012029145533
           },
           "dragging": false
         }

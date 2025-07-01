@@ -9,6 +9,7 @@ interface WorkflowHttpTriggerNodeData {
   label: string;
   endpoint: string;
   method: "GET" | "POST" | "PUT" | "DELETE";
+  displayName?: string;
 }
 
 export const WorkflowHttpTriggerNode = memo(({ data }: NodeProps<WorkflowHttpTriggerNodeData & { runState?: string, highlighted?: boolean }>) => {
@@ -26,7 +27,7 @@ export const WorkflowHttpTriggerNode = memo(({ data }: NodeProps<WorkflowHttpTri
         <div className="text-2xl">
           <Globe className="w-6 h-6" />
         </div>
-        <div className="text-sm font-medium text-center">{data.label}</div>
+        <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-mono">{data.method}</span>
           <span className="truncate max-w-[120px]">{data.endpoint}</span>

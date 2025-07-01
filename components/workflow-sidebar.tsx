@@ -308,6 +308,19 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
         </Button>
       </div>
       <div className="flex-1 overflow-y-auto p-6 pb-20">
+        {/* Display Name Field */}
+        <div className="mb-6">
+          <label htmlFor="displayName" className="block font-medium mb-1">Display Name</label>
+          <input
+            id="displayName"
+            type="text"
+            className="w-full border rounded-lg p-2 text-sm"
+            value={node.data.displayName ?? ''}
+            onChange={e => onChange(node.id, { displayName: e.target.value })}
+            placeholder="Enter display name"
+            maxLength={48}
+          />
+        </div>
         {/* Info Modal */}
         {showInfoModal && (
           <div

@@ -491,23 +491,28 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             </div>
           </div>
         ) : (
-          demoTrace.slice(0, Math.max(stepsRevealed, loadingStep2 ? 3 : loadingStep3 ? 4 : 2)).map((step, idx) => (
-            <TraceStep
-              key={idx}
-              nodeName={step.node}
-              output={step.output}
-              data={step.data}
-              isLoading={step.node === 'BOM Reformatting' && idx === 1 ? loadingStep1 : step.node === 'AI Web Scrape' ? loadingStep2 : step.node === 'BOM Optimization' && idx === 3 ? loadingStep3 : false}
-              loadingMessage={step.node === 'BOM Reformatting' && idx === 1 ? 'Reformatting BOM...' : step.node === 'AI Web Scrape' ? (!showSearchComplete ? currentSearchMessage || 'Running AI Web Scrape…' : undefined) : step.node === 'BOM Optimization' && idx === 3 ? 'Processing enhanced data...' : undefined}
-            >
-              {/* If this is the AI Web Scrape step and showSearchComplete is true, show the static message instead of normal content */}
-              {step.node === 'AI Web Scrape' && showSearchComplete ? (
-                <div className="text-sm text-gray-600">Search complete</div>
-              ) : step.node === 'AI Web Scrape' && step.data ? (
-                <CsvTableWithLinks csv={step.data} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
-              ) : null}
-            </TraceStep>
-          ))
+          demoTrace.slice(0, Math.max(stepsRevealed, loadingStep2 ? 3 : loadingStep3 ? 4 : 2)).map((step, idx) => {
+            // For AI Web Scrape, only show the table after loadingStep2 is false and showSearchComplete is false
+            const isAIWebScrape = step.node === 'AI Web Scrape';
+            const shouldShowTable = isAIWebScrape && !loadingStep2 && !showSearchComplete;
+            return (
+              <TraceStep
+                key={idx}
+                nodeName={step.node}
+                output={step.output}
+                data={step.data}
+                isLoading={step.node === 'BOM Reformatting' && idx === 1 ? loadingStep1 : step.node === 'AI Web Scrape' ? loadingStep2 : step.node === 'BOM Optimization' && idx === 3 ? loadingStep3 : false}
+                loadingMessage={step.node === 'BOM Reformatting' && idx === 1 ? 'Reformatting BOM...' : step.node === 'AI Web Scrape' ? (!showSearchComplete ? currentSearchMessage || 'Running AI Web Scrape…' : undefined) : step.node === 'BOM Optimization' && idx === 3 ? 'Processing enhanced data...' : undefined}
+              >
+                {/* If this is the AI Web Scrape step and showSearchComplete is true, show the static message instead of normal content */}
+                {isAIWebScrape && showSearchComplete ? (
+                  <div className="text-sm text-gray-600">Search complete</div>
+                ) : shouldShowTable ? (
+                  <CsvTableWithLinks csv={step.data!} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
+                ) : null}
+              </TraceStep>
+            );
+          })
         )}
       </div>
     </div>

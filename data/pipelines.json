@@ -1304,7 +1304,7 @@
     "name": "BOM Coding to CSV",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-07-01T05:14:18.698Z",
+    "updatedAt": "2025-07-01T05:29:32.652Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1320,8 +1320,8 @@
             "label": "Structured Generation",
             "type": "action",
             "runState": "idle",
-            "outputTemplateUrl": "/templates/e55de520-2bad-4c94-9a86-72b168f0733a-bom-import-template.csv",
-            "outputTemplateName": "bom-import-template.csv",
+            "outputTemplateUrl": "/templates/f467d697-c362-460f-b1e2-2cdc9b3716c6-BOM-template.csv",
+            "outputTemplateName": "BOM-template.csv",
             "useOutputTemplate": true,
             "prompt": "Please structure the data received into the expected template",
             "ioConfig": {
@@ -1338,7 +1338,7 @@
           },
           "width": 157,
           "height": 86,
-          "selected": false,
+          "selected": true,
           "positionAbsolute": {
             "x": 117.3809042086528,
             "y": 83.80742855457925
@@ -1397,8 +1397,8 @@
           "id": "action-1751334092984",
           "type": "action",
           "position": {
-            "x": 707.1448114117453,
-            "y": 84.86214088080578
+            "x": 731.110594584248,
+            "y": 83.90350955390568
           },
           "data": {
             "label": "Structured Generation",
@@ -1424,30 +1424,8 @@
           "height": 86,
           "selected": true,
           "positionAbsolute": {
-            "x": 707.1448114117453,
-            "y": 84.86214088080578
-          },
-          "dragging": false
-        },
-        {
-          "id": "output-1751334534475",
-          "type": "output",
-          "position": {
-            "x": 1027.3863968868636,
-            "y": 85.012029145533
-          },
-          "data": {
-            "label": "Excel Export",
-            "type": "excel",
-            "runState": "idle",
-            "displayName": "CSV Export"
-          },
-          "width": 110,
-          "height": 86,
-          "selected": false,
-          "positionAbsolute": {
-            "x": 1027.3863968868636,
-            "y": 85.012029145533
+            "x": 731.110594584248,
+            "y": 83.90350955390568
           },
           "dragging": false
         }
@@ -1488,18 +1466,6 @@
           "target": "action-1751334092984",
           "targetHandle": null,
           "id": "ai_web_search-1751308153360-action-1751334092984"
-        },
-        {
-          "type": "step",
-          "style": {
-            "strokeWidth": 2,
-            "stroke": "#222"
-          },
-          "source": "action-1751334092984",
-          "sourceHandle": null,
-          "target": "output-1751334534475",
-          "targetHandle": null,
-          "id": "action-1751334092984-output-1751334534475"
         }
       ]
     }

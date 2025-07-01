@@ -157,12 +157,7 @@ function getDemoTrace(bomFinalCsv: string) {
       node: 'BOM Optimization',
       output: '{\n  "Status": "success"}',
       data: bomFinalCsv,
-    },
-    {
-      node: 'CSV Export',
-      output: '{\n  "Exported": true}',
-      data: completedBomCsv,
-    },
+    }
   ];
 }
 
@@ -527,6 +522,17 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   </TraceStep>
                 );
               }
+              // Show only the CSV table for BOM Optimization
+              return (
+                <TraceStep
+                  key={idx}
+                  nodeName={step.node}
+                  output={step.output}
+                  data={step.data}
+                >
+                  <CsvTable csv={step.data || ''} />
+                </TraceStep>
+              );
             }
             // For BOM Reformatting, show only the CSV table without extra columns
             if (step.node === 'BOM Reformatting' && step.data) {

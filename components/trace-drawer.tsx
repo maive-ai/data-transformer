@@ -352,6 +352,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
   const startWidth = useRef(400);
   const [selectedFileName, setSelectedFileName] = useState<string>("");
   const [showSearchComplete, setShowSearchComplete] = useState(false);
+  const [aiWebScrapeCsvOpen, setAiWebScrapeCsvOpen] = useState(false);
 
   // Mouse event handlers for resizing
   const onMouseDown = (e: React.MouseEvent) => {
@@ -504,11 +505,39 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                 isLoading={step.node === 'BOM Reformatting' && idx === 1 ? loadingStep1 : step.node === 'AI Web Scrape' ? loadingStep2 : step.node === 'BOM Optimization' && idx === 3 ? loadingStep3 : false}
                 loadingMessage={step.node === 'BOM Reformatting' && idx === 1 ? 'Reformatting BOM...' : step.node === 'AI Web Scrape' ? (!showSearchComplete ? currentSearchMessage || 'Running AI Web Scrape…' : undefined) : step.node === 'BOM Optimization' && idx === 3 ? 'Processing enhanced data...' : undefined}
               >
-                {/* If this is the AI Web Scrape step and showSearchComplete is true, show the static message instead of normal content */}
                 {isAIWebScrape && showSearchComplete ? (
                   <div className="text-sm text-gray-600">Search complete</div>
                 ) : shouldShowTable ? (
-                  <CsvTableWithLinks csv={step.data!} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setAiWebScrapeCsvOpen((v) => !v)}
+                          className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                          title={aiWebScrapeCsvOpen ? 'Hide CSV' : 'Show CSV'}
+                        >
+                          <ChevronDown className={`w-3 h-3 transition-transform ${aiWebScrapeCsvOpen ? 'rotate-180' : ''}`} />
+                        </Button>
+                        <FileSpreadsheet className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => downloadCsv(step.data!, 'ai_web_scrape_data.csv')}
+                          className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                          title="Download CSV"
+                        >
+                          <Download className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    {aiWebScrapeCsvOpen ? (
+                      <CsvTableWithLinks csv={step.data!} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
+                    ) : null}
+                  </div>
                 ) : null}
               </TraceStep>
             );

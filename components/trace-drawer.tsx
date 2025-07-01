@@ -24,9 +24,10 @@ interface TraceStepProps {
   data?: string;
   isLoading?: boolean;
   loadingMessage?: string;
+  children?: React.ReactNode;
 }
 
-function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceStepProps) {
+function TraceStep({ nodeName, output, data, isLoading, loadingMessage, children }: TraceStepProps) {
   const [csvOpen, setCsvOpen] = useState(false);
   const handleDownload = () => {
     if (data && data.includes(',') && data.includes('\n')) {
@@ -37,12 +38,14 @@ function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceS
 
   const getIcon = () => {
     switch (nodeName) {
-      case 'Manual Upload':
+      case 'BOM Upload':
         return <FileUp className="w-5 h-5" />;
-      case 'Structured Generation':
+      case 'BOM Reformatting':
         return <Wand2 className="w-5 h-5" />;
       case 'AI Web Scrape':
         return <Globe className="w-5 h-5" />;
+      case 'BOM Optimization':
+        return <Wand2 className="w-5 h-5" />;
       case 'CSV Export':
         return <FileSpreadsheet className="w-5 h-5" />;
       default:
@@ -56,7 +59,9 @@ function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceS
         {getIcon()}
         <span>{nodeName}</span>
       </div>
-      {isLoading ? (
+      {children ? (
+        children
+      ) : isLoading ? (
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
           <svg className="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -113,21 +118,21 @@ function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceS
 
 const demoTrace = [
   {
-    node: 'Manual Upload',
-    output: 'Uploaded file: space-delimited-bom.txt',
+    node: 'BOM Upload',
+    output: 'Uploaded file: BOM-messy.csv',
   },
   {
-    node: 'Structured Generation',
+    node: 'BOM Reformatting',
     output: '{\n  "Transformed": true}',
     data: completedBomCsv,
   },
   {
     node: 'AI Web Scrape',
-    output: '{\n  "Status": "success",\n  "found": 8\n}',
+    output: '{\n  "Status": "success"}',
     data: `Part Number,Description,Manufacturer,Price,Stock,Supplier\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.15,1250,DigiKey\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.12,890,Mouser\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,$0.08,2100,LCSC\nAS1115-BSST,LED Driver 24-QSOP,ams,$2.45,156,DigiKey\n1N4148-T,Switching Diode,Diodes_Inc,$0.05,3400,Mouser`,
   },
   {
-    node: 'Structured Generation',
+    node: 'BOM Optimization',
     output: '{\n  "Status": "success"}',
     data: completedBomCsv,
   },
@@ -202,6 +207,8 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
   const dragging = useRef(false);
   const startX = useRef(0);
   const startWidth = useRef(400);
+  const [selectedFileName, setSelectedFileName] = useState<string>("");
+  const [showSearchComplete, setShowSearchComplete] = useState(false);
 
   // Mouse event handlers for resizing
   const onMouseDown = (e: React.MouseEvent) => {
@@ -231,6 +238,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
       setFileUploaded(true);
       setStepsRevealed(1);
       setLoadingStep1(true);
+      setSelectedFileName(e.target.files[0].name);
     }
   };
 
@@ -250,35 +258,33 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
   // Effect to handle loading for AI Web Scrape
   useEffect(() => {
     if (loadingStep2) {
-      // Show progressive search messages
+      setShowSearchComplete(false);
       const searchMessages = [
         'Searching digikey.com...',
         'Searching mouser.com...',
-        'Searching lcsc.com...',
-        'Search complete'
+        'Searching lcsc.com...'
       ];
-      
       let messageIndex = 0;
+      setCurrentSearchMessage(searchMessages[0]);
       const messageTimer = setInterval(() => {
-        setCurrentSearchMessage(searchMessages[messageIndex]);
         messageIndex++;
-        
-        if (messageIndex >= searchMessages.length) {
+        if (messageIndex < searchMessages.length) {
+          setCurrentSearchMessage(searchMessages[messageIndex]);
+        } else {
           clearInterval(messageTimer);
-          // Wait a bit longer on "Search complete" before moving to next iteration
+          setLoadingStep2(false);
+          setShowSearchComplete(true);
           setTimeout(() => {
-            setLoadingStep2(false);
+            setShowSearchComplete(false);
             setCurrentSearchMessage('');
-            
             // Reveal the second Structured Generation step and start loading
             setTimeout(() => {
               setStepsRevealed(4); // Show up to the second Structured Generation step
               setLoadingStep3(true);
             }, 1000);
-          }, 1000);
+          }, 1000); // Show 'Search complete' for 1s
         }
-      }, 800); // Change message every 800ms
-      
+      }, 5000);
       return () => {
         clearInterval(messageTimer);
       };
@@ -322,12 +328,24 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
           <div className="border rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center mt-16">
             <div className="font-medium text-gray-700 mb-2 text-lg">Input</div>
             <div className="text-gray-600 mb-4 text-sm text-center">Please select a file to start the workflow execution.</div>
-            <input
-              type="file"
-              accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4,.txt"
-              className="block w-full mb-2"
-              onChange={handleFileUpload}
-            />
+            <div className="flex items-center gap-3">
+              <input
+                id="trace-file-upload"
+                type="file"
+                accept=".csv,.xlsx,.json,.xml,.pdf,.doc,.docx,.mp4,video/mp4,.txt"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => document.getElementById('trace-file-upload')?.click()}
+                className="px-4 py-2"
+              >
+                Choose File
+              </Button>
+              <span className="text-sm text-gray-600">{selectedFileName || 'No file chosen'}</span>
+            </div>
           </div>
         ) : (
           demoTrace.slice(0, Math.max(stepsRevealed, loadingStep2 ? 3 : loadingStep3 ? 4 : 2)).map((step, idx) => (
@@ -336,9 +354,14 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
               nodeName={step.node}
               output={step.output}
               data={step.data}
-              isLoading={step.node === 'Structured Generation' && idx === 1 ? loadingStep1 : step.node === 'AI Web Scrape' ? loadingStep2 : step.node === 'Structured Generation' && idx === 3 ? loadingStep3 : false}
-              loadingMessage={step.node === 'Structured Generation' && idx === 1 ? 'Reformating BOM...' : step.node === 'AI Web Scrape' ? currentSearchMessage || 'Running AI Web Scrape…' : step.node === 'Structured Generation' && idx === 3 ? 'Processing enhanced data...' : undefined}
-            />
+              isLoading={step.node === 'BOM Reformatting' && idx === 1 ? loadingStep1 : step.node === 'AI Web Scrape' ? loadingStep2 : step.node === 'BOM Optimization' && idx === 3 ? loadingStep3 : false}
+              loadingMessage={step.node === 'BOM Reformatting' && idx === 1 ? 'Reformatting BOM...' : step.node === 'AI Web Scrape' ? (!showSearchComplete ? currentSearchMessage || 'Running AI Web Scrape…' : undefined) : step.node === 'BOM Optimization' && idx === 3 ? 'Processing enhanced data...' : undefined}
+            >
+              {/* If this is the AI Web Scrape step and showSearchComplete is true, show the static message instead of normal content */}
+              {step.node === 'AI Web Scrape' && showSearchComplete ? (
+                <div className="text-sm text-gray-600">Search complete</div>
+              ) : null}
+            </TraceStep>
           ))
         )}
       </div>

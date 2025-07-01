@@ -42,6 +42,7 @@ type NodeState = {
     outputPath: string;
   }>;
   defaultOutputPath: string;
+  displayName: string;
 };
 
 // Define action type
@@ -70,6 +71,7 @@ const initialState: NodeState = {
 
   decisionConditions: [],
   defaultOutputPath: "",
+  displayName: "",
 };
 
 // Reducer function
@@ -124,6 +126,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
 
         decisionConditions: node.data.decisionConditions || [],
         defaultOutputPath: node.data.defaultOutputPath || "",
+        displayName: node.data.displayName || "",
       }
     });
   }, [node]);

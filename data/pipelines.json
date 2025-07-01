@@ -1304,7 +1304,7 @@
     "name": "BOM Coding to CSV",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-07-01T03:57:43.034Z",
+    "updatedAt": "2025-07-01T04:29:05.347Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1439,9 +1439,10 @@
           "data": {
             "label": "Excel Export",
             "type": "excel",
-            "runState": "idle"
+            "runState": "idle",
+            "displayName": "CSV Export"
           },
-          "width": 116,
+          "width": 110,
           "height": 86,
           "selected": false,
           "positionAbsolute": {

@@ -516,6 +516,15 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
         </Button>
       </div>
       <div className="overflow-y-auto h-[calc(100%-64px)] px-6 py-4 space-y-6">
+        {/* Status indicator: only show after file is uploaded */}
+        {fileUploaded && (
+          <div className="mb-4">
+            <span className="font-semibold text-gray-700">Status: </span>
+            <span className={stepsRevealed < getDemoTrace(bomFinalCsv).length ? 'text-yellow-600' : 'text-green-600'}>
+              {stepsRevealed < getDemoTrace(bomFinalCsv).length ? 'Running' : 'Success'}
+            </span>
+          </div>
+        )}
         {!fileUploaded ? (
           <div className="border rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center mt-16">
             <div className="font-medium text-gray-700 mb-2 text-lg">Input</div>

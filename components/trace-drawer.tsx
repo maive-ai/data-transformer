@@ -1,8 +1,28 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Download, FileUp, Wand2, Globe, FileSpreadsheet, ChevronDown, Table } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import path from 'path';
 
 const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quantity,Reference Designators\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R1,\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R2,\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,1,C1,\nAS1115-BSST,LED Driver 24-QSOP,ams,1,U1,\n1N4148-T,Switching Diode,Diodes_Inc,1,D1,`;
+
+const bomNiceCsv = `RefDes,MPN,Manufacturer,Qty,Description,Notes\nR1,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,-\nR2,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,-\nC1,C0805C103K1RACTU,KEMET,1,10nF 50V X7R 0805 Capacitor,Alternate for C1\nU1,AS1115-BSST,ams,1,LED Driver 24-QSOP,-\nD1,1N4148-T,Diodes_Inc,1,Switching Diode,Fast\nR3,-,-,1,1kΩ 0603 Resistor,No PN provided`;
+
+const supplierFiles = [
+  'artifacts/supplier/CRG0603F10K.csv',
+  '/public/artifacts/supplier/CRG0603F10K.csv',
+  '/public/artifacts/supplier/C0805C103K1RACTU.csv',
+  '/public/artifacts/supplier/AS1115-BSST.csv',
+  '/public/artifacts/supplier/1N4148-T.csv',
+  '', // No supplier file for R3
+];
+const substituteFiles = [
+  '/public/artifacts/substitute/CRG0603F10K.csv',
+  '/public/artifacts/substitute/CRG0603F10K.csv',
+  '/public/artifacts/substitute/C0805C103K1RACTU.csv',
+  '/public/artifacts/substitute/AS1115-BSST.csv',
+  '/public/artifacts/substitute/1N4148-T.csv',
+  '/public/artifacts/substitute/1kΩ 0603 Resistor.csv',
+];
 
 // Function to download CSV data
 function downloadCsv(csvData: string, filename: string) {
@@ -104,7 +124,7 @@ function TraceStep({ nodeName, output, data, isLoading, loadingMessage, children
                 </div>
               </div>
               {data.includes(',') && data.includes('\n') ? (
-                csvOpen && <CsvTable csv={data} />
+                csvOpen && <CsvTableWithLinks csv={data} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
               ) : (
                 <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{data}</pre>
               )}
@@ -124,7 +144,7 @@ const demoTrace = [
   {
     node: 'BOM Reformatting',
     output: '{\n  "Transformed": true}',
-    data: completedBomCsv,
+    data: bomNiceCsv,
   },
   {
     node: 'AI Web Scrape',
@@ -148,7 +168,7 @@ function parseCsv(csv: string): string[][] {
   return csv.trim().split(/\r?\n/).map(line => line.split(','));
 }
 
-function CsvTable({ csv }: { csv: string }) {
+function CsvTableWithLinks({ csv, supplierFiles, substituteFiles }: { csv: string, supplierFiles: string[], substituteFiles: string[] }) {
   const rows = parseCsv(csv);
   if (!rows.length) return null;
   return (
@@ -159,6 +179,8 @@ function CsvTable({ csv }: { csv: string }) {
             {rows[0].map((cell, i) => (
               <th key={i} className="border px-2 py-1 bg-gray-100 text-left font-semibold">{cell}</th>
             ))}
+            <th className="border px-2 py-1 bg-gray-100 text-left font-semibold">Supplier Data</th>
+            <th className="border px-2 py-1 bg-gray-100 text-left font-semibold">Substitute Data</th>
           </tr>
         </thead>
         <tbody>
@@ -167,6 +189,20 @@ function CsvTable({ csv }: { csv: string }) {
               {row.map((cell, j) => (
                 <td key={j} className="border px-2 py-1">{cell}</td>
               ))}
+              <td className="border px-2 py-1">
+                {supplierFiles[i] ? (
+                  <a href={supplierFiles[i]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    {supplierFiles[i].split('/').pop()}
+                  </a>
+                ) : null}
+              </td>
+              <td className="border px-2 py-1">
+                {substituteFiles[i] ? (
+                  <a href={substituteFiles[i]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    {substituteFiles[i].split('/').pop()}
+                  </a>
+                ) : null}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -360,6 +396,8 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
               {/* If this is the AI Web Scrape step and showSearchComplete is true, show the static message instead of normal content */}
               {step.node === 'AI Web Scrape' && showSearchComplete ? (
                 <div className="text-sm text-gray-600">Search complete</div>
+              ) : step.node === 'AI Web Scrape' && step.data ? (
+                <CsvTableWithLinks csv={step.data} supplierFiles={supplierFiles} substituteFiles={substituteFiles} />
               ) : null}
             </TraceStep>
           ))

@@ -1,21 +1,98 @@
 import { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Download, FileUp, Brain, Globe, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const completedBomCsv = `Manufacturer Part Number,Description,Manufacturer,Quantity,Reference Designators\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R1,\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,R2,\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,1,C1,\nAS1115-BSST,LED Driver 24-QSOP,ams,1,U1,\n1N4148-T,Switching Diode,Diodes_Inc,1,D1,`;
 
-// Generate progressive CSV data based on current loop row
-function getProgressiveCsvData(currentRow: number): string {
-  const rows = parseCsv(completedBomCsv);
-  if (currentRow === 0) {
-    // Start with only headers
-    return rows[0].join(',');
-  }
-  
-  // Return only headers + rows up to currentRow
-  const headerRow = rows[0];
-  const dataRows = rows.slice(1, currentRow + 1);
-  return [headerRow, ...dataRows].map(row => row.join(',')).join('\n');
+// Function to download CSV data
+function downloadCsv(csvData: string, filename: string) {
+  const blob = new Blob([csvData], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+// Reusable Trace Step Component
+interface TraceStepProps {
+  nodeName: string;
+  output: string;
+  data?: string;
+  isLoading?: boolean;
+  loadingMessage?: string;
+}
+
+function TraceStep({ nodeName, output, data, isLoading, loadingMessage }: TraceStepProps) {
+  const handleDownload = () => {
+    if (data && data.includes(',') && data.includes('\n')) {
+      const filename = `${nodeName.toLowerCase().replace(/\s+/g, '_')}_data.csv`;
+      downloadCsv(data, filename);
+    }
+  };
+
+  const getIcon = () => {
+    switch (nodeName) {
+      case 'Manual Upload':
+        return <FileUp className="w-5 h-5" />;
+      case 'Structured Generation':
+        return <Brain className="w-5 h-5" />;
+      case 'AI Web Scrape':
+        return <Globe className="w-5 h-5" />;
+      case 'CSV Export':
+        return <FileSpreadsheet className="w-5 h-5" />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="border rounded-lg p-4 bg-gray-50 mb-4">
+      <div className="flex items-center gap-2 font-semibold text-gray-700 mb-2">
+        {getIcon()}
+        <span>{nodeName}</span>
+      </div>
+      {isLoading ? (
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+          <svg className="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+          </svg>
+          {loadingMessage}
+        </div>
+      ) : (
+        <>
+          <JsonFields json={output} />
+          {data && (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="font-bold text-xs text-gray-600">Data</div>
+                {data.includes(',') && data.includes('\n') && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDownload}
+                    className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+                    title="Download CSV"
+                  >
+                    <Download className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+              {data.includes(',') && data.includes('\n') ? (
+                <CsvTable csv={data} />
+              ) : (
+                <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{data}</pre>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 const demoTrace = [
@@ -29,23 +106,19 @@ const demoTrace = [
     data: completedBomCsv,
   },
   {
-    node: 'Loop',
-    output: 'Processed 10 items',
-    substeps: [
-      {
-        node: 'AI Web Scrape',
-        output: '{\n  "status": "success",\n  "found": 8\n}',
-      },
-      {
-        node: 'CSV Append',
-        output: 'Appended 8 rows to output.csv',
-        data: completedBomCsv,
-      },
-    ],
+    node: 'AI Web Scrape',
+    output: '{\n  "status": "success",\n  "found": 8\n}',
+    data: `Part Number,Description,Manufacturer,Price,Stock,Supplier\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.15,1250,DigiKey\nCRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,$0.12,890,Mouser\nC0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,$0.08,2100,LCSC\nAS1115-BSST,LED Driver 24-QSOP,ams,$2.45,156,DigiKey\n1N4148-T,Switching Diode,Diodes_Inc,$0.05,3400,Mouser`,
   },
   {
-    node: 'ERP Bom Generation',
-    output: '{\n  "bom": "generated"\n}',
+    node: 'Structured Generation',
+    output: '{\n  "processed": true,\n  "enhanced_rows": 8\n}',
+    data: completedBomCsv,
+  },
+  {
+    node: 'CSV Export',
+    output: '{\n  "exported": true,\n  "filename": "processed_bom.csv"\n}',
+    data: completedBomCsv,
   },
 ];
 
@@ -104,9 +177,9 @@ function JsonFields({ json }: { json: string }) {
 export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [stepsRevealed, setStepsRevealed] = useState(0);
-  const [loadingStep, setLoadingStep] = useState<string | null>(null);
-  const [currentLoopRow, setCurrentLoopRow] = useState(0);
-  const [loopCompleted, setLoopCompleted] = useState(false);
+  const [loadingStep1, setLoadingStep1] = useState(false); // First Structured Generation
+  const [loadingStep2, setLoadingStep2] = useState(false); // AI Web Scrape
+  const [loadingStep3, setLoadingStep3] = useState(false); // Second Structured Generation
   const [currentSearchMessage, setCurrentSearchMessage] = useState('');
   const [width, setWidth] = useState(400);
   const revealTimer = useRef<NodeJS.Timeout | null>(null);
@@ -141,29 +214,26 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
     if (e.target.files && e.target.files.length > 0) {
       setFileUploaded(true);
       setStepsRevealed(1);
-      setLoadingStep('Structured Generation');
+      setLoadingStep1(true);
     }
   };
 
   // Effect to handle loading for Structured Generation
   useEffect(() => {
-    if (loadingStep === 'Structured Generation') {
+    if (loadingStep1) {
       const timer = setTimeout(() => {
-        setLoadingStep(null);
-        // Reveal Loop step (index 2) immediately and start AI Web Scrape loading
-        setStepsRevealed(3); // Show Manual Upload, Structured Generation, and Loop
-
-        setCurrentLoopRow(0);
-        setLoopCompleted(false);
-        setLoadingStep('AI Web Scrape');
+        setLoadingStep1(false);
+        // Reveal AI Web Scrape step (index 2) immediately and start loading
+        setStepsRevealed(3); // Show Manual Upload, Structured Generation, and AI Web Scrape
+        setLoadingStep2(true);
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [loadingStep]);
+  }, [loadingStep1]);
 
-  // Effect to handle loading for AI Web Scrape inside Loop
+  // Effect to handle loading for AI Web Scrape
   useEffect(() => {
-    if (loadingStep === 'AI Web Scrape') {
+    if (loadingStep2) {
       // Show progressive search messages
       const searchMessages = [
         'Searching digikey.com...',
@@ -181,26 +251,14 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
           clearInterval(messageTimer);
           // Wait a bit longer on "Search complete" before moving to next iteration
           setTimeout(() => {
-            setLoadingStep(null);
+            setLoadingStep2(false);
             setCurrentSearchMessage('');
             
-            // Handle loop progression
-            setCurrentLoopRow(prev => {
-              const nextRow = prev + 1;
-              if (nextRow >= 5) { // Process 5 rows total
-                setLoopCompleted(true);
-                // Reveal the final step after loop completes
-                setTimeout(() => {
-                  setStepsRevealed(4); // Reveal all steps including ERP BOM Generation
-                }, 1000);
-              } else {
-                // Continue looping - trigger next AI Web Scrape after a brief pause
-                setTimeout(() => {
-                  setLoadingStep('AI Web Scrape');
-                }, 500);
-              }
-              return nextRow;
-            });
+            // Reveal the second Structured Generation step and start loading
+            setTimeout(() => {
+              setStepsRevealed(4); // Show up to the second Structured Generation step
+              setLoadingStep3(true);
+            }, 1000);
           }, 1000);
         }
       }, 800); // Change message every 800ms
@@ -209,7 +267,21 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
         clearInterval(messageTimer);
       };
     }
-  }, [loadingStep]);
+  }, [loadingStep2]);
+
+  // Effect to handle loading for the second Structured Generation
+  useEffect(() => {
+    if (loadingStep3) {
+      const timer = setTimeout(() => {
+        setLoadingStep3(false);
+        // Reveal the final CSV Export step
+        setTimeout(() => {
+          setStepsRevealed(5); // Reveal all steps including CSV Export
+        }, 1000);
+      }, 3000); // Shorter loading time for the second Structured Generation
+      return () => clearTimeout(timer);
+    }
+  }, [loadingStep3]);
 
   return (
     <div
@@ -242,76 +314,15 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             />
           </div>
         ) : (
-          demoTrace.slice(0, Math.max(stepsRevealed, loopCompleted ? 4 : loadingStep === 'AI Web Scrape' ? 3 : 2)).map((step, idx) => (
-            <div key={idx} className="border rounded-lg p-4 bg-gray-50 mb-4">
-              <div className="font-medium text-gray-700 mb-2">{step.node}</div>
-              {/* Show loading spinner for Structured Generation if loading */}
-              {step.node === loadingStep ? (
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                  <svg className="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                  </svg>
-                  Reformating BOM...
-                </div>
-              ) : (
-                <>
-                  <JsonFields json={step.output} />
-                  {step.data && (
-                    <div>
-                      <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
-                      {step.data.includes(',') && step.data.includes('\n') ? (
-                        <CsvTable csv={step.data} />
-                      ) : (
-                        <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{step.data}</pre>
-                      )}
-                    </div>
-                  )}
-                  {/* Render substeps if present */}
-                  {Array.isArray(step.substeps) && (
-                    <div className="pl-6 mt-4 border-l-2 border-gray-300">
-                      {step.substeps.map((sub, subIdx) => (
-                        <div key={subIdx} className="mb-4">
-                          <div className="font-medium text-gray-700 mb-2">{sub.node}</div>
-                          {/* Show loading spinner for AI Web Scrape if loading */}
-                          {sub.node === loadingStep ? (
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                              <svg className="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                              </svg>
-                              {currentSearchMessage || 'Running AI Web Scrape…'}
-                            </div>
-                          ) : (
-                            <>
-                              {sub.node === 'AI Web Scrape' ? (
-                                <div className="text-xs mb-1 text-gray-800">
-                                  <span className="font-semibold text-gray-700">Status:</span> Search completed successfully
-                                </div>
-                              ) : (
-                                <JsonFields json={sub.output} />
-                              )}
-                              {sub.data && (
-                                <div>
-                                  <div className="font-semibold text-xs text-gray-600 mb-1">Data</div>
-                                  {sub.node === 'CSV Append' ? (
-                                    <CsvTable csv={getProgressiveCsvData(currentLoopRow)} />
-                                  ) : sub.data.includes(',') && sub.data.includes('\n') ? (
-                                    <CsvTable csv={sub.data} />
-                                  ) : (
-                                    <pre className="bg-white rounded p-2 text-xs overflow-x-auto border text-gray-800">{sub.data}</pre>
-                                  )}
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+          demoTrace.slice(0, Math.max(stepsRevealed, loadingStep2 ? 3 : loadingStep3 ? 4 : 2)).map((step, idx) => (
+            <TraceStep
+              key={idx}
+              nodeName={step.node}
+              output={step.output}
+              data={step.data}
+              isLoading={step.node === 'Structured Generation' && idx === 1 ? loadingStep1 : step.node === 'AI Web Scrape' ? loadingStep2 : step.node === 'Structured Generation' && idx === 3 ? loadingStep3 : false}
+              loadingMessage={step.node === 'Structured Generation' && idx === 1 ? 'Reformating BOM...' : step.node === 'AI Web Scrape' ? currentSearchMessage || 'Running AI Web Scrape…' : step.node === 'Structured Generation' && idx === 3 ? 'Processing enhanced data...' : undefined}
+            />
           ))
         )}
       </div>

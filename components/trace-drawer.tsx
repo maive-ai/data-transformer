@@ -370,6 +370,27 @@ function CollapsibleCsvTable({ csv, filename }: { csv: string; filename: string 
   );
 }
 
+// Add the list of domains for AI Web Scrape search
+const aiWebScrapeDomains = [
+  "digikey.com",
+  "mouser.com",
+  "lcsc.com",
+  "onlinecomponents.com",
+  "capacitor-resistance.com",
+  "onesourcecomponents.com",
+  "ariat-tech.com",
+  "pneda.com",
+  "richardelectronics.com",
+  "octopart.com",
+  "micro-semiconductor.com",
+  "components-store.com",
+  "newark.com",
+  "boser-tech.com",
+  "digikrom.com",
+  "arrow.com",
+  "senico-electronics.com"
+];
+
 export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [stepsRevealed, setStepsRevealed] = useState(0);
@@ -451,17 +472,12 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
   useEffect(() => {
     if (loadingStep2) {
       setShowSearchComplete(false);
-      const searchMessages = [
-        'Searching digikey.com...',
-        'Searching mouser.com...',
-        'Searching lcsc.com...'
-      ];
       let messageIndex = 0;
-      setCurrentSearchMessage(searchMessages[0]);
+      setCurrentSearchMessage(`Searching ${aiWebScrapeDomains[0]}...`);
       const messageTimer = setInterval(() => {
         messageIndex++;
-        if (messageIndex < searchMessages.length) {
-          setCurrentSearchMessage(searchMessages[messageIndex]);
+        if (messageIndex < aiWebScrapeDomains.length) {
+          setCurrentSearchMessage(`Searching ${aiWebScrapeDomains[messageIndex]}...`);
         } else {
           clearInterval(messageTimer);
           setLoadingStep2(false);
@@ -476,7 +492,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             }, 1000);
           }, 1000); // Show 'Search complete' for 1s
         }
-      }, 5000);
+      }, 2000);
       return () => {
         clearInterval(messageTimer);
       };

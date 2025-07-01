@@ -335,6 +335,41 @@ function JsonFields({ json }: { json: string }) {
   );
 }
 
+// Add CollapsibleCsvTable component
+function CollapsibleCsvTable({ csv, filename }: { csv: string; filename: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setOpen((v) => !v)}
+            className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+            title={open ? 'Hide CSV' : 'Show CSV'}
+          >
+            <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+          </Button>
+          <FileSpreadsheet className="w-4 h-4 text-gray-600" />
+        </div>
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => downloadCsv(csv, filename)}
+            className="h-6 w-6 p-0 text-gray-500 hover:text-gray-700"
+            title="Download CSV"
+          >
+            <Download className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+      {open ? <CsvTable csv={csv} /> : null}
+    </div>
+  );
+}
+
 export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [fileUploaded, setFileUploaded] = useState(false);
   const [stepsRevealed, setStepsRevealed] = useState(0);
@@ -510,9 +545,9 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
             const shouldShowTable = isAIWebScrape && !loadingStep2 && !showSearchComplete;
             // For BOM Optimization, show loading or error if BOM-final.csv is not loaded
             if (step.node === 'BOM Optimization') {
-              if (bomFinalCsvLoading) {
+              if (bomFinalCsvLoading || loadingStep3) {
                 return (
-                  <TraceStep key={idx} nodeName={step.node} output={step.output} isLoading loadingMessage="Loading BOM-final.csv..." />
+                  <TraceStep key={idx} nodeName={step.node} output={step.output} isLoading loadingMessage={bomFinalCsvLoading ? "Loading BOM-final.csv..." : "Processing enhanced data..."} />
                 );
               }
               if (bomFinalCsvError) {
@@ -522,7 +557,7 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   </TraceStep>
                 );
               }
-              // Show only the CSV table for BOM Optimization
+              // Collapsible table with download for BOM Optimization
               return (
                 <TraceStep
                   key={idx}
@@ -530,22 +565,33 @@ export function TraceDrawer({ open, onClose }: { open: boolean; onClose: () => v
                   output={step.output}
                   data={step.data}
                 >
-                  <CsvTable csv={step.data || ''} />
+                  <CollapsibleCsvTable csv={step.data || ''} filename="bom_optimization.csv" />
                 </TraceStep>
               );
             }
-            // For BOM Reformatting, show only the CSV table without extra columns
+            // For BOM Reformatting, show only the CSV table without extra columns after loading
             if (step.node === 'BOM Reformatting' && step.data) {
+              if (loadingStep1) {
+                return (
+                  <TraceStep
+                    key={idx}
+                    nodeName={step.node}
+                    output={step.output}
+                    data={step.data}
+                    isLoading
+                    loadingMessage="Reformatting BOM..."
+                  />
+                );
+              }
+              // Collapsible table with download for BOM Reformatting
               return (
                 <TraceStep
                   key={idx}
                   nodeName={step.node}
                   output={step.output}
                   data={step.data}
-                  isLoading={step.node === 'BOM Reformatting' && idx === 1 ? loadingStep1 : false}
-                  loadingMessage={step.node === 'BOM Reformatting' && idx === 1 ? 'Reformatting BOM...' : undefined}
                 >
-                  <CsvTable csv={step.data} />
+                  <CollapsibleCsvTable csv={step.data} filename="bom_reformatting.csv" />
                 </TraceStep>
               );
             }

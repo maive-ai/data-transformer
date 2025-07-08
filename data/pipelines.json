@@ -241,7 +241,7 @@
     "name": "SOP from Video",
     "description": "",
     "createdAt": "2025-05-30T07:43:14.781Z",
-    "updatedAt": "2025-06-03T02:41:53.171Z",
+    "updatedAt": "2025-07-07T21:33:46.964Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1304,7 +1304,7 @@
     "name": "BOM Coding to CSV",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-07-01T05:51:03.489Z",
+    "updatedAt": "2025-07-08T05:30:57.009Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1313,34 +1313,38 @@
           "id": "action-1751306973030",
           "type": "action",
           "position": {
-            "x": 117.3809042086528,
+            "x": 117.8809042086528,
             "y": 83.80742855457925
           },
           "data": {
             "label": "Structured Generation",
             "type": "action",
-            "runState": "idle",
-            "outputTemplateUrl": "/templates/f467d697-c362-460f-b1e2-2cdc9b3716c6-BOM-template.csv",
+            "runState": "done",
+            "outputTemplateUrl": "/templates/e1414847-9761-4acd-8663-44a47fb7e2f9-BOM-template.csv",
             "outputTemplateName": "BOM-template.csv",
             "useOutputTemplate": true,
-            "prompt": "Please structure the data received into the expected template",
+            "prompt": "Transform the provided manufacturing data according to the specified instructions. Your goal is to produce clean, structured, and analysis-ready output that correctly maps ambiguous or inconsistent inputs to their intended fields.",
             "ioConfig": {
               "inputTypes": [
                 {
-                  "type": ""
+                  "type": "csv"
                 }
               ],
               "outputType": {
-                "type": ""
+                "type": "csv"
               }
             },
-            "displayName": "BOM Reformatting"
+            "displayName": "BOM Reformatting",
+            "files": [
+              {}
+            ],
+            "file": {}
           },
-          "width": 157,
-          "height": 86,
+          "width": 158,
+          "height": 88,
           "selected": true,
           "positionAbsolute": {
-            "x": 117.3809042086528,
+            "x": 117.8809042086528,
             "y": 83.80742855457925
           },
           "dragging": false
@@ -1349,8 +1353,8 @@
           "id": "ai_web_search-1751308153360",
           "type": "ai_web_search",
           "position": {
-            "x": 416.06682070674003,
-            "y": 71.58855633932038
+            "x": 326.9395767298437,
+            "y": 70.63175893125421
           },
           "data": {
             "label": "AI Web Search",
@@ -1360,14 +1364,23 @@
               "mouser.com",
               "lcsc.com"
             ],
-            "runState": "idle"
+            "runState": "done",
+            "files": [
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ]
           },
           "width": 160,
           "height": 112,
-          "selected": true,
+          "selected": false,
           "positionAbsolute": {
-            "x": 416.06682070674003,
-            "y": 71.58855633932038
+            "x": 326.9395767298437,
+            "y": 70.63175893125421
           },
           "dragging": false
         },
@@ -1375,20 +1388,23 @@
           "id": "trigger-1751313521051",
           "type": "trigger",
           "position": {
-            "x": -115.1820589943253,
+            "x": -54.40382228615482,
             "y": 83.94335721097875
           },
           "data": {
             "label": "Manual Upload",
             "type": "manual",
-            "runState": "prompt",
-            "displayName": "BOM Upload"
+            "runState": "done",
+            "displayName": "BOM Upload",
+            "uploadedFileNames": [
+              "BOM-messy.csv"
+            ]
           },
-          "width": 117,
-          "height": 86,
+          "width": 116,
+          "height": 85,
           "selected": false,
           "positionAbsolute": {
-            "x": -115.1820589943253,
+            "x": -54.40382228615482,
             "y": 83.94335721097875
           },
           "dragging": false
@@ -1397,8 +1413,8 @@
           "id": "action-1751334092984",
           "type": "action",
           "position": {
-            "x": 731.110594584248,
-            "y": 83.90350955390568
+            "x": 534.8300703516389,
+            "y": 84.26812721627391
           },
           "data": {
             "label": "Structured Generation",
@@ -1417,15 +1433,22 @@
                 "type": ""
               }
             },
-            "runState": "idle",
-            "displayName": "BOM Optimization"
+            "runState": "done",
+            "displayName": "BOM Optimization",
+            "files": [
+              {},
+              {},
+              {},
+              {},
+              {}
+            ]
           },
-          "width": 155,
-          "height": 86,
+          "width": 156,
+          "height": 88,
           "selected": true,
           "positionAbsolute": {
-            "x": 731.110594584248,
-            "y": 83.90350955390568
+            "x": 534.8300703516389,
+            "y": 84.26812721627391
           },
           "dragging": false
         }

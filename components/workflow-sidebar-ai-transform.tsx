@@ -1,3 +1,4 @@
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 
 interface AiTransformSidebarProps {
@@ -12,6 +13,10 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
   const [useOutputTemplate, setUseOutputTemplate] = useState(node.data.useOutputTemplate || false);
   const [outputTemplateName, setOutputTemplateName] = useState(node.data.outputTemplateName || "");
   const [outputTemplateUrl, setOutputTemplateUrl] = useState(node.data.outputTemplateUrl || "");
+  const [csvModalOpen, setCsvModalOpen] = useState(false);
+  const [csvContents, setCsvContents] = useState<string[]>([]);
+  const [csvError, setCsvError] = useState<string | null>(null);
+  const [csvIndex, setCsvIndex] = useState(0);
 
   // Update state when node changes
   useEffect(() => {
@@ -74,6 +79,110 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
       });
     }
   };
+
+  // Function to load CSV(s) from node.data.file or node.data.files
+  const loadCsvFiles = async () => {
+    let files: File[] = [];
+    if (node.data.files && Array.isArray(node.data.files)) {
+      files = node.data.files;
+    } else if (node.data.file) {
+      files = [node.data.file];
+    }
+    if (!files.length) {
+      setCsvContents([]);
+      setCsvError("CSV_OUTPUT_NOT_FOUND: No CSV output data is available for this node. Please run the node and try again.");
+      return;
+    }
+    try {
+      const contents = await Promise.all(files.map(file => file.text()));
+      setCsvContents(contents);
+      setCsvError(null);
+    } catch (err) {
+      setCsvContents([]);
+      setCsvError("CSV_READ_ERROR: Failed to read CSV output file(s). Please check the node execution and try again.");
+    }
+  };
+
+  // Open modal and load CSVs
+  const handleOpenCsvModal = async () => {
+    await loadCsvFiles();
+    setCsvIndex(0);
+    setCsvModalOpen(true);
+  };
+
+  // Helper to robustly parse CSV rows, handling quoted fields and commas inside quotes
+  function parseCsv(csv: string): string[][] {
+    const rows: string[][] = [];
+    let currentRow: string[] = [];
+    let currentCell = '';
+    let inQuotes = false;
+    let i = 0;
+    while (i < csv.length) {
+      const char = csv[i];
+      if (char === '"') {
+        if (inQuotes && csv[i + 1] === '"') {
+          // Escaped quote
+          currentCell += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        currentRow.push(currentCell);
+        currentCell = '';
+      } else if ((char === '\n' || char === '\r') && !inQuotes) {
+        if (currentCell !== '' || currentRow.length > 0) {
+          currentRow.push(currentCell);
+          rows.push(currentRow);
+          currentRow = [];
+          currentCell = '';
+        }
+        // Handle \r\n (Windows)
+        if (char === '\r' && csv[i + 1] === '\n') i++;
+      } else {
+        currentCell += char;
+      }
+      i++;
+    }
+    // Add last cell/row
+    if (currentCell !== '' || currentRow.length > 0) {
+      currentRow.push(currentCell);
+      rows.push(currentRow);
+    }
+    // Remove empty trailing rows
+    return rows.filter(row => row.length > 1 || (row.length === 1 && row[0].trim() !== ''));
+  }
+
+  // Replace the CSV table rendering to use the robust parser
+  function renderCsvTable(csv: string, idx: number) {
+    const rows = parseCsv(csv);
+    if (!rows.length) return <div className="text-gray-500">(Empty CSV)</div>;
+    return (
+      <div key={idx} className="mb-6 overflow-x-auto">
+        <div className="font-semibold mb-2">CSV File {idx + 1}</div>
+        <div className="max-h-[60vh] overflow-y-auto border rounded-lg">
+          <table className="min-w-full border text-xs">
+            <thead>
+              <tr>
+                {rows[0].map((cell, i) => (
+                  <th key={i} className="border px-2 py-1 bg-gray-100 text-left font-semibold">{cell}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.slice(1).map((row, i) => (
+                <tr key={i}>
+                  {row.map((cell, j) => (
+                    <td key={j} className="border px-2 py-1">{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -166,6 +275,66 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
           </div>
         )}
       </div>
+
+      {/* Run History Section (find and render if present) */}
+      {node.data.runHistory && Array.isArray(node.data.runHistory) && (
+        <div>
+          <div className="font-medium mb-2">Run History</div>
+          <ul className="text-xs text-gray-700 space-y-1">
+            {node.data.runHistory.map((run: any, idx: number) => (
+              <li key={idx} className="flex items-center gap-2">
+                <span>{run.timestamp}</span>
+                <span className={run.status === 'done' ? 'text-green-600' : 'text-red-600'}>{run.status}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* View CSV Output Button (always visible) */}
+      <button
+        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+        onClick={handleOpenCsvModal}
+      >
+        View CSV Output
+      </button>
+
+      {/* Modal for CSV output */}
+      <Dialog open={csvModalOpen} onOpenChange={setCsvModalOpen}>
+        <DialogContent className="max-w-3xl w-full">
+          <DialogTitle>CSV Output</DialogTitle>
+          {csvError ? (
+            <div className="text-red-600 font-mono whitespace-pre-wrap">{csvError}</div>
+          ) : csvContents.length > 0 ? (
+            <div>
+              {csvContents.length > 1 && (
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <button
+                    className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
+                    onClick={() => setCsvIndex(i => Math.max(0, i - 1))}
+                    disabled={csvIndex === 0}
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm">CSV {csvIndex + 1} of {csvContents.length}</span>
+                  <button
+                    className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
+                    onClick={() => setCsvIndex(i => Math.min(csvContents.length - 1, i + 1))}
+                    disabled={csvIndex === csvContents.length - 1}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+              <div className="max-h-[65vh] overflow-y-auto">
+                {renderCsvTable(csvContents[csvIndex], csvIndex)}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500">No CSV output data found.</div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Save Button */}
       <button

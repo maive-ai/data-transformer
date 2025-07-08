@@ -864,6 +864,20 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             else if (upstreamData?.file) inputFiles.push(upstreamData.file);
           }
           if (!inputFiles.length && node.type !== NodeType.AI_OPERATOR) throw new Error('No input files available');
+          
+          // Add detailed logging for BOM reformatting and other action nodes
+          console.log(`🚀 [WORKFLOW] Starting action node execution:`, {
+            nodeId,
+            nodeType: node.type,
+            nodeLabel: node.data.label,
+            displayName: node.data.displayName,
+            inputFilesCount: inputFiles.length,
+            inputFileNames: inputFiles.map((f: File) => f.name),
+            prompt: node.data.prompt,
+            useOutputTemplate: node.data.useOutputTemplate,
+            outputTemplateUrl: node.data.outputTemplateUrl
+          });
+
           const formData = new FormData();
           formData.append('inputFile', inputFiles[0]);
           if (node.data.prompt) formData.append('prompt', node.data.prompt);
@@ -884,19 +898,47 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             ? { 'x-global-system-prompt': encodeURIComponent(globalSystemPrompt) }
             : undefined;
 
+          console.log(`📡 [WORKFLOW] Calling Gemini API for node ${nodeId}:`, {
+            nodeLabel: node.data.label,
+            displayName: node.data.displayName,
+            inputFileName: inputFiles[0]?.name,
+            prompt: node.data.prompt,
+            useOutputTemplate: node.data.useOutputTemplate,
+            outputTemplateUrl: node.data.outputTemplateUrl,
+            hasGlobalSystemPrompt: !!globalSystemPrompt
+          });
+
           const response = await fetch('/api/gemini', {
             method: 'POST',
             body: formData,
             headers,
           });
+          
+          console.log(`📡 [WORKFLOW] Gemini API response received for node ${nodeId}:`, {
+            status: response.status,
+            ok: response.ok,
+            nodeLabel: node.data.label,
+            displayName: node.data.displayName
+          });
+
           if (!response.ok) throw new Error('Failed to process file with Gemini');
           const result = await response.json();
-          let csvFiles = [];
+          
+          console.log(`✅ [WORKFLOW] Gemini API processing completed for node ${nodeId}:`, {
+            nodeLabel: node.data.label,
+            displayName: node.data.displayName,
+            resultDataLength: result.data?.length || 0,
+            resultDataType: typeof result.data,
+            success: result.success
+          });
+
+          let csvFiles: File[] = [];
           // If output type is json, create a downloadable file from the result (including hardcoded JSON)
           if (node.data.ioConfig?.outputType?.type === FileType.JSON && result.data && result.data.length > 0) {
             const jsonData = result.data.length === 1 ? result.data[0] : result.data;
             // Short-circuit for hardcoded JSON output when input is MP4
             if (node.data.ioConfig?.inputTypes?.some((t: any) => t.type === FileType.MP4)) {
+              console.log(`⏭️ [WORKFLOW] Skipping Gemini processing for MP4 input, using hardcoded JSON for node ${nodeId}`);
               // Sleep for 30 seconds before outputting the hardcoded JSON
               await new Promise(resolve => setTimeout(resolve, 30000));
               const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
@@ -910,6 +952,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                   runState: RunState.DONE,
                   fileUrl,
                   outputFileName: 'P-650-WTH-BKM.json',
+                  files: [jsonFile],
+                  file: jsonFile
                 }
               } : n));
               completedRef.current.add(nodeId);
@@ -929,20 +973,54 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 runState: RunState.DONE,
                 fileUrl,
                 outputFileName: 'P-650-WTH-BKM.json',
+                files: [jsonFile],
+                file: jsonFile
+              }
+            } : n));
+          } else if (result.data && result.data.length > 0) {
+            csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
+            nodeData.set(nodeId, { files: csvFiles });
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: RunState.DONE,
+                files: csvFiles,
+                file: csvFiles.length === 1 ? csvFiles[0] : undefined
               }
             } : n));
           } else {
-            csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
-            nodeData.set(nodeId, { files: csvFiles });
-            setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
+            // No output data
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: RunState.DONE,
+                files: [],
+                file: undefined
+              }
+            } : n));
           }
+          
+          console.log(`✅ [WORKFLOW] Node ${nodeId} completed successfully:`, {
+            nodeLabel: node.data.label,
+            displayName: node.data.displayName,
+            outputFilesCount: csvFiles.length,
+            outputFileNames: csvFiles.map((f: File) => f.name)
+          });
+          
           // Always mark node as completed and trigger downstream nodes after output is set
           completedRef.current.add(nodeId);
           for (const downstreamId of getDownstream(nodeId)) {
             runNode(downstreamId);
           }
-        } catch (error) {
-          console.error(`Error running node ${nodeId}:`, error);
+        } catch (error: unknown) {
+          console.error(`❌ [WORKFLOW] Error running node ${nodeId}:`, {
+            nodeLabel: node.data.label,
+            displayName: node.data.displayName,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+          });
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
         setNodeRunHistory(history => {

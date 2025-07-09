@@ -1304,7 +1304,7 @@
     "name": "BOM Coding to CSV",
     "description": "",
     "createdAt": "2025-06-30T17:42:57.923Z",
-    "updatedAt": "2025-07-08T05:30:57.009Z",
+    "updatedAt": "2025-07-09T00:36:06.743Z",
     "steps": [],
     "runs": [],
     "workflow": {
@@ -1372,6 +1372,8 @@
               {},
               {},
               {},
+              {},
+              {},
               {}
             ]
           },
@@ -1397,7 +1399,7 @@
             "runState": "done",
             "displayName": "BOM Upload",
             "uploadedFileNames": [
-              "BOM-messy.csv"
+              "BOM messy.csv"
             ]
           },
           "width": 116,
@@ -1436,6 +1438,7 @@
             "runState": "done",
             "displayName": "BOM Optimization",
             "files": [
+              {},
               {},
               {},
               {},

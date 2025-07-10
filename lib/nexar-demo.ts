@@ -135,6 +135,117 @@ export async function searchPartByMPN(mpn: string): Promise<void> {
   }
 }
 
+// Helper function to find MPN column index
+function findMpnColumnIndex(header: string): number {
+  const headerColumns = header.split(',').map(col => col.trim().toLowerCase());
+  const mpnColumnIndex = headerColumns.findIndex(col => 
+    col === 'mpn' || 
+    col === 'manufacturer part number' || 
+    col === 'part number' || 
+    col === 'partnumber' ||
+    col === 'manufacturerpartnumber'
+  );
+  
+  if (mpnColumnIndex === -1) {
+    throw new Error('No MPN column found in BOM. Expected column names: mpn, manufacturer part number, part number, partnumber, manufacturerpartnumber');
+  }
+  
+  return mpnColumnIndex;
+}
+
+// Helper function to extract Nexar data from search results
+function extractNexarData(part: Part): string {
+  let bestPrice = '';
+  let bestCurrency = '';
+  let bestAvailability = '';
+  let leadTime = '';
+  let obsolescence = 'Active';
+  let alternatives = '';
+  let sellers = '';
+  
+  if (part.sellers && part.sellers.length > 0) {
+    const seller = part.sellers[0];
+    if (seller.offers && seller.offers.length > 0) {
+      const offer = seller.offers[0];
+      if (offer.prices && offer.prices.length > 0) {
+        const price = offer.prices[0];
+        bestPrice = price.price.toString();
+        bestCurrency = price.currency;
+      }
+      bestAvailability = offer.inventoryLevel;
+    }
+    sellers = part.sellers.map(s => s.company.name).join('; ');
+  }
+  
+  // Check for alternatives (generic MPN)
+  if (part.genericMpn && part.genericMpn !== part.mpn) {
+    alternatives = part.genericMpn;
+  }
+  
+  return `${bestPrice},${bestCurrency},${bestAvailability},${leadTime},${obsolescence},${alternatives},"${sellers}"`;
+}
+
+// Helper function to process a single BOM row
+async function processBomRow(line: string, mpnColumnIndex: number): Promise<string> {
+  const parts = line.split(',').map(part => part.trim());
+  const mpn = parts[mpnColumnIndex] || '';
+  
+  if (!mpn) {
+    // If no MPN, keep original row with empty Nexar data
+    return line + ',,,,,,,';
+  }
+  
+  try {
+    // Search for this MPN
+    const response = await nexar.query<SearchResponse>(gqlQuery, { mpn });
+    const results = response?.data?.supSearch?.results;
+    
+    if (results && results.length > 0) {
+      const part = results[0].part; // Use first result
+      const nexarData = extractNexarData(part);
+      return line + ',' + nexarData;
+    } else {
+      // No results found, keep original row with empty Nexar data
+      return line + ',,,,,,,';
+    }
+    
+  } catch (error) {
+    console.error(`Error searching for MPN ${mpn}:`, error);
+    // Keep original row with empty Nexar data
+    return line + ',,,,,,,';
+  }
+}
+
+// New function for BOM processing
+export async function searchBomComponents(bomCsvContent: string): Promise<string> {
+  try {
+    // Parse CSV content
+    const lines = bomCsvContent.split('\n').filter(line => line.trim());
+    if (lines.length < 2) throw new Error('CSV must have at least one data row');
+    
+    const header = lines[0];
+    const dataLines = lines.slice(1);
+    
+    // Find MPN column index
+    const mpnColumnIndex = findMpnColumnIndex(header);
+    
+    // Add new columns for Nexar data
+    const enhancedHeader = header + ',nexar_price,nexar_currency,nexar_availability,nexar_lead_time,nexar_obsolescence,nexar_alternatives,nexar_sellers';
+    
+    // Process each BOM row
+    const enhancedRows = await Promise.all(
+      dataLines.map(line => processBomRow(line, mpnColumnIndex))
+    );
+    
+    // Return enhanced CSV
+    return [enhancedHeader, ...enhancedRows].join('\n');
+    
+  } catch (error) {
+    console.error('Error processing BOM:', error);
+    throw error;
+  }
+}
+
 // Interactive CLI version (for Node.js environments)
 export async function startInteractiveSearch(): Promise<void> {
   const readline = require("readline");

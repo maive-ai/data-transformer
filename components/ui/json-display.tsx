@@ -107,6 +107,8 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
               onClick={() => toggleExpanded(nodeKey)}
               className="focus:outline-none flex items-center justify-center h-5 w-5"
               aria-expanded={isExpanded}
+              tabIndex={0}
+              style={{ minWidth: 20 }}
             >
               {isExpanded ? <ChevronDown className="w-3 h-3 text-gray-400" /> : <ChevronRight className="w-3 h-3 text-gray-400" />}
             </button>
@@ -130,7 +132,11 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
     
     // Primitive or non-expandable value
     return (
-      <div className="flex items-center gap-2 py-1 pl-5">
+      <div className="flex items-center gap-2 py-1">
+        {/* Invisible chevron for alignment */}
+        <span className="inline-flex items-center justify-center h-5 w-5 opacity-0">
+          <ChevronRight className="w-3 h-3" />
+        </span>
         <span className={cn(
           "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
           getPastelClass(key)

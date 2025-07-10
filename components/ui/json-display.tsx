@@ -88,7 +88,7 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
       }
 
       const nodeKey = `${key}-${depth}`;
-      const isExpanded = expanded[nodeKey] ?? depth < 2; // Auto-expand first levels
+      const isExpanded = expanded[nodeKey] ?? (isTopLevel ? true : false); // Only top-level expanded by default
 
       const entries = isArray ? value.map((v, i) => [`Item ${i + 1}`, v]) : Object.entries(value);
 
@@ -102,7 +102,7 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
 
       return (
         <div>
-          <div className="flex items-center gap-2 py-0.5">
+          <div className="flex items-center gap-2 py-1">
             <button
               onClick={() => toggleExpanded(nodeKey)}
               className="focus:outline-none flex items-center justify-center h-5 w-5"
@@ -130,13 +130,17 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
     
     // Primitive or non-expandable value
     return (
-      <div className="flex items-center gap-2 py-0.5 pl-5">
+      <div className="flex items-center gap-2 py-1 pl-5">
         <span className={cn(
           "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
           getPastelClass(key)
         )}>{humanizeKey(key)}</span>
-        {typeof value === 'string' && <span className="text-gray-800 text-xs">{value}</span>}
-        {typeof value === 'number' && <span className="text-blue-700 text-xs">{value}</span>}
+        {typeof value === 'string' &&
+          (/^https?:\/\//.test(value)
+            ? <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">link</a>
+            : <span className="text-gray-800 text-xs">{value}</span>
+          )}
+        {typeof value === 'number' && <span className="text-gray-800 text-xs">{value}</span>}
         {typeof value === 'boolean' && <span className="text-purple-700 text-xs">{value ? 'Yes' : 'No'}</span>}
         {value === null && <span className="text-gray-400 italic text-xs">None</span>}
       </div>
@@ -196,7 +200,7 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
             >
               <CloseIcon className="w-5 h-5 text-gray-500" />
             </button>
-            <div className="max-w-5xl mx-auto">
+            <div>
               {renderValue(displayData)}
             </div>
           </div>

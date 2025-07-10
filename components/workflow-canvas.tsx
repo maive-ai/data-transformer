@@ -115,8 +115,8 @@ function getPdtTimestamp() {
   }).replace(/[/:]/g, '-').replace(/, /g, '_').replace(/ /g, '');
 }
 
-// Config: disable node outlines/highlights
-const HIGHLIGHT_NODES_WHEN_RUNNING = false;
+// Config: enable node outlines/highlights
+const HIGHLIGHT_NODES_WHEN_RUNNING = true;
 
 export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   initialNodes = [],
@@ -1423,14 +1423,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       <div className="flex-1 h-full">
         <ReactFlow
           nodes={nodes.map(n => {
-            let isHighlighted = false;
-            if (HIGHLIGHT_NODES_WHEN_RUNNING) {
-              if (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) {
-                isHighlighted = n.id === selectedNodeId;
-              } else if (n.data.runState === RunState.RUNNING) {
-                isHighlighted = true;
-              }
-            }
+            // Simplified highlighting logic - highlight running nodes and selected manual triggers
+            const isHighlighted = n.data.runState === RunState.RUNNING || 
+              (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL && n.id === selectedNodeId);
+            
             return {
               ...n,
               selected: n.id === selectedNodeId,

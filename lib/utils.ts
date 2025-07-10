@@ -1,9 +1,21 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import * as XLSX from 'xlsx'
+import { RunState } from "@/types/enums"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function getNodeBorderClass(runState?: RunState): string {
+  switch (runState) {
+    case RunState.IDLE: return "border border-gray-200";
+    case RunState.RUNNING: return "rainbow-outline";
+    case RunState.DONE: return "border-2 border-green-400";
+    case RunState.ERROR: return "border-2 border-red-500";
+    case RunState.PROMPT: return "border-2 border-blue-400 animate-pulse";
+    default: return "border border-gray-200";
+  }
 }
 
 export async function convertCsvToExcel(csvContent: string, fileName: string): Promise<Blob> {

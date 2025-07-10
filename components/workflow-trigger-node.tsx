@@ -5,6 +5,7 @@ import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
 import { Upload, Calendar } from "lucide-react";
 import { RunState, TriggerSubType } from "@/types/enums";
+import { getNodeBorderClass } from "@/lib/utils";
 
 interface WorkflowTriggerNodeData {
   label: string;
@@ -29,25 +30,8 @@ const INTEGRATIONS = [
   { name: "Custom API", icon: "🔌" },
 ];
 
-// Config: disable node outlines/highlights
-const HIGHLIGHT_NODES_WHEN_RUNNING = false;
-
 export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNodeData>) => {
-  let borderClass = "";
-  if (HIGHLIGHT_NODES_WHEN_RUNNING) {
-    if (data.runState === RunState.PROMPT) borderClass = "border-2 border-blue-400 animate-pulse";
-    else if (data.runState === RunState.RUNNING) borderClass = "";
-    else if (data.runState === RunState.DONE) borderClass = "border-2 border-green-500";
-    else borderClass = "border border-gray-200";
-  } else {
-    borderClass = "border border-gray-200";
-  }
-
-  const highlighted = data.highlighted && data.runState !== RunState.PROMPT;
-  if (highlighted) {
-    // Debug: log when a node is highlighted
-    console.log('Rainbow highlight (trigger):', data.label, highlighted);
-  }
+  const borderClass = getNodeBorderClass(data.runState as RunState);
 
   const getIcon = () => {
     switch (data.type) {
@@ -72,7 +56,7 @@ export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNode
   };
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${highlighted ? 'rainbow-outline' : ''} ${getBgColor()}`}>
+    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${getBgColor()}`}>
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>
         <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>

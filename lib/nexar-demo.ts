@@ -1,5 +1,9 @@
 import 'dotenv/config';
 import { NexarClient } from './nexar-client';
+import { Readable } from 'stream';
+
+// Use require for csv-parser to avoid TypeScript issues
+const csvParser = require('csv-parser');
 
 // Environment variable validation
 const clientId = process.env.NEXAR_CLIENT_ID ?? (() => {
@@ -15,7 +19,7 @@ const nexar = new NexarClient(clientId, clientSecret);
 
 // GraphQL query for searching parts by MPN
 const gqlQuery = `query Search($mpn: String!) {
-    supSearch(q: $mpn, limit: 3) {
+    supSearch(q: $mpn, limit: 1) {
         results {
             part {
                 mpn
@@ -153,92 +157,70 @@ function findMpnColumnIndex(header: string): number {
   return mpnColumnIndex;
 }
 
-// Helper function to extract Nexar data from search results
-function extractNexarData(part: Part): string {
-  let bestPrice = '';
-  let bestCurrency = '';
-  let bestAvailability = '';
-  let leadTime = '';
-  let obsolescence = 'Active';
-  let alternatives = '';
-  let sellers = '';
-  
-  if (part.sellers && part.sellers.length > 0) {
-    const seller = part.sellers[0];
-    if (seller.offers && seller.offers.length > 0) {
-      const offer = seller.offers[0];
-      if (offer.prices && offer.prices.length > 0) {
-        const price = offer.prices[0];
-        bestPrice = price.price.toString();
-        bestCurrency = price.currency;
+
+
+// Refactored helper function to process a single BOM row (JSON version)
+async function processBomRow(row: Record<string, any>, mpnColumnIndex: number): Promise<Record<string, any>> {
+  const mpn = Object.values(row)[mpnColumnIndex] as string || '';
+  let nexarData: any = null;
+
+  if (mpn) {
+    try {
+      // Search for this MPN
+      const response = await nexar.query<SearchResponse>(gqlQuery, { mpn });
+      const results = response?.data?.supSearch?.results;
+      if (results && results.length > 0) {
+        const part = results[0].part; // Use first result
+        nexarData = part;
       }
-      bestAvailability = offer.inventoryLevel;
+    } catch (error) {
+      console.error(`Error searching for MPN ${mpn}:`, error);
     }
-    sellers = part.sellers.map(s => s.company.name).join('; ');
   }
   
-  // Check for alternatives (generic MPN)
-  if (part.genericMpn && part.genericMpn !== part.mpn) {
-    alternatives = part.genericMpn;
-  }
+  // Build enriched object with nested nexarData
+  const enriched: Record<string, any> = { ...row };
+  enriched.nexarData = nexarData;
   
-  return `${bestPrice},${bestCurrency},${bestAvailability},${leadTime},${obsolescence},${alternatives},"${sellers}"`;
+  return enriched;
 }
 
-// Helper function to process a single BOM row
-async function processBomRow(line: string, mpnColumnIndex: number): Promise<string> {
-  const parts = line.split(',').map(part => part.trim());
-  const mpn = parts[mpnColumnIndex] || '';
-  
-  if (!mpn) {
-    // If no MPN, keep original row with empty Nexar data
-    return line + ',,,,,,,';
-  }
-  
-  try {
-    // Search for this MPN
-    const response = await nexar.query<SearchResponse>(gqlQuery, { mpn });
-    const results = response?.data?.supSearch?.results;
+// Helper function to parse CSV to JSON
+async function parseCsvToJson(csvContent: string): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    const stream = Readable.from(csvContent);
     
-    if (results && results.length > 0) {
-      const part = results[0].part; // Use first result
-      const nexarData = extractNexarData(part);
-      return line + ',' + nexarData;
-    } else {
-      // No results found, keep original row with empty Nexar data
-      return line + ',,,,,,,';
-    }
-    
-  } catch (error) {
-    console.error(`Error searching for MPN ${mpn}:`, error);
-    // Keep original row with empty Nexar data
-    return line + ',,,,,,,';
-  }
+    stream
+      .pipe(csvParser())
+      .on('data', (data: any) => results.push(data))
+      .on('end', () => resolve(results))
+      .on('error', (error: any) => reject(error));
+  });
 }
 
 // New function for BOM processing
-export async function searchBomComponents(bomCsvContent: string): Promise<string> {
+export async function searchBomComponents(bomCsvContent: string): Promise<any[]> {
   try {
-    // Parse CSV content
-    const lines = bomCsvContent.split('\n').filter(line => line.trim());
-    if (lines.length < 2) throw new Error('CSV must have at least one data row');
+    // Parse CSV to JSON first
+    const bomData = await parseCsvToJson(bomCsvContent);
     
-    const header = lines[0];
-    const dataLines = lines.slice(1);
+    if (bomData.length === 0) {
+      throw new Error('No data found in CSV');
+    }
+    
+    // Get headers from the first row
+    const headers = Object.keys(bomData[0]);
     
     // Find MPN column index
-    const mpnColumnIndex = findMpnColumnIndex(header);
+    const mpnColumnIndex = findMpnColumnIndex(headers.join(','));
     
-    // Add new columns for Nexar data
-    const enhancedHeader = header + ',nexar_price,nexar_currency,nexar_availability,nexar_lead_time,nexar_obsolescence,nexar_alternatives,nexar_sellers';
-    
-    // Process each BOM row
-    const enhancedRows = await Promise.all(
-      dataLines.map(line => processBomRow(line, mpnColumnIndex))
+    // Process each BOM row using the refactored processBomRow
+    const enrichedRows = await Promise.all(
+      bomData.map(row => processBomRow(row, mpnColumnIndex))
     );
     
-    // Return enhanced CSV
-    return [enhancedHeader, ...enhancedRows].join('\n');
+    return enrichedRows;
     
   } catch (error) {
     console.error('Error processing BOM:', error);

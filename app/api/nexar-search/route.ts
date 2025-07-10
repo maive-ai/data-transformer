@@ -14,11 +14,11 @@ export async function POST(request: Request) {
     const bomContent = await bomFile.text();
     
     // Process the BOM using existing Nexar client
-    const enhancedBomContent = await searchBomComponents(bomContent);
+    const enrichedBomData = await searchBomComponents(bomContent);
     
     return NextResponse.json({
       success: true,
-      csvData: enhancedBomContent
+      data: enrichedBomData
     });
     
   } catch (error) {

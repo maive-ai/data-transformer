@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { JsonDisplay } from '@/components/ui/json-display';
 import { X, Plus } from 'lucide-react';
 
 interface AiWebSearchSidebarProps {
@@ -17,90 +18,106 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
   useEffect(() => {
     setPrompt(node.data.prompt || '');
     setWebsites(node.data.websites || ['']);
-  }, [node]);
+  }, [node.data]);
 
-  // Auto-expand textarea height
-  useEffect(() => {
-    const ta = promptRef.current;
-    if (ta) {
-      ta.style.height = 'auto';
-      ta.style.height = ta.scrollHeight + 'px';
-    }
-  }, [prompt]);
-
-  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPrompt(e.target.value);
-    onChange(node.id, { prompt: e.target.value, websites });
+  const handlePromptChange = (value: string) => {
+    setPrompt(value);
+    onChange(node.id, { ...node.data, prompt: value });
   };
 
-  const handleWebsiteChange = (idx: number, value: string) => {
-    const updated = [...websites];
-    updated[idx] = value;
-    setWebsites(updated);
-    onChange(node.id, { prompt, websites: updated });
+  const handleWebsiteChange = (index: number, value: string) => {
+    const newWebsites = [...websites];
+    newWebsites[index] = value;
+    setWebsites(newWebsites);
+    onChange(node.id, { ...node.data, websites: newWebsites });
   };
 
-  const handleAddWebsite = () => {
-    const updated = [...websites, ''];
-    setWebsites(updated);
-    onChange(node.id, { prompt, websites: updated });
+  const addWebsite = () => {
+    const newWebsites = [...websites, ''];
+    setWebsites(newWebsites);
+    onChange(node.id, { ...node.data, websites: newWebsites });
   };
 
-  const handleRemoveWebsite = (idx: number) => {
-    const updated = websites.filter((_, i) => i !== idx);
-    setWebsites(updated.length ? updated : ['']);
-    onChange(node.id, { prompt, websites: updated.length ? updated : [''] });
+  const removeWebsite = (index: number) => {
+    const newWebsites = websites.filter((_, i) => i !== index);
+    setWebsites(newWebsites);
+    onChange(node.id, { ...node.data, websites: newWebsites });
   };
 
   return (
-    <div className="space-y-8 px-2 pt-4 pb-0">
-      {/* Prompt Section */}
+    <div className="p-4 space-y-6">
       <div>
-        <label className="block text-sm font-medium mb-2">Search Prompt</label>
-        <Textarea
-          ref={promptRef}
-          value={prompt}
-          onChange={handlePromptChange}
-          placeholder="e.g. Find the latest research on quantum computing..."
-          className="resize-none min-h-[80px] max-h-[40vh] overflow-y-auto focus-visible:ring-[hsl(var(--sidebar-active))]"
-        />
+        <h3 className="text-lg font-semibold mb-2">AI Web Search</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Configure AI-powered web scraping to extract structured data from websites.
+        </p>
       </div>
 
-      {/* Websites Section */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Websites to Search</label>
-        <div className="space-y-2">
-          {websites.map((site, idx) => (
-            <div key={idx} className="flex items-center w-full">
-              <Input
-                value={site}
-                onChange={e => handleWebsiteChange(idx, e.target.value)}
-                placeholder="www.example.com"
-                className="w-full focus-visible:ring-[hsl(var(--sidebar-active))]"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => handleRemoveWebsite(idx)}
-                disabled={websites.length === 1}
-                aria-label="Remove website"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ))}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Search Prompt
+          </label>
+          <Textarea
+            ref={promptRef}
+            value={prompt}
+            onChange={(e) => handlePromptChange(e.target.value)}
+            placeholder="Describe what data you want to extract from the websites..."
+            className="min-h-[100px]"
+          />
         </div>
-        <div className="flex justify-center mt-3">
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-8 h-8 p-0 rounded-full flex items-center justify-center"
-            onClick={handleAddWebsite}
-            aria-label="Add website"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Target Websites
+          </label>
+          <div className="space-y-2">
+            {websites.map((website, index) => (
+              <div key={index} className="flex gap-2">
+                <Input
+                  value={website}
+                  onChange={(e) => handleWebsiteChange(index, e.target.value)}
+                  placeholder="https://example.com"
+                  className="flex-1"
+                />
+                {websites.length > 1 && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeWebsite(index)}
+                    className="shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              onClick={addWebsite}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Website
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Output Section */}
+      <div className="space-y-4">
+        <div>
+          <h4 className="text-md font-medium mb-2">Output</h4>
+          <p className="text-sm text-gray-600 mb-3">
+            Extracted data from web search results
+          </p>
+        </div>
+        
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <JsonDisplay 
+            filePath="/artifacts/enriched-bom.json"
+            className="max-h-96 overflow-auto"
+          />
         </div>
       </div>
     </div>

@@ -36,7 +36,6 @@ import { WorkflowIntegrationNode } from './workflow-integration-node';
 import CurvedFeedbackEdge from './workflow-curved-edge';
 import { WorkflowOneToManyNode } from './workflow-one-to-many-node';
 import { WorkflowAiWebSearchNode } from './workflow-ai-web-search-node';
-import { TraceDrawer } from './trace-drawer';
 import { WorkflowAiAnalysisNode } from "./workflow-ai-analysis-node";
 
 // Add File System Access API type declarations
@@ -137,7 +136,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const [nodeRunHistory, setNodeRunHistory] = useState<Record<string, Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>>>({});
   const [localPipelineName, setLocalPipelineName] = useState(pipelineName);
   const completedRef = useRef(new Set<string>());
-  const [traceOpen, setTraceOpen] = useState(false);
 
   // Update local name when prop changes
   useEffect(() => {
@@ -233,7 +231,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   // Run pipeline animation logic
   const runPipeline = async () => {
-    setTraceOpen(true);
     // Reset all nodes to idle state at the start of each run
     setNodes(nds =>
       nds.map(n => ({
@@ -483,12 +480,34 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.PROMPT : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
             : n
         ));
-        // Wait for file selection via sidebar (handled by a global resolver for demo)
-        const files = await new Promise<File[]>((resolve) => {
-          if (typeof window !== 'undefined') {
-            (window as any).__fileUploadResolver = resolve;
-          }
+        
+        // Create a file input element and trigger file selection directly
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.csv,.xlsx,.xls,.json,.txt,.docx,.pdf,.mp4';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+        
+        const files = await new Promise<File[]>((resolve, reject) => {
+          fileInput.onchange = (e) => {
+            const target = e.target as HTMLInputElement;
+            if (target.files && target.files.length > 0) {
+              resolve(Array.from(target.files));
+            } else {
+              reject(new Error('No file selected'));
+            }
+            document.body.removeChild(fileInput);
+          };
+          
+          fileInput.oncancel = () => {
+            reject(new Error('File selection cancelled'));
+            document.body.removeChild(fileInput);
+          };
+          
+          // Trigger file selection dialog
+          fileInput.click();
         });
+        
         nodeData.set(nodeId, { file: files[0] });
         setNodes(nds => nds.map(n => n.id === nodeId ? {
           ...n,
@@ -1380,8 +1399,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   }));
 
   return (
-    <div className={"w-full h-full flex flex-col relative" + (traceOpen ? ' mr-[400px]' : '')}>
-      <TraceDrawer open={traceOpen} onClose={() => setTraceOpen(false)} />
+    <div className="w-full h-full flex flex-col relative">
       {/* Top bar: pipeline name, toolbar, play/stop button, absolutely positioned */}
       <div className="absolute left-0 right-0 top-6 z-40 flex flex-row items-center justify-between px-8 pointer-events-none">
         {/* Pipeline name input, left */}

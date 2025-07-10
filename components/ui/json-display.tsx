@@ -6,12 +6,12 @@ import { Maximize2, X as CloseIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface JsonDisplayProps {
-  data: any;
+  data?: any;
+  filePath?: string;
   className?: string;
   maxDepth?: number;
 }
 
-// Pastel color palette for key backgrounds
 const pastelColors = [
   "bg-blue-100 text-blue-800",
   "bg-green-100 text-green-800",
@@ -26,117 +26,184 @@ function humanizeKey(key: string) {
   return key
     .replace(/([A-Z])/g, ' $1')
     .replace(/[_-]/g, ' ')
-    .replace(/^\w/, c => c.toUpperCase())
+    .replace(/^[a-z]/, c => c.toUpperCase())
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function getPastelClass(key: string) {
-  // Deterministically pick a color for a key
   let hash = 0;
   for (let i = 0; i < key.length; i++) hash = key.charCodeAt(i) + ((hash << 5) - hash);
   return pastelColors[Math.abs(hash) % pastelColors.length];
 }
 
-export function JsonDisplay({ data, className, maxDepth = 10 }: JsonDisplayProps) {
-  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({ root: true });
+export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDisplayProps) {
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const [showModal, setShowModal] = React.useState(false);
+  const [fileData, setFileData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (filePath) {
+      setLoading(true);
+      setError(null);
+      fetch(filePath)
+        .then(response => {
+          if (!response.ok) throw new Error(`Failed to load file: ${response.statusText}`);
+          return response.json();
+        })
+        .then(json => {
+          setFileData(json);
+          setLoading(false);
+        })
+        .catch(err => {
+          setError(err.message);
+          setLoading(false);
+        });
+    }
+  }, [filePath]);
+
+  const displayData = filePath ? fileData : data;
 
   const toggleExpanded = (key: string) => {
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const renderValue = (value: any, key: string, depth: number = 0, isTopLevelArray = false): React.ReactNode => {
+  // Helper for top-level array rendering
+  const renderTopLevelArray = (arr: any[]) => (
+    <div className="flex flex-col gap-1">
+      {arr.map((item, idx) => {
+        const label = `Item ${idx + 1}`;
+        const nodeKey = `top-item-${idx}`;
+        const isExpanded = expanded[nodeKey] ?? true;
+        return (
+          <div key={nodeKey} className="">
+            <div className="flex items-center gap-2 py-0.5">
+              <button
+                onClick={() => toggleExpanded(nodeKey)}
+                className="focus:outline-none flex items-center justify-center h-5 w-5"
+                aria-expanded={isExpanded}
+                aria-controls={`section-${nodeKey}`}
+                tabIndex={0}
+                style={{ minWidth: 20 }}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-3 h-3 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-3 h-3 text-gray-400" />
+                )}
+              </button>
+              <span className={cn(
+                "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
+                getPastelClass(label)
+              )}>{label}</span>
+            </div>
+            {isExpanded && (
+              <div id={`section-${nodeKey}`} className="ml-3 border-l border-gray-100 pl-2">
+                {renderValue(item, label, 1)}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const renderValue = (value: any, key: string, depth: number = 0, parentIsArray = false): React.ReactNode => {
     if (depth > maxDepth) {
       return <span className="text-gray-400 italic text-xs">(Max depth reached)</span>;
     }
-    if (value === null || value === undefined) {
+    if (value === null) {
       return <span className="text-gray-400 italic text-xs">None</span>;
     }
     if (typeof value === 'object') {
       const isArray = Array.isArray(value);
       const isEmpty = isArray ? value.length === 0 : Object.keys(value).length === 0;
-      const isExpanded = expanded[key];
-      // Special handling for top-level array
-      if (isArray && depth === 0) {
+      const nodeKey = `${key}-${depth}`;
+      const isExpanded = expanded[nodeKey] ?? depth < 1; // expand root by default
+      if (isArray) {
+        if (isEmpty) {
+          return <span className="text-gray-400 italic text-xs">(Empty array)</span>;
+        }
+        // Only use special top-level rendering for top-level array
+        if (depth === 0) {
+          return renderTopLevelArray(value);
+        }
+        // Array of primitives
+        if (value.every((v: any) => typeof v !== 'object' || v === null)) {
+          return (
+            <div className="flex flex-col gap-0.5 ml-3">
+              {value.map((item: any, idx: number) => (
+                <div key={idx} className="flex items-center gap-2 py-0.5">
+                  <span className={cn(
+                    "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
+                    getPastelClass(String(idx))
+                  )}>{`Component ${idx + 1}`}</span>
+                  {renderValue(item, String(idx), depth + 1, true)}
+                </div>
+              ))}
+            </div>
+          );
+        }
+        // Array of objects
         return (
-          <div>
+          <div className="flex flex-col gap-1 ml-3">
             {value.map((item: any, idx: number) => (
-              <div key={`component-${idx}`} className="mb-1">
-                {typeof item === 'object' && item !== null
-                  ? (
-                    <div className="flex flex-col gap-0.5">
-                      {Object.entries(item).map(([k, v]) => (
-                        <React.Fragment key={k}>
-                          {renderValue(v, k, 1)}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  )
-                  : <span className="text-xs text-gray-800">{String(item)}</span>}
+              <div key={idx} className="">
+                {renderValue(item, String(idx), depth + 1, true)}
               </div>
             ))}
           </div>
         );
       }
+      // Object
+      if (isEmpty) {
+        return <span className="text-gray-400 italic text-xs">(Empty object)</span>;
+      }
       return (
-        <div className={cn(depth > 0 && "ml-[22px]")}> {/* Indent nested */}
-          <div className="flex items-center gap-2 py-0.5">
-            <button
-              onClick={() => toggleExpanded(key)}
-              className="focus:outline-none flex items-center justify-center h-5 w-5"
-              aria-expanded={isExpanded}
-              aria-controls={`section-${key}`}
-              tabIndex={0}
-              style={{ minWidth: 20 }}
-            >
-              {isExpanded ? (
-                <ChevronDown className="w-3 h-3 text-gray-400" />
-              ) : (
-                <ChevronRight className="w-3 h-3 text-gray-400" />
-              )}
-            </button>
-            <span className={cn(
-              "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
-              getPastelClass(key)
-            )}>
-              {humanizeKey(key === 'root' ? 'Data' : key)}
-            </span>
-            <span className="text-xs text-gray-500">
-              {isArray ? (isEmpty ? '(No items)' : `${value.length} item${value.length > 1 ? 's' : ''}`) : (isEmpty ? '(No data)' : 'Object')}
-            </span>
+        <div className={cn(depth > 0 && "ml-3")}> {/* Indent nested */}
+          <div className="flex flex-col gap-0.5">
+            {Object.entries(value).map(([k, v]) => {
+              const childIsExpandable = typeof v === 'object' && v !== null && (Array.isArray(v) ? v.length > 0 : Object.keys(v).length > 0);
+              const childKey = `${k}-${depth + 1}`;
+              return (
+                <div key={childKey} className="flex items-start gap-2 py-0.5">
+                  {childIsExpandable ? (
+                    <button
+                      onClick={() => toggleExpanded(childKey)}
+                      className="focus:outline-none flex items-center justify-center h-5 w-5 mt-0.5"
+                      aria-expanded={expanded[childKey]}
+                      aria-controls={`section-${childKey}`}
+                      tabIndex={0}
+                      style={{ minWidth: 20 }}
+                    >
+                      {expanded[childKey] ? (
+                        <ChevronDown className="w-3 h-3 text-gray-400" />
+                      ) : (
+                        <ChevronRight className="w-3 h-3 text-gray-400" />
+                      )}
+                    </button>
+                  ) : (
+                    <span className="w-5" />
+                  )}
+                  <span className={cn(
+                    "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
+                    getPastelClass(k)
+                  )}>{humanizeKey(k)}</span>
+                  <div className="flex-1">
+                    {childIsExpandable && expanded[childKey] ? (
+                      <div id={`section-${childKey}`} className="ml-3 border-l border-gray-100 pl-2">
+                        {renderValue(v, k, depth + 1)}
+                      </div>
+                    ) : !childIsExpandable ? (
+                      <span className="text-xs text-gray-800">{renderValue(v, k, depth + 1)}</span>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          {isExpanded && (
-            <div id={`section-${key}`} className="ml-[22px] pl-[11px] border-l border-gray-100">
-              {isArray ? (
-                <div className="flex flex-col gap-0.5">
-                  {value.map((item: any, idx: number) => (
-                    <div key={`${key}-item-${idx}`} className="">
-                      {typeof item === 'object' && item !== null
-                        ? renderValue(item, `${key}[${idx}]`, depth + 1)
-                        : (
-                          <div className="flex items-center gap-2 py-0.5">
-                            <span className={cn(
-                              "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
-                              getPastelClass(String(idx))
-                            )}>{`Item ${idx + 1}`}</span>
-                            <span className="text-xs text-gray-800">{String(item)}</span>
-                          </div>
-                        )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-0.5">
-                  {Object.entries(value).map(([k, v]) => (
-                    <React.Fragment key={k}>
-                      {renderValue(v, k, depth + 1)}
-                    </React.Fragment>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       );
     }
@@ -153,6 +220,22 @@ export function JsonDisplay({ data, className, maxDepth = 10 }: JsonDisplayProps
     return <span className="text-gray-700 text-xs">{String(value)}</span>;
   };
 
+  if (filePath && loading) {
+    return (
+      <div className={cn("bg-white p-4 text-center", className)}>
+        <div className="text-gray-500">Loading JSON data...</div>
+      </div>
+    );
+  }
+
+  if (filePath && error) {
+    return (
+      <div className={cn("bg-white p-4 text-center", className)}>
+        <div className="text-red-500">Error loading file: {error}</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className={cn("bg-white p-2 text-xs overflow-x-auto relative", className)}>
@@ -164,10 +247,10 @@ export function JsonDisplay({ data, className, maxDepth = 10 }: JsonDisplayProps
         >
           <Maximize2 className="w-4 h-4 text-gray-500" />
         </button>
-        {data ? (
-          <div>
-            {renderValue(data, 'root', 0, Array.isArray(data))}
-          </div>
+        {Array.isArray(displayData) ? (
+          renderTopLevelArray(displayData)
+        ) : displayData ? (
+          <div>{renderValue(displayData, 'root', 0)}</div>
         ) : (
           <div className="text-gray-400 italic">No data available</div>
         )}
@@ -190,7 +273,11 @@ export function JsonDisplay({ data, className, maxDepth = 10 }: JsonDisplayProps
               <CloseIcon className="w-5 h-5 text-gray-500" />
             </button>
             <div className="max-w-5xl mx-auto">
-              {renderValue(data, 'root', 0, Array.isArray(data))}
+              {Array.isArray(displayData)
+                ? renderTopLevelArray(displayData)
+                : displayData
+                ? renderValue(displayData, 'root', 0)
+                : <div className="text-gray-400 italic">No data available</div>}
             </div>
           </div>
         </div>

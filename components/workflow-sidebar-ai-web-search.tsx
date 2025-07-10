@@ -10,57 +10,6 @@ interface AiWebSearchSidebarProps {
   onChange: (id: string, newData: any) => void;
 }
 
-// Hardcoded test data: array of components/parts
-const testWebSearchData = [
-  {
-    manufacturer: "TE Connectivity",
-    part_number: "CRG0603F10K",
-    description: "10kΩ 0603 1% Resistor",
-    stock: 937853,
-    price: "$0.00696",
-    specifications: {
-      resistance: "10kΩ",
-      tolerance: "±1%",
-      power_rating: "0.1W",
-      package: "0603",
-      temperature_coefficient: "±100ppm/°C"
-    },
-    suppliers: [
-      {
-        name: "Digi-Key",
-        stock: 937853,
-        price: "$0.00696",
-        shipping: "Same-day"
-      },
-      {
-        name: "Mouser",
-        stock: 560351,
-        price: "$0.00800",
-        shipping: "Same-day"
-      }
-    ]
-  },
-  {
-    manufacturer: "ams OSRAM",
-    part_number: "AS1115-BSST",
-    description: "LED Driver 24-QSOP",
-    stock: 4360,
-    price: "$1.540000",
-    specifications: {
-      package: "24-QSOP",
-      operating_temperature: "-40°C to +125°C",
-      supply_voltage: "4.5V to 5.5V",
-      output_current: "40mA per segment"
-    },
-    features: [
-      "8-digit LED driver",
-      "I2C interface",
-      "Programmable brightness",
-      "Low power consumption"
-    ]
-  }
-];
-
 export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) {
   const [prompt, setPrompt] = useState(node.data.prompt || '');
   const [websites, setWebsites] = useState<string[]>(node.data.websites || ['']);
@@ -166,7 +115,7 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
         
         <div className="border rounded-lg p-4 bg-gray-50">
           <JsonDisplay 
-            data={testWebSearchData} 
+            filePath="/artifacts/enriched-bom.json"
             className="max-h-96 overflow-auto"
           />
         </div>

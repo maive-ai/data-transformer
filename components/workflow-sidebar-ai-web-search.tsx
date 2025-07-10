@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { JsonDisplay } from '@/components/ui/json-display';
 import { X, Plus } from 'lucide-react';
 
 interface AiWebSearchSidebarProps {
@@ -107,18 +106,37 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
       {/* Output Section */}
       <div className="space-y-4">
         <div>
-          <h4 className="text-md font-medium mb-2">Output</h4>
+          <h4 className="text-md font-medium mb-2">Nexar Search Results</h4>
           <p className="text-sm text-gray-600 mb-3">
-            Extracted data from web search results
+            Enriched component data from Nexar API
           </p>
         </div>
         
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <JsonDisplay 
-            filePath="/artifacts/enriched-bom.json"
-            className="max-h-96 overflow-auto"
-          />
-        </div>
+        {node.data.runState === 'running' && (
+          <div className="border rounded-lg p-4 bg-blue-50">
+            <p className="text-sm text-blue-600">Searching components...</p>
+          </div>
+        )}
+        
+        {node.data.runState === 'done' && node.data.enrichedData ? (
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <pre className="text-xs overflow-auto max-h-96">
+              {JSON.stringify(node.data.enrichedData, null, 2)}
+            </pre>
+          </div>
+        ) : node.data.runState === 'done' && !node.data.enrichedData ? (
+          <div className="border rounded-lg p-4 bg-yellow-50">
+            <p className="text-sm text-yellow-600">No enriched data available</p>
+          </div>
+        ) : node.data.runState === 'error' ? (
+          <div className="border rounded-lg p-4 bg-red-50">
+            <p className="text-sm text-red-600">Error occurred during search</p>
+          </div>
+        ) : (
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <p className="text-sm text-gray-500">Run the pipeline to see results</p>
+          </div>
+        )}
       </div>
     </div>
   );

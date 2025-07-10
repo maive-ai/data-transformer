@@ -354,10 +354,26 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           success: result.success
         });
 
+        // After creating the enriched JSON file, update the node data to include the actual data
         const { jsonFile, fileUrl } = createEnrichedJsonFile(result.data);
-        
+
+        // Store both the file and the actual data
         nodeData.set(nodeId, { files: [jsonFile] });
         updateNodeState(nodeId, jsonFile, fileUrl, setNodes);
+
+        // ALSO update the node data to include the enriched JSON
+        setNodes(nds => nds.map(n => n.id === nodeId ? {
+          ...n,
+          data: {
+            ...n.data,
+            enrichedData: result.data, // Add this line
+            runState: RunState.DONE,
+            fileUrl,
+            outputFileName: 'enriched_bom.json',
+            files: [jsonFile],
+            file: jsonFile
+          }
+        } : n));
         
         console.log(`✅ [WORKFLOW] AI Web Search node ${nodeId} completed successfully:`, {
           nodeLabel: node.data.label,

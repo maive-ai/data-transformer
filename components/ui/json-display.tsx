@@ -70,154 +70,103 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Helper for top-level array rendering
-  const renderTopLevelArray = (arr: any[]) => (
-    <div className="flex flex-col gap-1">
-      {arr.map((item, idx) => {
-        const label = `Item ${idx + 1}`;
-        const nodeKey = `top-item-${idx}`;
-        const isExpanded = expanded[nodeKey] ?? true;
-        return (
-          <div key={nodeKey} className="">
-            <div className="flex items-center gap-2 py-0.5">
-              <button
-                onClick={() => toggleExpanded(nodeKey)}
-                className="focus:outline-none flex items-center justify-center h-5 w-5"
-                aria-expanded={isExpanded}
-                aria-controls={`section-${nodeKey}`}
-                tabIndex={0}
-                style={{ minWidth: 20 }}
-              >
-                {isExpanded ? (
-                  <ChevronDown className="w-3 h-3 text-gray-400" />
-                ) : (
-                  <ChevronRight className="w-3 h-3 text-gray-400" />
-                )}
-              </button>
-              <span className={cn(
-                "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
-                getPastelClass(label)
-              )}>{label}</span>
-            </div>
-            {isExpanded && (
-              <div id={`section-${nodeKey}`} className="ml-3 border-l border-gray-100 pl-2">
-                {renderValue(item, label, 1)}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-
-  const renderValue = (value: any, key: string, depth: number = 0, parentIsArray = false): React.ReactNode => {
+  const renderNode = (value: any, key: string, depth: number = 0, isTopLevel = false): React.ReactNode => {
     if (depth > maxDepth) {
       return <span className="text-gray-400 italic text-xs">(Max depth reached)</span>;
     }
+
     if (value === null) {
       return <span className="text-gray-400 italic text-xs">None</span>;
     }
+
     if (typeof value === 'object') {
       const isArray = Array.isArray(value);
       const isEmpty = isArray ? value.length === 0 : Object.keys(value).length === 0;
+
+      if (isEmpty) {
+        return <span className="text-gray-400 italic text-xs">{isArray ? '(Empty list)' : '(Empty)'} </span>;
+      }
+
       const nodeKey = `${key}-${depth}`;
-      const isExpanded = expanded[nodeKey] ?? depth < 1; // expand root by default
-      if (isArray) {
-        if (isEmpty) {
-          return <span className="text-gray-400 italic text-xs">(Empty array)</span>;
-        }
-        // Only use special top-level rendering for top-level array
-        if (depth === 0) {
-          return renderTopLevelArray(value);
-        }
-        // Array of primitives
-        if (value.every((v: any) => typeof v !== 'object' || v === null)) {
-          return (
-            <div className="flex flex-col gap-0.5 ml-3">
-              {value.map((item: any, idx: number) => (
-                <div key={idx} className="flex items-center gap-2 py-0.5">
-                  <span className={cn(
-                    "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
-                    getPastelClass(String(idx))
-                  )}>{`Component ${idx + 1}`}</span>
-                  {renderValue(item, String(idx), depth + 1, true)}
-                </div>
-              ))}
-            </div>
-          );
-        }
-        // Array of objects
+      const isExpanded = expanded[nodeKey] !== undefined ? expanded[nodeKey] : (isTopLevel ? true : false); // Only top-level expanded by default, all children collapsed
+
+      let entries = isArray ? value.map((v, i) => [`Item ${i + 1}`, v]) : Object.entries(value);
+      entries = entries.filter(([k, v]) => v !== undefined);
+
+      if (isTopLevel) {
         return (
-          <div className="flex flex-col gap-1 ml-3">
-            {value.map((item: any, idx: number) => (
-              <div key={idx} className="">
-                {renderValue(item, String(idx), depth + 1, true)}
-              </div>
+          <div className="flex flex-col gap-1">
+            {entries.map(([k, v]) => (
+              <React.Fragment key={`${k}-${depth + 1}`}>
+                {renderNode(v, k, depth + 1)}
+              </React.Fragment>
             ))}
           </div>
         );
       }
-      // Object
-      if (isEmpty) {
-        return <span className="text-gray-400 italic text-xs">(Empty object)</span>;
-      }
+
       return (
-        <div className={cn(depth > 0 && "ml-3")}> {/* Indent nested */}
-          <div className="flex flex-col gap-0.5">
-            {Object.entries(value).map(([k, v]) => {
-              const childIsExpandable = typeof v === 'object' && v !== null && (Array.isArray(v) ? v.length > 0 : Object.keys(v).length > 0);
-              const childKey = `${k}-${depth + 1}`;
-              return (
-                <div key={childKey} className="flex items-start gap-2 py-0.5">
-                  {childIsExpandable ? (
-                    <button
-                      onClick={() => toggleExpanded(childKey)}
-                      className="focus:outline-none flex items-center justify-center h-5 w-5 mt-0.5"
-                      aria-expanded={expanded[childKey]}
-                      aria-controls={`section-${childKey}`}
-                      tabIndex={0}
-                      style={{ minWidth: 20 }}
-                    >
-                      {expanded[childKey] ? (
-                        <ChevronDown className="w-3 h-3 text-gray-400" />
-                      ) : (
-                        <ChevronRight className="w-3 h-3 text-gray-400" />
-                      )}
-                    </button>
-                  ) : (
-                    <span className="w-5" />
-                  )}
-                  <span className={cn(
-                    "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
-                    getPastelClass(k)
-                  )}>{humanizeKey(k)}</span>
-                  <div className="flex-1">
-                    {childIsExpandable && expanded[childKey] ? (
-                      <div id={`section-${childKey}`} className="ml-3 border-l border-gray-100 pl-2">
-                        {renderValue(v, k, depth + 1)}
-                      </div>
-                    ) : !childIsExpandable ? (
-                      <span className="text-xs text-gray-800">{renderValue(v, k, depth + 1)}</span>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
+        <div>
+          <div className="flex items-center gap-2 py-1">
+            <button
+              onClick={() => toggleExpanded(nodeKey)}
+              className="focus:outline-none flex items-center justify-center h-5 w-5"
+              aria-expanded={isExpanded}
+              tabIndex={0}
+              style={{ minWidth: 20 }}
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3 text-gray-400" /> : <ChevronRight className="w-3 h-3 text-gray-400" />}
+            </button>
+            <span className={cn(
+              "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
+              getPastelClass(key)
+            )}>
+              {humanizeKey(key)}
+            </span>
           </div>
+          {isExpanded && (
+            <div className="pl-6 border-l border-gray-100">
+              <div className="flex flex-col">
+                {entries.map(([k, v]) => (
+                  <React.Fragment key={`${k}-${depth + 1}`}>
+                    {renderNode(v, k, depth + 1)}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       );
     }
-    // Primitives
-    if (typeof value === 'string') {
-      return <span className="text-gray-800 text-xs">{value}</span>;
+    
+    // Primitive or non-expandable value
+    return (
+      <div className="flex items-center gap-2 py-1">
+        {/* Invisible chevron for alignment */}
+        <span className="inline-flex items-center justify-center h-5 w-5 opacity-0">
+          <ChevronRight className="w-3 h-3" />
+        </span>
+        <span className={cn(
+          "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
+          getPastelClass(key)
+        )}>{humanizeKey(key)}</span>
+        {typeof value === 'string' &&
+          (/^https?:\/\//.test(value)
+            ? <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline text-xs">link</a>
+            : <span className="text-gray-800 text-xs">{value}</span>
+          )}
+        {typeof value === 'number' && <span className="text-gray-800 text-xs">{value}</span>}
+        {typeof value === 'boolean' && <span className="text-purple-700 text-xs">{value ? 'Yes' : 'No'}</span>}
+        {value === null && <span className="text-gray-400 italic text-xs">None</span>}
+      </div>
+    );
+  };
+
+  const renderValue = (value: any) => {
+    if (value === null || value === undefined) {
+      return <div className="text-gray-400 italic">No data available</div>;
     }
-    if (typeof value === 'number') {
-      return <span className="text-blue-700 text-xs">{value}</span>;
-    }
-    if (typeof value === 'boolean') {
-      return <span className="text-purple-700 text-xs">{value ? 'Yes' : 'No'}</span>;
-    }
-    return <span className="text-gray-700 text-xs">{String(value)}</span>;
+    return renderNode(value, 'root', 0, true);
   };
 
   if (filePath && loading) {
@@ -247,13 +196,7 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
         >
           <Maximize2 className="w-4 h-4 text-gray-500" />
         </button>
-        {Array.isArray(displayData) ? (
-          renderTopLevelArray(displayData)
-        ) : displayData ? (
-          <div>{renderValue(displayData, 'root', 0)}</div>
-        ) : (
-          <div className="text-gray-400 italic">No data available</div>
-        )}
+        {renderValue(displayData)}
       </div>
       {/* Fullscreen Modal */}
       {showModal && (
@@ -272,12 +215,8 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
             >
               <CloseIcon className="w-5 h-5 text-gray-500" />
             </button>
-            <div className="max-w-5xl mx-auto">
-              {Array.isArray(displayData)
-                ? renderTopLevelArray(displayData)
-                : displayData
-                ? renderValue(displayData, 'root', 0)
-                : <div className="text-gray-400 italic">No data available</div>}
+            <div>
+              {renderValue(displayData)}
             </div>
           </div>
         </div>

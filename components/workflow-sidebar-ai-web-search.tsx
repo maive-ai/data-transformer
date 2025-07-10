@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { X, Plus } from 'lucide-react';
+import { JsonDisplay } from '@/components/ui/json-display';
 
 interface AiWebSearchSidebarProps {
   node: any;
@@ -120,9 +121,7 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
         
         {node.data.runState === 'done' && node.data.enrichedData ? (
           <div className="border rounded-lg p-4 bg-gray-50">
-            <pre className="text-xs overflow-auto max-h-96">
-              {JSON.stringify(node.data.enrichedData, null, 2)}
-            </pre>
+            <JsonDisplay data={node.data.enrichedData} className="max-h-96 overflow-auto" />
           </div>
         ) : node.data.runState === 'done' && !node.data.enrichedData ? (
           <div className="border rounded-lg p-4 bg-yellow-50">

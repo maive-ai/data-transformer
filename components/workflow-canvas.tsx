@@ -260,6 +260,125 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     // Helper: get all upstream nodes
     const getUpstream = (nodeId: string) => edges.filter(e => e.target === nodeId).map(e => e.source);
 
+    // Helper functions for AI Web Search node
+    const getInputFileFromUpstream = (nodeId: string, nodeData: Map<string, any>, getUpstream: (id: string) => string[]) => {
+      const upstreamId = getUpstream(nodeId)[0];
+      const upstreamData = nodeData.get(upstreamId);
+      
+      // Check for both 'file' and 'files' properties
+      if (upstreamData?.file) {
+        return upstreamData.file;
+      } else if (upstreamData?.files && upstreamData.files.length > 0) {
+        // Use the first file if multiple files are available
+        return upstreamData.files[0];
+      } else {
+        throw new Error('No input file available');
+      }
+    };
+
+    const callNexarApi = async (bomFile: File, nodeId: string, node: any) => {
+      console.log(`📡 [WORKFLOW] Calling Nexar API for node ${nodeId}:`, {
+        nodeLabel: node.data.label,
+        displayName: node.data.displayName,
+        inputFileName: bomFile.name
+      });
+
+      const formData = new FormData();
+      formData.append('bomFile', bomFile);
+
+      const response = await fetch('/api/nexar-search', {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log(`📡 [WORKFLOW] Nexar API response received for node ${nodeId}:`, {
+        status: response.status,
+        ok: response.ok,
+        nodeLabel: node.data.label,
+        displayName: node.data.displayName
+      });
+
+      if (!response.ok) throw new Error('Failed to process BOM with Nexar API');
+      return await response.json();
+    };
+
+    const createEnrichedJsonFile = (enrichedData: any) => {
+      const jsonBlob = new Blob([JSON.stringify(enrichedData, null, 2)], { type: 'application/json' });
+      const jsonFile = new File([jsonBlob], 'enriched_bom.json', { type: 'application/json' });
+      const fileUrl = URL.createObjectURL(jsonBlob);
+      return { jsonFile, fileUrl };
+    };
+
+    const updateNodeState = (nodeId: string, jsonFile: File, fileUrl: string, setNodes: React.Dispatch<React.SetStateAction<Node[]>>) => {
+      setNodes(nds => nds.map(n => n.id === nodeId ? {
+        ...n,
+        data: {
+          ...n.data,
+          runState: RunState.DONE,
+          fileUrl,
+          outputFileName: 'enriched_bom.json',
+          files: [jsonFile],
+          file: jsonFile
+        }
+      } : n));
+    };
+
+    const handleAiWebSearchNode = async (
+      nodeId: string, 
+      node: any, 
+      nodeData: Map<string, any>, 
+      setNodes: React.Dispatch<React.SetStateAction<Node[]>>,
+      getUpstream: (id: string) => string[],
+      getDownstream: (id: string) => string[],
+      runNode: (id: string) => Promise<void>
+    ) => {
+      try {
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+        
+        const bomFile = getInputFileFromUpstream(nodeId, nodeData, getUpstream);
+        
+        console.log(`🚀 [WORKFLOW] Starting AI Web Search (Nexar) node execution:`, {
+          nodeId,
+          nodeType: node.type,
+          nodeLabel: node.data.label,
+          displayName: node.data.displayName,
+          inputFileName: bomFile.name
+        });
+
+        const result = await callNexarApi(bomFile, nodeId, node);
+        
+        console.log(`✅ [WORKFLOW] Nexar API processing completed for node ${nodeId}:`, {
+          nodeLabel: node.data.label,
+          displayName: node.data.displayName,
+          resultDataLength: result.data?.length || 0,
+          success: result.success
+        });
+
+        const { jsonFile, fileUrl } = createEnrichedJsonFile(result.data);
+        
+        nodeData.set(nodeId, { files: [jsonFile] });
+        updateNodeState(nodeId, jsonFile, fileUrl, setNodes);
+        
+        console.log(`✅ [WORKFLOW] AI Web Search node ${nodeId} completed successfully:`, {
+          nodeLabel: node.data.label,
+          displayName: node.data.displayName,
+          outputFileName: 'enriched_bom.json'
+        });
+        
+        completedRef.current.add(nodeId);
+        for (const downstreamId of getDownstream(nodeId)) {
+          runNode(downstreamId);
+        }
+      } catch (error) {
+        console.error(`❌ [WORKFLOW] Error in AI Web Search node ${nodeId}:`, {
+          nodeLabel: node.data.label,
+          displayName: node.data.displayName,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
+      }
+    };
+
     // Helper: run a node if all its dependencies are satisfied
     const runNode = async (nodeId: string): Promise<void> => {
       const node = nodes.find(n => n.id === nodeId);
@@ -852,6 +971,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           console.error('Error in CSV Append node:', err);
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.ERROR } } : n));
         }
+        return;
+      } else if (node.type === NodeType.AI_WEB_SCRAPE) {
+        await handleAiWebSearchNode(nodeId, node, nodeData, setNodes, getUpstream, getDownstream, runNode);
         return;
       } else {
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));

@@ -92,18 +92,37 @@ export async function POST(request: Request) {
 
     console.log('🚀 [GEMINI] Starting actual Gemini API processing');
 
-    // Get file extension and MIME type
-    const fileExt = inputFiles[0].name.split('.').pop()?.toLowerCase() || '';
-    const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
+    // Separate JSON files from other files
+    const jsonFiles: string[] = [];
+    const nonJsonFiles: File[] = [];
 
-    console.log('📤 [GEMINI] Uploading files to Gemini:', {
-      fileExt,
-      mimeType,
-      inputFileNames: inputFiles.map(f => f.name)
+    for (const file of inputFiles) {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext === 'json' || file.type === 'application/json') {
+        // Read JSON content and add to prompt
+        const jsonContent = await file.text();
+        jsonFiles.push(jsonContent);
+        console.log(`📄 [GEMINI] JSON file detected: ${file.name}, content length: ${jsonContent.length}`);
+      } else {
+        // Upload as file
+        nonJsonFiles.push(file);
+      }
+    }
+
+    console.log('📤 [GEMINI] File processing summary:', {
+      jsonFilesCount: jsonFiles.length,
+      nonJsonFilesCount: nonJsonFiles.length,
+      nonJsonFileNames: nonJsonFiles.map(f => f.name)
     });
 
-    // Upload input files to Gemini
-    const inputFileUrls = await Promise.all(inputFiles.map((file: File) => uploadFileToGeminiResumable(file, mimeType)));
+    // Upload non-JSON files to Gemini
+    const inputFileUrls = nonJsonFiles.length > 0 
+      ? await Promise.all(nonJsonFiles.map((file: File) => {
+          const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+          const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
+          return uploadFileToGeminiResumable(file, mimeType);
+        }))
+      : [];
 
     // Upload output template if provided and required (not CSV)
     let outputTemplateUrls: string[] = [];
@@ -156,7 +175,19 @@ export async function POST(request: Request) {
     const systemPrompt =
       (globalSystemPrompt ? `GLOBAL SYSTEM PROMPT:\n${globalSystemPrompt}\n\n` : '')
 
-    let fullPrompt = `USER INSTRUCTIONS:\n${prompt || '[none]'}${schemaText}\n\nSYSTEM INSTRUCTIONS:\n${systemPrompt}`;
+    // Build the prompt with JSON data first
+    let fullPrompt = '';
+    
+    // Add JSON content first if any
+    if (jsonFiles.length > 0) {
+      fullPrompt += 'JSON Data:\n';
+      jsonFiles.forEach((jsonContent, index) => {
+        fullPrompt += `\n--- JSON File ${index + 1} ---\n${jsonContent}\n`;
+      });
+      fullPrompt += '\n';
+    }
+    
+    fullPrompt += `USER INSTRUCTIONS:\n${prompt || '[none]'}${schemaText}\n\nSYSTEM INSTRUCTIONS:\n${systemPrompt}`;
 
     console.log('📝 [GEMINI] Prepared prompt for Gemini API:', {
       promptLength: fullPrompt.length,
@@ -170,7 +201,12 @@ export async function POST(request: Request) {
     // Prepare Gemini API request parts
     const parts = [
       { text: fullPrompt },
-      ...inputFileUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: mimeType } })),
+      ...inputFileUrls.map((url: string, index: number) => {
+        const file = nonJsonFiles[index];
+        const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+        const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
+        return { file_data: { file_uri: url, mime_type: mimeType } };
+      }),
     ];
     if (shouldUploadTemplate && outputTemplateUrls.length > 0) {
       parts.push(...outputTemplateUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: 'text/csv' } })));
@@ -184,7 +220,7 @@ export async function POST(request: Request) {
 
     // Send request to Gemini API
     const startTime = Date.now();
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     const body: any = {
       contents: [{ parts }],
       generationConfig: {

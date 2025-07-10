@@ -84,7 +84,7 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
       const isEmpty = isArray ? value.length === 0 : Object.keys(value).length === 0;
 
       if (isEmpty) {
-        return <span className="text-gray-400 italic text-xs">{isArray ? '(Empty list)' : '(Empty)'}</span>;
+        return <span className="text-gray-400 italic text-xs">{isArray ? '(Empty list)' : '(Empty)'} </span>;
       }
 
       const nodeKey = `${key}-${depth}`;
@@ -130,12 +130,11 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
     
     // Primitive or non-expandable value
     return (
-      <div className="flex items-center gap-2 py-0.5">
+      <div className="flex items-center gap-2 py-0.5 pl-5">
         <span className={cn(
           "font-semibold rounded px-2 py-0.5 text-xs whitespace-nowrap",
           getPastelClass(key)
         )}>{humanizeKey(key)}</span>
-        
         {typeof value === 'string' && <span className="text-gray-800 text-xs">{value}</span>}
         {typeof value === 'number' && <span className="text-blue-700 text-xs">{value}</span>}
         {typeof value === 'boolean' && <span className="text-purple-700 text-xs">{value ? 'Yes' : 'No'}</span>}

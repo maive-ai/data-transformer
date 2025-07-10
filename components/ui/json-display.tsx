@@ -88,7 +88,7 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
       }
 
       const nodeKey = `${key}-${depth}`;
-      const isExpanded = expanded[nodeKey] ?? (isTopLevel ? true : false); // Only top-level expanded by default
+      const isExpanded = expanded[nodeKey] !== undefined ? expanded[nodeKey] : (isTopLevel ? true : false); // Only top-level expanded by default, all children collapsed
 
       const entries = isArray ? value.map((v, i) => [`Item ${i + 1}`, v]) : Object.entries(value);
 

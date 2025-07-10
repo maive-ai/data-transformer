@@ -62,7 +62,7 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
           setLoading(false);
         });
     }
-  }, []);
+  }, [filePath]);
 
   const displayData = filePath ? fileData : data;
 
@@ -90,12 +90,17 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
       const nodeKey = `${key}-${depth}`;
       const isExpanded = expanded[nodeKey] !== undefined ? expanded[nodeKey] : (isTopLevel ? true : false); // Only top-level expanded by default, all children collapsed
 
-      const entries = isArray ? value.map((v, i) => [`Item ${i + 1}`, v]) : Object.entries(value);
+      let entries = isArray ? value.map((v, i) => [`Item ${i + 1}`, v]) : Object.entries(value);
+      entries = entries.filter(([k, v]) => v !== undefined);
 
       if (isTopLevel) {
         return (
           <div className="flex flex-col gap-1">
-            {entries.map(([k, v]) => renderNode(v, k, depth + 1))}
+            {entries.map(([k, v]) => (
+              <React.Fragment key={`${k}-${depth + 1}`}>
+                {renderNode(v, k, depth + 1)}
+              </React.Fragment>
+            ))}
           </div>
         );
       }
@@ -122,7 +127,11 @@ export function JsonDisplay({ data, filePath, className, maxDepth = 10 }: JsonDi
           {isExpanded && (
             <div className="pl-6 border-l border-gray-100">
               <div className="flex flex-col">
-                {entries.map(([k, v]) => renderNode(v, k, depth + 1))}
+                {entries.map(([k, v]) => (
+                  <React.Fragment key={`${k}-${depth + 1}`}>
+                    {renderNode(v, k, depth + 1)}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
           )}

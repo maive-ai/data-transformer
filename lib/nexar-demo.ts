@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { NexarClient } from './nexar-client';
 import { Readable } from 'stream';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 // Use require for csv-parser to avoid TypeScript issues
 const csvParser = require('csv-parser');
@@ -199,8 +201,35 @@ async function parseCsvToJson(csvContent: string): Promise<any[]> {
   });
 }
 
+// Helper function to log enriched BOM data to file
+async function logEnrichedBomToFile(enrichedData: any[], outputPath?: string): Promise<string> {
+  try {
+    // Default output path in the data directory
+    const defaultPath = path.join(process.cwd(), 'data', 'enriched_bom.json');
+    const filePath = outputPath || defaultPath;
+    
+    // Ensure the directory exists
+    const dir = path.dirname(filePath);
+    await fs.mkdir(dir, { recursive: true });
+    
+    // Convert to JSON string with pretty formatting
+    const jsonContent = JSON.stringify(enrichedData, null, 2);
+    
+    // Write to file (this will overwrite the file each time)
+    await fs.writeFile(filePath, jsonContent, 'utf8');
+    
+    console.log(`✅ [NEXAR] Enriched BOM data logged to: ${filePath}`);
+    console.log(`📊 [NEXAR] Logged ${enrichedData.length} enriched rows`);
+    
+    return filePath;
+  } catch (error) {
+    console.error('❌ [NEXAR] Error logging enriched BOM to file:', error);
+    throw error;
+  }
+}
+
 // New function for BOM processing
-export async function searchBomComponents(bomCsvContent: string): Promise<any[]> {
+export async function searchBomComponents(bomCsvContent: string, logToFile: boolean = true): Promise<any[]> {
   try {
     // Parse CSV to JSON first
     const bomData = await parseCsvToJson(bomCsvContent);
@@ -215,15 +244,24 @@ export async function searchBomComponents(bomCsvContent: string): Promise<any[]>
     // Find MPN column index
     const mpnColumnIndex = findMpnColumnIndex(headers.join(','));
     
+    console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows with MPN column at index ${mpnColumnIndex}`);
+    
     // Process each BOM row using the refactored processBomRow
     const enrichedRows = await Promise.all(
       bomData.map(row => processBomRow(row, mpnColumnIndex))
     );
     
+    // Log to file if requested
+    if (logToFile) {
+      await logEnrichedBomToFile(enrichedRows);
+    }
+    
+    console.log(`✅ [NEXAR] Successfully processed ${enrichedRows.length} BOM rows`);
+    
     return enrichedRows;
     
   } catch (error) {
-    console.error('Error processing BOM:', error);
+    console.error('❌ [NEXAR] Error processing BOM:', error);
     throw error;
   }
 }

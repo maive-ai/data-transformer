@@ -1,5 +1,9 @@
 import 'dotenv/config';
 import { NexarClient } from './nexar-client';
+import { Readable } from 'stream';
+
+// Use require for csv-parser to avoid TypeScript issues
+const csvParser = require('csv-parser');
 
 // Environment variable validation
 const clientId = process.env.NEXAR_CLIENT_ID ?? (() => {
@@ -15,7 +19,7 @@ const nexar = new NexarClient(clientId, clientSecret);
 
 // GraphQL query for searching parts by MPN
 const gqlQuery = `query Search($mpn: String!) {
-    supSearch(q: $mpn, limit: 3) {
+    supSearch(q: $mpn, limit: 1) {
         results {
             part {
                 mpn
@@ -132,6 +136,95 @@ export async function searchPartByMPN(mpn: string): Promise<void> {
     }
   } catch (error) {
     console.error('Error searching for part:', error);
+  }
+}
+
+// Helper function to find MPN column index
+function findMpnColumnIndex(header: string): number {
+  const headerColumns = header.split(',').map(col => col.trim().toLowerCase());
+  const mpnColumnIndex = headerColumns.findIndex(col => 
+    col === 'mpn' || 
+    col === 'manufacturer part number' || 
+    col === 'part number' || 
+    col === 'partnumber' ||
+    col === 'manufacturerpartnumber'
+  );
+  
+  if (mpnColumnIndex === -1) {
+    throw new Error('No MPN column found in BOM. Expected column names: mpn, manufacturer part number, part number, partnumber, manufacturerpartnumber');
+  }
+  
+  return mpnColumnIndex;
+}
+
+
+
+// Refactored helper function to process a single BOM row (JSON version)
+async function processBomRow(row: Record<string, any>, mpnColumnIndex: number): Promise<Record<string, any>> {
+  const mpn = Object.values(row)[mpnColumnIndex] as string || '';
+  let nexarData: any = null;
+
+  if (mpn) {
+    try {
+      // Search for this MPN
+      const response = await nexar.query<SearchResponse>(gqlQuery, { mpn });
+      const results = response?.data?.supSearch?.results;
+      if (results && results.length > 0) {
+        const part = results[0].part; // Use first result
+        nexarData = part;
+      }
+    } catch (error) {
+      console.error(`Error searching for MPN ${mpn}:`, error);
+    }
+  }
+  
+  // Build enriched object with nested nexarData
+  const enriched: Record<string, any> = { ...row };
+  enriched.nexarData = nexarData;
+  
+  return enriched;
+}
+
+// Helper function to parse CSV to JSON
+async function parseCsvToJson(csvContent: string): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    const stream = Readable.from(csvContent);
+    
+    stream
+      .pipe(csvParser())
+      .on('data', (data: any) => results.push(data))
+      .on('end', () => resolve(results))
+      .on('error', (error: any) => reject(error));
+  });
+}
+
+// New function for BOM processing
+export async function searchBomComponents(bomCsvContent: string): Promise<any[]> {
+  try {
+    // Parse CSV to JSON first
+    const bomData = await parseCsvToJson(bomCsvContent);
+    
+    if (bomData.length === 0) {
+      throw new Error('No data found in CSV');
+    }
+    
+    // Get headers from the first row
+    const headers = Object.keys(bomData[0]);
+    
+    // Find MPN column index
+    const mpnColumnIndex = findMpnColumnIndex(headers.join(','));
+    
+    // Process each BOM row using the refactored processBomRow
+    const enrichedRows = await Promise.all(
+      bomData.map(row => processBomRow(row, mpnColumnIndex))
+    );
+    
+    return enrichedRows;
+    
+  } catch (error) {
+    console.error('Error processing BOM:', error);
+    throw error;
   }
 }
 

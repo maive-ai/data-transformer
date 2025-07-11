@@ -18,6 +18,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { WorkflowNode } from './workflow-node';
 import { WorkflowTriggerNode } from './workflow-trigger-node';
+import { WorkflowManualUploadNode } from './workflow-manual-upload-node';
 import { WorkflowSidebar } from './workflow-sidebar';
 import { WorkflowToolbar } from "./workflow-toolbar";
 import { convertCsvToExcel } from "@/lib/utils";
@@ -56,6 +57,7 @@ interface SaveFilePickerOptions {
 // Define nodeTypes outside the component for ReactFlow stability
 const nodeTypes = {
   trigger: WorkflowTriggerNode,
+  manualUpload: WorkflowManualUploadNode,
   action: WorkflowNode,
   output: WorkflowOutputNode,
   httpTrigger: WorkflowHttpTriggerNode,
@@ -115,8 +117,8 @@ function getPdtTimestamp() {
   }).replace(/[/:]/g, '-').replace(/, /g, '_').replace(/ /g, '');
 }
 
-// Config: disable node outlines/highlights
-const HIGHLIGHT_NODES_WHEN_RUNNING = false;
+// Config: enable node outlines/highlights
+const HIGHLIGHT_NODES_WHEN_RUNNING = true;
 
 export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   initialNodes = [],
@@ -133,6 +135,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 }: WorkflowCanvasProps, ref) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
+  const [showCompletionState, setShowCompletionState] = useState(false);
   const [nodeRunHistory, setNodeRunHistory] = useState<Record<string, Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>>>({});
   const [localPipelineName, setLocalPipelineName] = useState(pipelineName);
   const completedRef = useRef(new Set<string>());
@@ -245,8 +248,13 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     // Find root nodes (no incoming edges), sorted by y position
     const rootNodes = [...nodes.filter(n => !edges.some(e => e.target === n.id))].sort((a, b) => a.position.y - b.position.y);
     // Only consider file upload root nodes (manual triggers)
-    const fileUploadRoots = rootNodes.filter(n => n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL);
-    const otherRoots = rootNodes.filter(n => !(n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL));
+    const fileUploadRoots = rootNodes.filter(n => 
+      (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || 
+      n.type === 'manualUpload'
+    );
+    const otherRoots = rootNodes.filter(n => 
+      !((n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || n.type === 'manualUpload')
+    );
     // Track node completion and outputs
     const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[]; fileUploadResolver?: (files: File[]) => void }> = new Map();
     completedRef.current = new Set();
@@ -330,7 +338,13 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       runNode: (id: string) => Promise<void>
     ) => {
       try {
+        console.log(`🔄 [WORKFLOW] Setting AI Web Search node ${nodeId} to RUNNING state`);
         setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
+        
+        // Add a 5-second delay to make the running state more visible
+        console.log(`⏳ [WORKFLOW] Starting 5-second delay for AI Web Search node ${nodeId}`);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        console.log(`✅ [WORKFLOW] 5-second delay completed for AI Web Search node ${nodeId}`);
         
         const bomFile = getInputFileFromUpstream(nodeId, nodeData, getUpstream);
         
@@ -359,6 +373,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         updateNodeState(nodeId, jsonFile, fileUrl, setNodes);
 
         // ALSO update the node data to include the enriched JSON
+        console.log(`🔄 [WORKFLOW] Setting AI Web Search node ${nodeId} to DONE state`);
         setNodes(nds => nds.map(n => n.id === nodeId ? {
           ...n,
           data: {
@@ -450,7 +465,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         try {
           setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.RUNNING } } : n));
           await new Promise(res => setTimeout(res, 800)); // Simulate network delay
-          setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n));
+          console.log(`HTTP Trigger node ${nodeId} completed, setting state to DONE`);
+          setNodes(nds => {
+            const updated = nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, runState: RunState.DONE } } : n);
+            console.log(`Node ${nodeId} state set to DONE, current nodes:`, updated.map(n => ({ id: n.id, runState: n.data.runState })));
+            return updated;
+          });
           completedRef.current.add(nodeId);
           // Trigger downstream nodes AFTER marking as done
           for (const downstreamId of getDownstream(nodeId)) {
@@ -474,10 +494,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         }
         return;
       }
-      if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL) {
+      if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL || node.type === 'manualUpload') {
         setNodes(nds => nds.map(n =>
-          n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL
-            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.PROMPT : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
+          (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || n.type === 'manualUpload'
+            ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.RUNNING : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
             : n
         ));
         
@@ -1338,7 +1358,25 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     }
     // After all file upload roots, start any other root nodes (if any)
     await Promise.all(otherRoots.map(root => runNode(root.id)));
+    
+    // Set completion state to show green borders
+    setShowCompletionState(true);
     setRunning(false);
+    
+    // Reset all nodes to idle state after a delay to show completion state
+    setTimeout(() => {
+      console.log('Resetting all nodes to IDLE state after pipeline completion');
+      setShowCompletionState(false);
+      setNodes(nds =>
+        nds.map(n => ({
+          ...n,
+          data: {
+            ...n.data,
+            runState: RunState.IDLE,
+          },
+        }))
+      );
+    }, 60000); // Show completion state for 5 seconds
   };
 
   const handleNodesChange = useCallback(
@@ -1381,6 +1419,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   // Remove keyboard shortcut effect
   const stopPipeline = useCallback(() => {
+    console.log('stopPipeline called - resetting all nodes to IDLE');
     setRunning(false);
     setNodes(nds => nds.map(n => ({
       ...n,
@@ -1423,14 +1462,15 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       <div className="flex-1 h-full">
         <ReactFlow
           nodes={nodes.map(n => {
-            let isHighlighted = false;
-            if (HIGHLIGHT_NODES_WHEN_RUNNING) {
-              if (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) {
-                isHighlighted = n.id === selectedNodeId;
-              } else if (n.data.runState === RunState.RUNNING) {
-                isHighlighted = true;
-              }
+            // Simplified highlighting logic - highlight running nodes and selected manual triggers
+            const isHighlighted = n.data.runState === RunState.RUNNING || 
+              ((n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || n.type === 'manualUpload') && n.id === selectedNodeId;
+            
+            // Debug logging for AI Web Search nodes
+            if (n.type === NodeType.AI_WEB_SCRAPE) {
+              console.log(`🎯 [REACTFLOW] AI Web Search node ${n.id}: runState=${n.data.runState}, isHighlighted=${isHighlighted}`);
             }
+            
             return {
               ...n,
               selected: n.id === selectedNodeId,

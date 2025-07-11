@@ -224,8 +224,11 @@ export async function POST(request: Request) {
     const body: any = {
       contents: [{ parts }],
       generationConfig: {
-        responseMimeType: 'text/plain'
-      }
+        responseMimeType: 'text/plain',
+        thinkingConfig: {
+          thinkingBudget: 1000
+        }
+      },
     };
     const response = await fetch(geminiUrl, {
       method: 'POST',

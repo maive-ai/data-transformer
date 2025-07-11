@@ -81,7 +81,7 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() =>
-                    handleAddNode(NodeType.TRIGGER, {
+                    handleAddNode('manualUpload', {
                       label: NodeLabel.MANUAL_UPLOAD,
                       type: TriggerSubType.MANUAL,
                     })

@@ -4,6 +4,8 @@ import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
 import { Globe } from "lucide-react";
+import { RunState } from "@/types/enums";
+import { getNodeBorderClass } from "@/lib/utils";
 
 interface WorkflowHttpTriggerNodeData {
   label: string;
@@ -13,16 +15,10 @@ interface WorkflowHttpTriggerNodeData {
 }
 
 export const WorkflowHttpTriggerNode = memo(({ data }: NodeProps<WorkflowHttpTriggerNodeData & { runState?: string, highlighted?: boolean }>) => {
-  let borderClass = "";
-  if (data.runState === "prompt") borderClass = "border-2 border-blue-400 animate-pulse";
-  else if (data.runState === "running") borderClass = "";
-  else if (data.runState === "done") borderClass = "border-2 border-green-500";
-  else borderClass = "border border-blue-100";
-
-  const highlighted = data.highlighted && data.runState !== "prompt";
+  const borderClass = getNodeBorderClass(data.runState as RunState);
 
   return (
-    <Card className={`p-4 w-48 shadow-lg bg-white ${borderClass} ${highlighted ? 'rainbow-outline' : ''}`}>
+    <Card className={`p-4 w-48 shadow-lg bg-white ${borderClass}`}>
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">
           <Globe className="w-6 h-6" />

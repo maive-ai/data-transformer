@@ -159,17 +159,35 @@ function findMpnColumnIndex(header: string): number {
   return mpnColumnIndex;
 }
 
-
+// Helper function to find description column index
+function findDescriptionColumnIndex(header: string): number {
+  const headerColumns = header.split(',').map(col => col.trim().toLowerCase());
+  const descriptionColumnIndex = headerColumns.findIndex(col => 
+    col === 'description' || 
+    col === 'desc' ||
+    col === 'part description' ||
+    col === 'component description'
+  );
+  
+  return descriptionColumnIndex; // Return -1 if not found, which is fine for fallback
+}
 
 // Refactored helper function to process a single BOM row (JSON version)
-async function processBomRow(row: Record<string, any>, mpnColumnIndex: number, approvedSuppliers: string[]): Promise<Record<string, any>> {
-  const mpn = Object.values(row)[mpnColumnIndex] as string || '';
+async function processBomRow(row: Record<string, any>, mpnColumnIndex: number, descriptionColumnIndex: number, approvedSuppliers: string[]): Promise<Record<string, any>> {
+  let searchTerm = Object.values(row)[mpnColumnIndex] as string || '';
+  
+  // If MPN is empty, fall back to description
+  if (!searchTerm && descriptionColumnIndex !== -1) {
+    searchTerm = Object.values(row)[descriptionColumnIndex] as string || '';
+    console.log(`Using description as fallback for search: ${searchTerm}`);
+  }
+  
   let nexarData: any = null;
 
-  if (mpn) {
+  if (searchTerm) {
     try {
-      // Search for this MPN
-      const response = await nexar.query<SearchResponse>(gqlQuery, { mpn });
+      // Search for this MPN/description
+      const response = await nexar.query<SearchResponse>(gqlQuery, { mpn: searchTerm });
       const results = response?.data?.supSearch?.results;
       if (results && results.length > 0) {
         let part = results[0].part; // Use first result
@@ -178,7 +196,7 @@ async function processBomRow(row: Record<string, any>, mpnColumnIndex: number, a
         nexarData = part;
       }
     } catch (error) {
-      console.error(`Error searching for MPN ${mpn}:`, error);
+      console.error(`Error searching for term ${searchTerm}:`, error);
     }
   }
   
@@ -243,14 +261,15 @@ export async function searchBomComponents(bomCsvContent: string, approvedSupplie
     // Get headers from the first row
     const headers = Object.keys(bomData[0]);
     
-    // Find MPN column index
+    // Find MPN and description column indices
     const mpnColumnIndex = findMpnColumnIndex(headers.join(','));
+    const descriptionColumnIndex = findDescriptionColumnIndex(headers.join(','));
     
-    console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows with MPN column at index ${mpnColumnIndex}`);
+    console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows with MPN column at index ${mpnColumnIndex}, description column at index ${descriptionColumnIndex}`);
     
     // Process each BOM row using the refactored processBomRow
     const enrichedRows = await Promise.all(
-      bomData.map(row => processBomRow(row, mpnColumnIndex, approvedSuppliers))
+      bomData.map(row => processBomRow(row, mpnColumnIndex, descriptionColumnIndex, approvedSuppliers))
     );
     
     // Log to file if requested

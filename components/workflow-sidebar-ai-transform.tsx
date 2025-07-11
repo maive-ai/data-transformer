@@ -162,7 +162,7 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
     if (!rows.length) return <div className="text-gray-500">(Empty CSV)</div>;
     return (
       <div key={idx} className="mb-6">
-        <div className="font-semibold mb-2">CSV File {idx + 1}</div>
+        {/* Removed CSV File 1 header */}
         <div className="w-full overflow-x-auto">
           <table className="min-w-max border text-xs">
             <thead>

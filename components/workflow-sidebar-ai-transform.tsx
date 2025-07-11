@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Eye, Save } from "lucide-react";
 
 interface AiTransformSidebarProps {
   node: any;
@@ -209,7 +211,7 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
   CustomDialogContent.displayName = "CustomDialogContent";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative h-full">
       {/* Prompt Section */}
       <div>
         <div className="font-medium mb-2">AI Prompt</div>
@@ -300,28 +302,15 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
         )}
       </div>
 
-      {/* Run History Section (find and render if present) */}
-      {node.data.runHistory && Array.isArray(node.data.runHistory) && (
-        <div>
-          <div className="font-medium mb-2">Run History</div>
-          <ul className="text-xs text-gray-700 space-y-1">
-            {node.data.runHistory.map((run: any, idx: number) => (
-              <li key={idx} className="flex items-center gap-2">
-                <span>{run.timestamp}</span>
-                <span className={run.status === 'done' ? 'text-green-600' : 'text-red-600'}>{run.status}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* View CSV Output Button (always visible) */}
-      <button
-        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+      {/* CSV Output Button (secondary, with eye icon) */}
+      <Button
+        variant="secondary"
+        className="w-full mb-2"
         onClick={handleOpenCsvModal}
       >
-        View CSV Output
-      </button>
+        <Eye className="mr-2" />
+        CSV Output
+      </Button>
 
       {/* Modal for CSV output */}
       <Dialog open={csvModalOpen} onOpenChange={setCsvModalOpen}>
@@ -371,13 +360,17 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
         </CustomDialogContent>
       </Dialog>
 
-      {/* Save Button */}
-      <button
-        onClick={handleSave}
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-      >
-        Save Configuration
-      </button>
+      {/* Save Button anchored to bottom center of sidebar with padding */}
+      <div className="absolute left-1/2 bottom-0 -translate-x-1/2 pb-9 w-[180px]">
+        <Button
+          variant="primary"
+          className="w-full"
+          onClick={handleSave}
+        >
+          <Save className="mr-2" />
+          Save
+        </Button>
+      </div>
     </div>
   );
 } 

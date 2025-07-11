@@ -211,7 +211,7 @@ export function WorkflowManualUploadSidebar({ node, onChange, onClose }: Workflo
       {/* Save Button */}
       <div className="flex gap-2 pt-4">
         <Button onClick={handleSave} className="flex-1">
-          Save Configuration
+          Save
         </Button>
         <Button variant="outline" onClick={onClose}>
           Cancel

@@ -1587,10 +1587,17 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     <div className="w-full h-full flex flex-col relative">
       {/* Global File Download Modal */}
       {globalDownloadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm relative">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+          onClick={() => setGlobalDownloadModal(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm relative"
+            onClick={e => e.stopPropagation()} // Prevent modal click from closing
+          >
             <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl"
+              style={{ fontSize: '1.95rem' }} // 30% larger than 1.5rem (text-xl)
               onClick={() => setGlobalDownloadModal(null)}
               aria-label="Close"
             >

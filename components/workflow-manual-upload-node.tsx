@@ -48,29 +48,31 @@ export const WorkflowManualUploadNode = memo(({ data }: NodeProps<WorkflowManual
     }
   };
 
-  const getFileIcon = () => {
-    const fileName = data.uploadedFileName || data.uploadedFileNames?.[0];
-    if (!fileName) return <Upload className="w-6 h-6" />;
-    
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    switch (extension) {
-      case 'docx':
-      case 'doc':
-        return <FileText className="w-6 h-6 text-blue-600" />;
-      case 'pdf':
-        return <FileText className="w-6 h-6 text-red-600" />;
-      case 'csv':
-      case 'xlsx':
-      case 'xls':
-        return <FileText className="w-6 h-6 text-green-600" />;
-      case 'json':
-        return <FileText className="w-6 h-6 text-yellow-600" />;
-      case 'mp4':
-        return <FileText className="w-6 h-6 text-purple-600" />;
-      default:
-        return <FileText className="w-6 h-6" />;
-    }
-  };
+      const getFileIcon = () => {
+      const fileName = data.uploadedFileName || data.uploadedFileNames?.[0];
+      if (!fileName) return <Upload className="w-6 h-6" />;
+      
+      const extension = fileName.split('.').pop()?.toLowerCase();
+      switch (extension) {
+        case 'docx':
+        case 'doc':
+          return <FileText className="w-6 h-6 text-blue-600" />;
+        case 'pdf':
+          return <FileText className="w-6 h-6 text-red-600" />;
+        case 'txt':
+          return <FileText className="w-6 h-6 text-gray-600" />;
+        case 'csv':
+        case 'xlsx':
+        case 'xls':
+          return <FileText className="w-6 h-6 text-green-600" />;
+        case 'json':
+          return <FileText className="w-6 h-6 text-yellow-600" />;
+        case 'mp4':
+          return <FileText className="w-6 h-6 text-purple-600" />;
+        default:
+          return <FileText className="w-6 h-6" />;
+      }
+    };
 
   const getDisplayText = () => {
     if (data.uploadedFileNames && data.uploadedFileNames.length > 0) {
@@ -91,20 +93,63 @@ export const WorkflowManualUploadNode = memo(({ data }: NodeProps<WorkflowManual
     }
   }, []);
 
-  const triggerFileSelect = useCallback(() => {
+  const triggerFileSelect = useCallback(async () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = acceptedTypes.join(',');
     input.style.display = 'none';
     document.body.appendChild(input);
     
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files.length > 0) {
-        // For demo: use a global resolver set by the canvas
-        if (typeof window !== 'undefined' && (window as any).__fileUploadResolver) {
-          (window as any).__fileUploadResolver(Array.from(target.files));
-          (window as any).__fileUploadResolver = null;
+        const file = target.files[0];
+        
+        // Check if it's a .docx file and convert to PDF
+        if (file.name.toLowerCase().endsWith('.docx')) {
+          try {
+            setIsUploading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch('/api/convert-docx', {
+              method: 'POST',
+              body: formData,
+            });
+            
+                              if (response.ok) {
+                    const textBlob = await response.blob();
+                    const textFile = new File([textBlob], file.name.replace('.docx', '.txt'), { type: 'text/plain' });
+                    
+                    // For demo: use a global resolver set by the canvas
+                    if (typeof window !== 'undefined' && (window as any).__fileUploadResolver) {
+                      (window as any).__fileUploadResolver([textFile]);
+                      (window as any).__fileUploadResolver = null;
+                    }
+                  } else {
+              console.error('Conversion failed');
+              // Fallback to original file
+              if (typeof window !== 'undefined' && (window as any).__fileUploadResolver) {
+                (window as any).__fileUploadResolver([file]);
+                (window as any).__fileUploadResolver = null;
+              }
+            }
+          } catch (error) {
+            console.error('Conversion error:', error);
+            // Fallback to original file
+            if (typeof window !== 'undefined' && (window as any).__fileUploadResolver) {
+              (window as any).__fileUploadResolver([file]);
+              (window as any).__fileUploadResolver = null;
+            }
+          } finally {
+            setIsUploading(false);
+          }
+        } else {
+          // For non-docx files, use original logic
+          if (typeof window !== 'undefined' && (window as any).__fileUploadResolver) {
+            (window as any).__fileUploadResolver(Array.from(target.files));
+            (window as any).__fileUploadResolver = null;
+          }
         }
       }
       document.body.removeChild(input);

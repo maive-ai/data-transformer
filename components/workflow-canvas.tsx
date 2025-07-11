@@ -509,10 +509,37 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         document.body.appendChild(fileInput);
         
         const files = await new Promise<File[]>((resolve, reject) => {
-          fileInput.onchange = (e) => {
+          fileInput.onchange = async (e) => {
             const target = e.target as HTMLInputElement;
             if (target.files && target.files.length > 0) {
-              resolve(Array.from(target.files));
+              const file = target.files[0];
+              
+              // Check if it's a .docx file and convert to PDF
+              if (file.name.toLowerCase().endsWith('.docx')) {
+                try {
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  
+                  const response = await fetch('/api/convert-docx', {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  
+                  if (response.ok) {
+                    const textBlob = await response.blob();
+                    const textFile = new File([textBlob], file.name.replace('.docx', '.txt'), { type: 'text/plain' });
+                    resolve([textFile]);
+                  } else {
+                    console.error('Conversion failed, using original file');
+                    resolve([file]);
+                  }
+                } catch (error) {
+                  console.error('Conversion error:', error);
+                  resolve([file]);
+                }
+              } else {
+                resolve([file]);
+              }
             } else {
               reject(new Error('No file selected'));
             }

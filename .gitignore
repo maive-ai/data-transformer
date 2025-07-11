@@ -65,7 +65,7 @@ public/templates/*
 *.pickle
 *.npy
 *.npz
-
+temp/
 data/templates/*
 
 # Testing/Coverage

@@ -15,6 +15,7 @@ import { ErpSidebar } from "./workflow-sidebar-erp";
 import { IntegrationSidebar } from "./workflow-sidebar-integration";
 import { CsvAppendSidebar } from "./workflow-sidebar-csv-append";
 import { AiWebSearchSidebar } from './workflow-sidebar-ai-web-search';
+import { WorkflowManualUploadSidebar } from './workflow-sidebar-manual-upload';
 import { NodeType, TriggerSubType, OutputSubType, ActionSubType, FileType, NodeLabel } from "@/types/enums";
 
 
@@ -371,6 +372,12 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           <EventTriggerSidebar 
             node={node} 
             onChange={onChange}
+          />
+        ) : node.type === 'manualUpload' ? (
+          <WorkflowManualUploadSidebar 
+            node={node} 
+            onChange={onChange}
+            onClose={onClose}
           />
         ) : node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL ? (
           <>

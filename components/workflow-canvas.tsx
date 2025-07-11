@@ -18,6 +18,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { WorkflowNode } from './workflow-node';
 import { WorkflowTriggerNode } from './workflow-trigger-node';
+import { WorkflowManualUploadNode } from './workflow-manual-upload-node';
 import { WorkflowSidebar } from './workflow-sidebar';
 import { WorkflowToolbar } from "./workflow-toolbar";
 import { convertCsvToExcel } from "@/lib/utils";
@@ -56,6 +57,7 @@ interface SaveFilePickerOptions {
 // Define nodeTypes outside the component for ReactFlow stability
 const nodeTypes = {
   trigger: WorkflowTriggerNode,
+  manualUpload: WorkflowManualUploadNode,
   action: WorkflowNode,
   output: WorkflowOutputNode,
   httpTrigger: WorkflowHttpTriggerNode,
@@ -246,8 +248,13 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     // Find root nodes (no incoming edges), sorted by y position
     const rootNodes = [...nodes.filter(n => !edges.some(e => e.target === n.id))].sort((a, b) => a.position.y - b.position.y);
     // Only consider file upload root nodes (manual triggers)
-    const fileUploadRoots = rootNodes.filter(n => n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL);
-    const otherRoots = rootNodes.filter(n => !(n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL));
+    const fileUploadRoots = rootNodes.filter(n => 
+      (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || 
+      n.type === 'manualUpload'
+    );
+    const otherRoots = rootNodes.filter(n => 
+      !((n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || n.type === 'manualUpload')
+    );
     // Track node completion and outputs
     const nodeData: Map<string, { file?: File; inputFile?: string; outputFile?: string; fileUrl?: string; files?: File[]; uploadedFileNames?: string[]; fileUploadResolver?: (files: File[]) => void }> = new Map();
     completedRef.current = new Set();
@@ -487,9 +494,9 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         }
         return;
       }
-      if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL) {
+      if (node.type === NodeType.TRIGGER && node.data.type === TriggerSubType.MANUAL || node.type === 'manualUpload') {
         setNodes(nds => nds.map(n =>
-          n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL
+          (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || n.type === 'manualUpload'
             ? { ...n, data: { ...n.data, runState: n.id === nodeId ? RunState.RUNNING : (n.data.runState === RunState.DONE ? RunState.DONE : RunState.IDLE) } }
             : n
         ));
@@ -1457,7 +1464,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           nodes={nodes.map(n => {
             // Simplified highlighting logic - highlight running nodes and selected manual triggers
             const isHighlighted = n.data.runState === RunState.RUNNING || 
-              (n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL && n.id === selectedNodeId);
+              ((n.type === NodeType.TRIGGER && n.data.type === TriggerSubType.MANUAL) || n.type === 'manualUpload') && n.id === selectedNodeId;
             
             // Debug logging for AI Web Search nodes
             if (n.type === NodeType.AI_WEB_SCRAPE) {

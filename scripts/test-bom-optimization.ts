@@ -13,7 +13,7 @@ async function main() {
   console.log('🔬 Testing BOM Optimization Node (Gemini API)...\n');
 
   // 1. Read the enriched BOM JSON
-  const enrichedBomPath = join(__dirname, '../data/enriched_bom.json');
+  const enrichedBomPath = join(__dirname, '../data/enriched_bom_HUGE.json');
   const enrichedBomContent = readFileSync(enrichedBomPath, 'utf-8');
 
   // 2. Read the output template CSV

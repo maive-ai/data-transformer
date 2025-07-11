@@ -187,7 +187,7 @@ export async function POST(request: Request) {
       fullPrompt += '\n';
     }
     
-    fullPrompt += `USER INSTRUCTIONS:\n${prompt || '[none]'}${schemaText}\n\nSYSTEM INSTRUCTIONS:\n${systemPrompt}`;
+    fullPrompt += `\n\nSYSTEM INSTRUCTIONS:\n${systemPrompt}\n\n${schemaText}\n\nUSER INSTRUCTIONS:\n${prompt || '[none]'}`;
 
     console.log('📝 [GEMINI] Prepared prompt for Gemini API:', {
       promptLength: fullPrompt.length,

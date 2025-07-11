@@ -295,7 +295,7 @@ export async function searchBomComponents(bomCsvContent: string, approvedSupplie
  */
 export function filterApprovedSellers<T extends Part | Part[]>(partOrParts: T, approvedSuppliers: string[]): T {
   function filterPart(part: Part): Part {
-    if (!Array.isArray(part.sellers)) return part;
+    if (!Array.isArray(part.sellers) || approvedSuppliers.length === 0 || (approvedSuppliers[0] === "" && approvedSuppliers.length === 1)) return part;
     console.log("Filtering sellers for part:", part.mpn);
     console.log("Approved suppliers:", approvedSuppliers);
     return {

@@ -31,7 +31,7 @@ import { WorkflowLoopNode } from './workflow-loop-node';
 import { WorkflowErpNode } from './workflow-erp-node';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Upload, X, Download } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { NodeType, RunState, FileType, MimeType, OutputSubType, TriggerSubType, ErpAction, IntegrationSubType, NodeLabel } from "@/types/enums";
 import { WorkflowIntegrationNode } from './workflow-integration-node';
 import CurvedFeedbackEdge from './workflow-curved-edge';
@@ -139,15 +139,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   const [nodeRunHistory, setNodeRunHistory] = useState<Record<string, Array<{ timestamp: string; status: string; inputFile?: string; outputFile?: string }>>>({});
   const [localPipelineName, setLocalPipelineName] = useState(pipelineName);
   const completedRef = useRef(new Set<string>());
-  const [globalDownloadModal, setGlobalDownloadModal] = useState<{
-    nodeId: string;
-    file: File;
-    defaultName: string;
-  } | null>(null);
-  const [globalDownloadName, setGlobalDownloadName] = useState("");
-  const [globalDownloading, setGlobalDownloading] = useState(false);
-  // Track last dismissed download modal nodeId and file name
-  const lastDismissedDownloadRef = useRef<{ nodeId: string; fileName: string } | null>(null);
 
   // Update local name when prop changes
   useEffect(() => {
@@ -159,85 +150,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     const newName = e.target.value;
     setLocalPipelineName(newName);
     onPipelineNameChange?.(newName);
-  };
-
-  // Watch for any File Download node entering 'done' state with a file
-  useEffect(() => {
-    // Only show if no modal is already open
-    if (globalDownloadModal) return;
-    const fileDownloadNode = nodes.find(
-      n => n.type === NodeType.OUTPUT && n.data.type === OutputSubType.FILE_DOWNLOAD && n.data.runState === RunState.DONE && n.data.file && n.data.file instanceof File
-    );
-    if (fileDownloadNode) {
-      // Only show if not just dismissed for this node/file
-      if (
-        !lastDismissedDownloadRef.current ||
-        lastDismissedDownloadRef.current.nodeId !== fileDownloadNode.id ||
-        lastDismissedDownloadRef.current.fileName !== fileDownloadNode.data.file.name
-      ) {
-        setGlobalDownloadModal({
-          nodeId: fileDownloadNode.id,
-          file: fileDownloadNode.data.file,
-          defaultName: fileDownloadNode.data.file.name,
-        });
-        setGlobalDownloadName(fileDownloadNode.data.file.name);
-      }
-    }
-  }, [nodes, globalDownloadModal]);
-
-  const handleGlobalDownload = async () => {
-    if (!globalDownloadModal) return;
-    setGlobalDownloading(true);
-    const { file } = globalDownloadModal;
-    const fileName = globalDownloadName || file.name;
-    const newFile = fileName !== file.name ? new File([file], fileName, { type: file.type }) : file;
-    try {
-      if ('showSaveFilePicker' in window) {
-        try {
-          const fileHandle = await window.showSaveFilePicker({
-            suggestedName: newFile.name,
-            types: [{
-              description: 'File',
-              accept: {
-                [newFile.type]: [`.${newFile.name.split('.').pop()}`]
-              }
-            }]
-          });
-          const writable = await fileHandle.createWritable();
-          await writable.write(newFile);
-          await writable.close();
-          setGlobalDownloadModal(null);
-        } catch (error) {
-          if (error && (error as any).name === 'AbortError') {
-            // User cancelled, do nothing
-            return;
-          }
-          // Fallback to auto-download
-          const url = URL.createObjectURL(newFile);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = newFile.name;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          setGlobalDownloadModal(null);
-        }
-      } else {
-        // Fallback for browsers without File System Access API
-        const url = URL.createObjectURL(newFile);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = newFile.name;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        setGlobalDownloadModal(null);
-      }
-    } finally {
-      setGlobalDownloading(false);
-    }
   };
 
   // Helper: get topological order of nodes (DAG)
@@ -1620,48 +1532,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
   return (
     <div className="w-full h-full flex flex-col relative">
-      {/* Global File Download Modal */}
-      {globalDownloadModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-          onClick={() => setGlobalDownloadModal(null)}
-        >
-          <div
-            className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm relative"
-            onClick={e => e.stopPropagation()} // Prevent modal click from closing
-          >
-            <button
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl"
-              style={{ fontSize: '1.95rem' }} // 30% larger than 1.5rem (text-xl)
-              onClick={() => {
-                if (globalDownloadModal) {
-                  lastDismissedDownloadRef.current = { nodeId: globalDownloadModal.nodeId, fileName: globalDownloadModal.file.name };
-                }
-                setGlobalDownloadModal(null);
-              }}
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <div className="mb-4 text-lg font-semibold flex items-center gap-2">
-              <Download className="w-5 h-5" /> Download File
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">File Name</label>
-              <input
-                className="w-full border rounded p-2 text-sm"
-                value={globalDownloadName}
-                onChange={e => setGlobalDownloadName(e.target.value)}
-                maxLength={128}
-              />
-            </div>
-            <Button onClick={async () => { await handleGlobalDownload(); setGlobalDownloadModal(null); }} disabled={globalDownloading || !globalDownloadName} className="w-full">
-              <Download className="w-4 h-4 mr-2" />
-              {globalDownloading ? "Downloading..." : `Download`}
-            </Button>
-          </div>
-        </div>
-      )}
       {/* Top bar: pipeline name, toolbar, play/stop button, absolutely positioned */}
       <div className="absolute left-0 right-0 top-6 z-40 flex flex-row items-center justify-between px-8 pointer-events-none">
         {/* Pipeline name input, left */}

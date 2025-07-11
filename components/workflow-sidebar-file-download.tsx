@@ -13,17 +13,15 @@ export function FileDownloadSidebar({ node }: { node: any }) {
   const file = isFile(fileCandidate) ? fileCandidate : undefined;
   const runState = node?.data?.runState;
 
-  const [modalOpen, setModalOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [fileName, setFileName] = useState(file ? file.name : "");
 
-  // Open modal automatically when file arrives
+  // Update fileName when file changes
   useEffect(() => {
-    if (runState === 'done' && file) {
+    if (file) {
       setFileName(file.name);
-      setModalOpen(true);
     }
-  }, [runState, file]);
+  }, [file]);
 
   const handleDownload = async () => {
     if (!file) return;
@@ -46,7 +44,6 @@ export function FileDownloadSidebar({ node }: { node: any }) {
           const writable = await fileHandle.createWritable();
           await writable.write(newFile);
           await writable.close();
-          setModalOpen(false);
         } catch (error) {
           if (error && (error as any).name === 'AbortError') {
             // User cancelled, do nothing
@@ -61,7 +58,6 @@ export function FileDownloadSidebar({ node }: { node: any }) {
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-          setModalOpen(false);
         }
       } else {
         // Fallback for browsers without File System Access API
@@ -73,7 +69,6 @@ export function FileDownloadSidebar({ node }: { node: any }) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        setModalOpen(false);
       }
     } finally {
       setDownloading(false);
@@ -81,43 +76,37 @@ export function FileDownloadSidebar({ node }: { node: any }) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Modal for download */}
-      {modalOpen && runState === 'done' && file && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm relative">
-            <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-              onClick={() => setModalOpen(false)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <div className="mb-4 text-lg font-semibold flex items-center gap-2">
-              <Download className="w-5 h-5" /> Download File
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">File Name</label>
-              <input
-                className="w-full border rounded p-2 text-sm"
-                value={fileName}
-                onChange={e => setFileName(e.target.value)}
-                maxLength={128}
-              />
-            </div>
-            <Button onClick={handleDownload} disabled={downloading || !fileName} className="w-full">
-              <Download className="w-4 h-4 mr-2" />
-              {downloading ? "Downloading..." : `Download`}
-            </Button>
-          </div>
-        </div>
-      )}
-      {/* Sidebar fallback to reopen modal */}
+    <div className="flex flex-col gap-6 p-2">
       {runState === 'done' && file ? (
-        <Button onClick={() => setModalOpen(true)} className="w-full">
-          <Download className="w-4 h-4 mr-2" />
-          {`Download ${file.name}`}
-        </Button>
+        <div className="space-y-4">
+          <div className="text-base font-semibold flex items-center gap-2">
+            <Download className="w-5 h-5" />
+            Download File
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1" htmlFor="file-name-input">File Name</label>
+            <input
+              id="file-name-input"
+              className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              value={fileName}
+              onChange={e => setFileName(e.target.value)}
+              maxLength={128}
+              disabled={downloading}
+            />
+          </div>
+          <Button
+            onClick={handleDownload}
+            disabled={downloading || !fileName}
+            className="w-full flex items-center justify-center gap-2 text-base font-medium"
+          >
+            <Download className="w-4 h-4" />
+            {downloading ? "Downloading..." : "Download"}
+          </Button>
+        </div>
+      ) : runState === 'running' ? (
+        <div className="text-sm text-muted-foreground">Processing file...</div>
+      ) : runState === 'error' ? (
+        <div className="text-sm text-red-600">Error processing file</div>
       ) : (
         <div className="text-sm text-muted-foreground">No file ready for download yet.</div>
       )}

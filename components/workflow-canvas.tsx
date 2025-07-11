@@ -146,6 +146,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
   } | null>(null);
   const [globalDownloadName, setGlobalDownloadName] = useState("");
   const [globalDownloading, setGlobalDownloading] = useState(false);
+  // Track last dismissed download modal nodeId and file name
+  const lastDismissedDownloadRef = useRef<{ nodeId: string; fileName: string } | null>(null);
 
   // Update local name when prop changes
   useEffect(() => {
@@ -167,12 +169,19 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
       n => n.type === NodeType.OUTPUT && n.data.type === OutputSubType.FILE_DOWNLOAD && n.data.runState === RunState.DONE && n.data.file && n.data.file instanceof File
     );
     if (fileDownloadNode) {
-      setGlobalDownloadModal({
-        nodeId: fileDownloadNode.id,
-        file: fileDownloadNode.data.file,
-        defaultName: fileDownloadNode.data.file.name,
-      });
-      setGlobalDownloadName(fileDownloadNode.data.file.name);
+      // Only show if not just dismissed for this node/file
+      if (
+        !lastDismissedDownloadRef.current ||
+        lastDismissedDownloadRef.current.nodeId !== fileDownloadNode.id ||
+        lastDismissedDownloadRef.current.fileName !== fileDownloadNode.data.file.name
+      ) {
+        setGlobalDownloadModal({
+          nodeId: fileDownloadNode.id,
+          file: fileDownloadNode.data.file,
+          defaultName: fileDownloadNode.data.file.name,
+        });
+        setGlobalDownloadName(fileDownloadNode.data.file.name);
+      }
     }
   }, [nodes, globalDownloadModal]);
 
@@ -1318,7 +1327,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               }
             } : n));
           } else if (result.data && result.data.length > 0) {
-            csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `transformed_${index}.csv`, { type: 'text/csv' }));
+            csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `bom ${index}.csv`, { type: 'text/csv' }));
             nodeData.set(nodeId, { files: csvFiles });
             setNodes(nds => nds.map(n => n.id === nodeId ? {
               ...n,
@@ -1624,7 +1633,12 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             <button
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl"
               style={{ fontSize: '1.95rem' }} // 30% larger than 1.5rem (text-xl)
-              onClick={() => setGlobalDownloadModal(null)}
+              onClick={() => {
+                if (globalDownloadModal) {
+                  lastDismissedDownloadRef.current = { nodeId: globalDownloadModal.nodeId, fileName: globalDownloadModal.file.name };
+                }
+                setGlobalDownloadModal(null);
+              }}
               aria-label="Close"
             >
               ×

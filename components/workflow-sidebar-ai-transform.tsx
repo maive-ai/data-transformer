@@ -158,10 +158,10 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
     const rows = parseCsv(csv);
     if (!rows.length) return <div className="text-gray-500">(Empty CSV)</div>;
     return (
-      <div key={idx} className="mb-6 overflow-x-auto">
+      <div key={idx} className="mb-6">
         <div className="font-semibold mb-2">CSV File {idx + 1}</div>
-        <div className="max-h-[60vh] overflow-y-auto border rounded-lg">
-          <table className="min-w-full border text-xs">
+        <div className="w-full overflow-x-auto">
+          <table className="min-w-max border text-xs">
             <thead>
               <tr>
                 {rows[0].map((cell, i) => (
@@ -301,7 +301,7 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
 
       {/* Modal for CSV output */}
       <Dialog open={csvModalOpen} onOpenChange={setCsvModalOpen}>
-        <DialogContent className="max-w-3xl w-full">
+        <DialogContent className="bg-white p-6 max-w-5xl w-auto overflow-x-auto">
           <DialogTitle>CSV Output</DialogTitle>
           {csvError ? (
             <div className="text-red-600 font-mono whitespace-pre-wrap">{csvError}</div>

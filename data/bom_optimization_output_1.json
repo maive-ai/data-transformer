@@ -1,0 +1,46 @@
+[
+  {
+    "RefDes": "R1 R2",
+    "MPN": "CRG0603F10K",
+    "Manufacturer": "TE Connectivity",
+    "Qty": "2",
+    "Description": "10k 0603 1% Resistor",
+    "Alternate": "",
+    "Supplier": "Lucentia Tech",
+    "Quote": "0.0034",
+    "Link": "https://octopart.com/opatz8j6/a1?t=IA4GUmoWfWoVKTBl2z1O6z4cOaIePRwF0_NozlIgKxgTnc64zTfxfyH-Pqnoo_su50yBdd-7HumdXzuvgPe4cj3eIWs0X1ASH8lpIvp1mwmfjC768I6ziFINaDGMbOFS7qgai4ZS8EUrmOIALz9kbGSv5tJTIPnTGx2i60iDH9Ryw9ey21eY8iuQ2knU6Rg1-j6MktzxcAqQNcW2zYPUxR0N1TYv8m151lU1UrK5-DQ14JF8cr5nEKJmsXJbyevKLqkU_TVTB2TA"
+  },
+  {
+    "RefDes": "C1",
+    "MPN": "C0805C103K1RACTU",
+    "Manufacturer": "KEMET",
+    "Qty": "1",
+    "Description": "10nF 50V X7R",
+    "Alternate": "",
+    "Supplier": "Ampacity Systems",
+    "Quote": "0.005",
+    "Link": "https://octopart.com/opatz8j6/a1?t=w-DwlUqDlOUsmIxFiEZV-Z7_AgUO3TiDIQLRTBkY8F-_l0Cl7SMaFxf8-hWeHE3FGTpiu5H0EImvXaE8DOrOw1s6Wejqc8B1N4NPrRDDpQOTPmf28SvHFAu3HyJ1dLETMhMO8eUWpzoAOdMdUlv14x2lA0S5w-DC-urlzdaxp5q5p8PFCLA081LZd2VBYTi-C7dS3-b1pigLAAutGXBXeteadNZM5FwDzaCyRztd4C9_-QbQGvjHq9PF3p5nFMz-FCuN73o"
+  },
+  {
+    "RefDes": "U1",
+    "MPN": "AS1115-BSST",
+    "Manufacturer": "Osram",
+    "Qty": "1",
+    "Description": "LED Driver",
+    "Alternate": "",
+    "Supplier": "Arrow Electronics",
+    "Quote": "1.43",
+    "Link": "https://octopart.com/opatz8j6/a1?t=3eX01Dog7l23qWMwfGUZJNqx8miBgV3ubNVtqu7RsaNKJpqOxupvb8K_KCPY6pkW00HAzdhyzcsk_kfq7jp9lYJbF4HYdW2WZQvXC9d69XMAXBoVC67uNqHmWa_ow9VRBMswadCxaADcrzwEhBOLhjJo0VdE-pZ2S8KmXTFXWfIewcNw76McqgoWQorc7sYe1WFWGl1b5juiXxHa5cLaz5uWmVS7UX868AK84tttn1MFFz-ZlO7cP10Io7iLy2U08wRJ7hM2dvg"
+  },
+  {
+    "RefDes": "R3",
+    "MPN": "",
+    "Manufacturer": "",
+    "Qty": "1",
+    "Description": "1kΩ 0603",
+    "Alternate": "RC0603FR-071KL",
+    "Supplier": "DigiKey",
+    "Quote": "0.10",
+    "Link": "https://www.digikey.com/en/products/detail/yageo/RC0603FR-071KL/1665471"
+  }
+]

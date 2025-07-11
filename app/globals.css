@@ -172,3 +172,27 @@ body {
 .react-flow__handle-connected {
   display: none !important;
 }
+
+/* Green outline for completed nodes */
+.green-outline {
+  position: relative;
+  z-index: 1;
+}
+.green-outline::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  z-index: -1;
+  border-radius: var(--radius, 16px);
+  border: 4px solid transparent;
+  box-sizing: border-box;
+  /* Light green gradient outline */
+  background: linear-gradient(270deg, #4ADE80, #22D3EE, #4ADE80);
+  background-size: 400% 400%;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}

@@ -188,7 +188,7 @@ async function processBomRow(row: Record<string, any>, mpnColumnIndex: number): 
 }
 
 // Helper function to parse CSV to JSON
-async function parseCsvToJson(csvContent: string): Promise<any[]> {
+export async function parseCsvToJson(csvContent: string): Promise<any[]> {
   return new Promise((resolve, reject) => {
     const results: any[] = [];
     const stream = Readable.from(csvContent);

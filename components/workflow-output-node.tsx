@@ -3,7 +3,7 @@
 import { memo } from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 import { Card } from "@/components/ui/card";
-import { FileSpreadsheet, Mail, Database, FileText } from "lucide-react";
+import { FileSpreadsheet, Mail, Database, FileText, Download } from "lucide-react";
 import { RunState, OutputSubType } from "@/types/enums";
 import { getNodeBorderClass } from "@/lib/utils";
 
@@ -28,6 +28,8 @@ export const WorkflowOutputNode = memo(({ data }: NodeProps<WorkflowOutputNodeDa
         return <Database className="w-6 h-6" />;
       case OutputSubType.DOC:
         return <FileText className="w-6 h-6" />;
+      case OutputSubType.FILE_DOWNLOAD:
+        return <Download className="w-6 h-6" />;
       default:
         return null;
     }
@@ -39,6 +41,8 @@ export const WorkflowOutputNode = memo(({ data }: NodeProps<WorkflowOutputNodeDa
         return 'bg-green-50';
       case OutputSubType.DOC:
         return 'bg-blue-50';
+      case OutputSubType.FILE_DOWNLOAD:
+        return 'bg-purple-50';
       default:
         return '';
     }

@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Clock, Zap, Wand2, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot, Repeat, Signpost, Server, Cloud, Split, Search } from "lucide-react";
+import { Clock, Zap, Wand2, FileSpreadsheet, Mail, Database, FileUp, FileText, Globe, Bot, Repeat, Signpost, Server, Cloud, Split, Search, Download } from "lucide-react";
 import { Node } from "reactflow";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { 
@@ -298,6 +298,23 @@ export function WorkflowToolbar({ onAddNode }: WorkflowToolbarProps) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{NodeLabel.DOC_EXPORT}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    handleAddNode(NodeType.OUTPUT, {
+                      label: NodeLabel.FILE_DOWNLOAD,
+                      type: OutputSubType.FILE_DOWNLOAD,
+                    })
+                  }
+                >
+                  <Download className="w-6 h-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{NodeLabel.FILE_DOWNLOAD}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </PopoverContent>

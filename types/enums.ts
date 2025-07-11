@@ -25,7 +25,8 @@ export enum TriggerSubType {
 export enum OutputSubType {
   EXCEL = 'excel',
   DOC = 'doc',
-  HTTP = 'http'
+  HTTP = 'http',
+  FILE_DOWNLOAD = 'file_download'
 }
 
 export enum ActionSubType {
@@ -101,6 +102,7 @@ export enum NodeLabel {
   EXCEL_EXPORT = 'Excel Export',
   EXCEL_TRANSFORM = 'Excel Transform',
   DOC_EXPORT = 'Doc Export',
+  FILE_DOWNLOAD = 'File Download',
   MANUAL_UPLOAD = 'Manual Upload',
   SCHEDULE = 'Schedule',
   HTTP_ENDPOINT = 'HTTP Endpoint',

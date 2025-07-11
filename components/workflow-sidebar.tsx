@@ -16,6 +16,7 @@ import { IntegrationSidebar } from "./workflow-sidebar-integration";
 import { CsvAppendSidebar } from "./workflow-sidebar-csv-append";
 import { AiWebSearchSidebar } from './workflow-sidebar-ai-web-search';
 import { WorkflowManualUploadSidebar } from './workflow-sidebar-manual-upload';
+import { FileDownloadSidebar } from './workflow-sidebar-file-download';
 import { NodeType, TriggerSubType, OutputSubType, ActionSubType, FileType, NodeLabel } from "@/types/enums";
 
 
@@ -447,6 +448,11 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
             node={node} 
             onChange={onChange}
           />
+        ) : node.type === NodeType.OUTPUT && node.data.type === OutputSubType.FILE_DOWNLOAD ? (
+          <FileDownloadSidebar 
+            node={node} 
+            onChange={onChange}
+          />
         ) : node.type === NodeType.AI_WEB_SCRAPE ? (
           <AiWebSearchSidebar 
             node={node} 
@@ -487,6 +493,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
        !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.EXCEL) &&
        !(node.type === NodeType.ACTION && node.data.type === ActionSubType.DECISION) &&
        !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.DOC) &&
+       !(node.type === NodeType.OUTPUT && node.data.type === OutputSubType.FILE_DOWNLOAD) &&
        !(node.type === NodeType.INTEGRATION) && (
       <div className="absolute bottom-0 left-0 w-full flex justify-center pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none">
         <Button

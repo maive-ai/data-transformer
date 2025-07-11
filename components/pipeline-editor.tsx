@@ -93,6 +93,20 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
     [pipeline, pipelineId]
   );
 
+  // Add a ref to track if stopPipeline was called
+  const stopPipelineRef = useRef(false);
+
+  // Listen for all nodes going idle after stopPipeline, then save
+  useEffect(() => {
+    if (stopPipelineRef.current) {
+      // If all nodes are idle, persist
+      if (nodes.every(n => n.data.runState === 'idle' || n.data.runState === undefined)) {
+        savePipeline();
+        stopPipelineRef.current = false;
+      }
+    }
+  }, [nodes, savePipeline]);
+
   const handlePipelineNameChange = (newName: string) => {
     setPipelineName(newName);
     savePipeline();
@@ -144,7 +158,10 @@ export function PipelineEditor({ pipeline, isNew = false }: PipelineEditorProps)
               <div className="flex items-center justify-end" style={{ minWidth: 48 }}>
                 {canvasRef.current?.running ? (
                   <Button
-                    onClick={() => canvasRef.current?.stopPipeline?.()}
+                    onClick={() => {
+                      stopPipelineRef.current = true;
+                      canvasRef.current?.stopPipeline?.();
+                    }}
                     className="shadow-lg rounded-xl p-3 text-base font-semibold bg-red-600 text-white hover:bg-red-700 transition"
                     aria-label="Stop Pipeline"
                     size="icon"

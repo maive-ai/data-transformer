@@ -664,19 +664,32 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 resolve([file]);
               }
             } else {
-              reject(new Error('No file selected'));
+              resolve([]); // Indicate cancellation
             }
             document.body.removeChild(fileInput);
           };
           
           fileInput.oncancel = () => {
-            reject(new Error('File selection cancelled'));
+            // Instead of rejecting with an error, resolve with a special value
+            resolve([]); // Indicate cancellation
             document.body.removeChild(fileInput);
           };
           
           // Trigger file selection dialog
           fileInput.click();
         });
+        // After file selection, check if cancelled
+        if (!files || files.length === 0) {
+          // File selection was cancelled, set node to idle and return
+          setNodes(nds => nds.map(n => n.id === nodeId ? {
+            ...n,
+            data: {
+              ...n.data,
+              runState: RunState.IDLE,
+            }
+          } : n));
+          return;
+        }
         
         nodeData.set(nodeId, { file: files[0] });
         setNodes(nds => nds.map(n => n.id === nodeId ? {

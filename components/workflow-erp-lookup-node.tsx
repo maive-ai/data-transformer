@@ -76,7 +76,7 @@ export const WorkflowErpLookupNode = memo(({ data }: NodeProps<WorkflowErpLookup
   const borderClass = getNodeBorderClass(data.runState as RunState);
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg ${borderClass}`}>
+    <Card className={`p-4 w-full h-full shadow-lg bg-white ${borderClass}`}>
       <Handle type="target" position={Position.Left} className="w-3 h-3" />
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl"><Database className="w-6 h-6" /></div>

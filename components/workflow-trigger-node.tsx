@@ -56,7 +56,7 @@ export const WorkflowTriggerNode = memo(({ data }: NodeProps<WorkflowTriggerNode
   };
 
   return (
-    <Card className={`p-4 w-full h-full shadow-lg ${borderClass} ${getBgColor()}`}>
+    <Card className={`p-4 w-full h-full shadow-lg bg-white ${borderClass}`}>
       <div className="flex flex-col items-center gap-2">
         <div className="text-2xl">{getIcon()}</div>
         <div className="text-sm font-medium text-center">{data.displayName || data.label}</div>

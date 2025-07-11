@@ -4,8 +4,6 @@ import { Readable } from 'stream';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-const APPROVED_SUPPLIERS = ["DigiKey"]
-
 // Use require for csv-parser to avoid TypeScript issues
 const csvParser = require('csv-parser');
 
@@ -164,7 +162,7 @@ function findMpnColumnIndex(header: string): number {
 
 
 // Refactored helper function to process a single BOM row (JSON version)
-async function processBomRow(row: Record<string, any>, mpnColumnIndex: number): Promise<Record<string, any>> {
+async function processBomRow(row: Record<string, any>, mpnColumnIndex: number, approvedSuppliers: string[]): Promise<Record<string, any>> {
   const mpn = Object.values(row)[mpnColumnIndex] as string || '';
   let nexarData: any = null;
 
@@ -176,7 +174,7 @@ async function processBomRow(row: Record<string, any>, mpnColumnIndex: number): 
       if (results && results.length > 0) {
         let part = results[0].part; // Use first result
         // Filter sellers to only approved suppliers
-        part = filterApprovedSellers(part);
+        part = filterApprovedSellers(part, approvedSuppliers);
         nexarData = part;
       }
     } catch (error) {
@@ -233,7 +231,7 @@ async function logEnrichedBomToFile(enrichedData: any[], outputPath?: string): P
 }
 
 // New function for BOM processing
-export async function searchBomComponents(bomCsvContent: string, logToFile: boolean = true): Promise<any[]> {
+export async function searchBomComponents(bomCsvContent: string, approvedSuppliers: string[], logToFile: boolean = true): Promise<any[]> {
   try {
     // Parse CSV to JSON first
     const bomData = await parseCsvToJson(bomCsvContent);
@@ -252,7 +250,7 @@ export async function searchBomComponents(bomCsvContent: string, logToFile: bool
     
     // Process each BOM row using the refactored processBomRow
     const enrichedRows = await Promise.all(
-      bomData.map(row => processBomRow(row, mpnColumnIndex))
+      bomData.map(row => processBomRow(row, mpnColumnIndex, approvedSuppliers))
     );
     
     // Log to file if requested
@@ -271,17 +269,22 @@ export async function searchBomComponents(bomCsvContent: string, logToFile: bool
 }
 
 /**
- * Filter sellers in a Part or array of Parts to only include APPROVED_SUPPLIERS.
+ * Filter sellers in a Part or array of Parts to only include approved suppliers.
  * @param partOrParts A Part object or array of Part objects
+ * @param approvedSuppliers Array of approved supplier names
  * @returns The filtered Part(s) with only approved sellers
  */
-export function filterApprovedSellers<T extends Part | Part[]>(partOrParts: T): T {
+export function filterApprovedSellers<T extends Part | Part[]>(partOrParts: T, approvedSuppliers: string[]): T {
   function filterPart(part: Part): Part {
     if (!Array.isArray(part.sellers)) return part;
+    console.log("Filtering sellers for part:", part.mpn);
+    console.log("Approved suppliers:", approvedSuppliers);
     return {
       ...part,
       sellers: part.sellers.filter(seller =>
-        APPROVED_SUPPLIERS.includes(seller.company.name)
+        approvedSuppliers.some(approved => 
+          approved.toLowerCase() === seller.company.name.toLowerCase()
+        )
       )
     };
   }

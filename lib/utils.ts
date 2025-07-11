@@ -11,7 +11,7 @@ export function getNodeBorderClass(runState?: RunState): string {
   switch (runState) {
     case RunState.IDLE: return "border border-gray-200";
     case RunState.RUNNING: return "rainbow-outline";
-    case RunState.DONE: return "border-2 border-green-400";
+    case RunState.DONE: return "border-4 border-green-600";
     case RunState.ERROR: return "border-2 border-red-500";
     case RunState.PROMPT: return "border-2 border-blue-400 animate-pulse";
     default: return "border border-gray-200";

@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { X, Plus } from 'lucide-react';
 import { JsonDisplay } from '@/components/ui/json-display';
 
@@ -11,19 +10,11 @@ interface AiWebSearchSidebarProps {
 }
 
 export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) {
-  const [prompt, setPrompt] = useState(node.data.prompt || '');
   const [websites, setWebsites] = useState<string[]>(node.data.websites || ['']);
-  const promptRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setPrompt(node.data.prompt || '');
     setWebsites(node.data.websites || ['']);
   }, [node.data]);
-
-  const handlePromptChange = (value: string) => {
-    setPrompt(value);
-    onChange(node.id, { ...node.data, prompt: value });
-  };
 
   const handleWebsiteChange = (index: number, value: string) => {
     const newWebsites = [...websites];
@@ -46,27 +37,9 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
 
   return (
     <div className="p-4 space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-2">AI Web Search</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Configure AI-powered web scraping to extract structured data from websites.
-        </p>
-      </div>
+
 
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Search Prompt
-          </label>
-          <Textarea
-            ref={promptRef}
-            value={prompt}
-            onChange={(e) => handlePromptChange(e.target.value)}
-            placeholder="Describe what data you want to extract from the websites..."
-            className="min-h-[100px]"
-          />
-        </div>
-
         <div>
           <label className="block text-sm font-medium mb-2">
             Target Websites
@@ -107,10 +80,7 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
       {/* Output Section */}
       <div className="space-y-4">
         <div>
-          <h4 className="text-md font-medium mb-2">Nexar Search Results</h4>
-          <p className="text-sm text-gray-600 mb-3">
-            Enriched component data from Nexar API
-          </p>
+          <h4 className="text-md font-medium mb-2">Search Results</h4>
         </div>
         
         {node.data.runState === 'running' && (

@@ -1,5 +1,8 @@
+import React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 
 interface AiTransformSidebarProps {
   node: any;
@@ -184,6 +187,27 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
     );
   }
 
+  // Custom DialogContent without default close button
+  const CustomDialogContent = React.forwardRef<
+    React.ElementRef<typeof DialogPrimitive.Content>,
+    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+  >(({ className, children, ...props }, ref) => (
+    <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={
+          "fixed left-1/2 top-1/2 z-50 flex flex-col w-full max-w-5xl max-h-[80vh] -translate-x-1/2 -translate-y-1/2 border bg-background p-6 shadow-lg sm:rounded-lg " +
+          (className || "")
+        }
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </DialogPrimitive.Portal>
+  ));
+  CustomDialogContent.displayName = "CustomDialogContent";
+
   return (
     <div className="space-y-6">
       {/* Prompt Section */}
@@ -301,12 +325,23 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
 
       {/* Modal for CSV output */}
       <Dialog open={csvModalOpen} onOpenChange={setCsvModalOpen}>
-        <DialogContent className="bg-white p-6 max-w-5xl w-auto overflow-x-auto">
-          <DialogTitle>CSV Output</DialogTitle>
+        <CustomDialogContent>
+          {/* Custom Close Button - absolutely positioned, always visible */}
+          <button
+            onClick={() => setCsvModalOpen(false)}
+            className="absolute right-4 top-4 z-10 rounded-full p-2 bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-0"
+            tabIndex={0}
+            aria-label="Close"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <DialogTitle className="pr-10">CSV Output</DialogTitle>
           {csvError ? (
-            <div className="text-red-600 font-mono whitespace-pre-wrap">{csvError}</div>
+            <div className="text-red-600 font-mono whitespace-pre-wrap mt-4">{csvError}</div>
           ) : csvContents.length > 0 ? (
-            <div>
+            <div className="flex-1 flex flex-col mt-4">
               {csvContents.length > 1 && (
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <button
@@ -326,14 +361,14 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
                   </button>
                 </div>
               )}
-              <div className="max-h-[65vh] overflow-y-auto">
+              <div className="flex-1 w-full overflow-x-auto overflow-y-auto max-h-[60vh]">
                 {renderCsvTable(csvContents[csvIndex], csvIndex)}
               </div>
             </div>
           ) : (
-            <div className="text-gray-500">No CSV output data found.</div>
+            <div className="text-gray-500 mt-4">No CSV output data found.</div>
           )}
-        </DialogContent>
+        </CustomDialogContent>
       </Dialog>
 
       {/* Save Button */}

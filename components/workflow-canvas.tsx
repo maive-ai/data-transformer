@@ -1524,7 +1524,6 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     
     // Set completion state to show green borders
     setShowCompletionState(true);
-    setRunning(false);
     
     // Reset all nodes to idle state after a delay to show completion state
     setTimeout(() => {
@@ -1600,6 +1599,16 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     stopPipeline,
   }));
 
+  // Set running=true at the start of runPipeline, and only set running=false when all nodes are done or error
+  useEffect(() => {
+    // If any node is running, set running to true
+    if (nodes.some(n => n.data.runState === RunState.RUNNING)) {
+      setRunning(true);
+    } else if (nodes.length > 0 && nodes.every(n => n.data.runState === RunState.DONE || n.data.runState === RunState.ERROR || n.data.runState === RunState.IDLE || n.data.runState === undefined)) {
+      setRunning(false);
+    }
+  }, [nodes]);
+
   return (
     <div className="w-full h-full flex flex-col relative">
       {/* Global File Download Modal */}
@@ -1632,7 +1641,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 maxLength={128}
               />
             </div>
-            <Button onClick={handleGlobalDownload} disabled={globalDownloading || !globalDownloadName} className="w-full">
+            <Button onClick={async () => { await handleGlobalDownload(); setGlobalDownloadModal(null); }} disabled={globalDownloading || !globalDownloadName} className="w-full">
               <Download className="w-4 h-4 mr-2" />
               {globalDownloading ? "Downloading..." : `Download`}
             </Button>

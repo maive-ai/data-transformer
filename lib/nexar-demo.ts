@@ -4,8 +4,6 @@ import { Readable } from 'stream';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-const APPROVED_SUPPLIERS = ["DigiKey"]
-
 // Use require for csv-parser to avoid TypeScript issues
 const csvParser = require('csv-parser');
 
@@ -161,26 +159,44 @@ function findMpnColumnIndex(header: string): number {
   return mpnColumnIndex;
 }
 
-
+// Helper function to find description column index
+function findDescriptionColumnIndex(header: string): number {
+  const headerColumns = header.split(',').map(col => col.trim().toLowerCase());
+  const descriptionColumnIndex = headerColumns.findIndex(col => 
+    col === 'description' || 
+    col === 'desc' ||
+    col === 'part description' ||
+    col === 'component description'
+  );
+  
+  return descriptionColumnIndex; // Return -1 if not found, which is fine for fallback
+}
 
 // Refactored helper function to process a single BOM row (JSON version)
-async function processBomRow(row: Record<string, any>, mpnColumnIndex: number): Promise<Record<string, any>> {
-  const mpn = Object.values(row)[mpnColumnIndex] as string || '';
+async function processBomRow(row: Record<string, any>, mpnColumnIndex: number, descriptionColumnIndex: number, approvedSuppliers: string[]): Promise<Record<string, any>> {
+  let searchTerm = Object.values(row)[mpnColumnIndex] as string || '';
+  
+  // If MPN is empty, fall back to description
+  if (!searchTerm && descriptionColumnIndex !== -1) {
+    searchTerm = Object.values(row)[descriptionColumnIndex] as string || '';
+    console.log(`Using description as fallback for search: ${searchTerm}`);
+  }
+  
   let nexarData: any = null;
 
-  if (mpn) {
+  if (searchTerm) {
     try {
-      // Search for this MPN
-      const response = await nexar.query<SearchResponse>(gqlQuery, { mpn });
+      // Search for this MPN/description
+      const response = await nexar.query<SearchResponse>(gqlQuery, { mpn: searchTerm });
       const results = response?.data?.supSearch?.results;
       if (results && results.length > 0) {
         let part = results[0].part; // Use first result
         // Filter sellers to only approved suppliers
-        part = filterApprovedSellers(part);
+        part = filterApprovedSellers(part, approvedSuppliers);
         nexarData = part;
       }
     } catch (error) {
-      console.error(`Error searching for MPN ${mpn}:`, error);
+      console.error(`Error searching for term ${searchTerm}:`, error);
     }
   }
   
@@ -233,7 +249,7 @@ async function logEnrichedBomToFile(enrichedData: any[], outputPath?: string): P
 }
 
 // New function for BOM processing
-export async function searchBomComponents(bomCsvContent: string, logToFile: boolean = true): Promise<any[]> {
+export async function searchBomComponents(bomCsvContent: string, approvedSuppliers: string[], logToFile: boolean = true): Promise<any[]> {
   try {
     // Parse CSV to JSON first
     const bomData = await parseCsvToJson(bomCsvContent);
@@ -245,14 +261,15 @@ export async function searchBomComponents(bomCsvContent: string, logToFile: bool
     // Get headers from the first row
     const headers = Object.keys(bomData[0]);
     
-    // Find MPN column index
+    // Find MPN and description column indices
     const mpnColumnIndex = findMpnColumnIndex(headers.join(','));
+    const descriptionColumnIndex = findDescriptionColumnIndex(headers.join(','));
     
-    console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows with MPN column at index ${mpnColumnIndex}`);
+    console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows with MPN column at index ${mpnColumnIndex}, description column at index ${descriptionColumnIndex}`);
     
     // Process each BOM row using the refactored processBomRow
     const enrichedRows = await Promise.all(
-      bomData.map(row => processBomRow(row, mpnColumnIndex))
+      bomData.map(row => processBomRow(row, mpnColumnIndex, descriptionColumnIndex, approvedSuppliers))
     );
     
     // Log to file if requested
@@ -271,17 +288,22 @@ export async function searchBomComponents(bomCsvContent: string, logToFile: bool
 }
 
 /**
- * Filter sellers in a Part or array of Parts to only include APPROVED_SUPPLIERS.
+ * Filter sellers in a Part or array of Parts to only include approved suppliers.
  * @param partOrParts A Part object or array of Part objects
+ * @param approvedSuppliers Array of approved supplier names
  * @returns The filtered Part(s) with only approved sellers
  */
-export function filterApprovedSellers<T extends Part | Part[]>(partOrParts: T): T {
+export function filterApprovedSellers<T extends Part | Part[]>(partOrParts: T, approvedSuppliers: string[]): T {
   function filterPart(part: Part): Part {
     if (!Array.isArray(part.sellers)) return part;
+    console.log("Filtering sellers for part:", part.mpn);
+    console.log("Approved suppliers:", approvedSuppliers);
     return {
       ...part,
       sellers: part.sellers.filter(seller =>
-        APPROVED_SUPPLIERS.includes(seller.company.name)
+        approvedSuppliers.some(approved => 
+          approved.toLowerCase() === seller.company.name.toLowerCase()
+        )
       )
     };
   }

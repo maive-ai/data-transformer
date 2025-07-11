@@ -10,29 +10,29 @@ interface AiWebSearchSidebarProps {
 }
 
 export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) {
-  const [websites, setWebsites] = useState<string[]>(node.data.websites || ['']);
+  const [approvedSuppliers, setApprovedSuppliers] = useState<string[]>(node.data.approvedSuppliers || []);
 
   useEffect(() => {
-    setWebsites(node.data.websites || ['']);
+    setApprovedSuppliers(node.data.approvedSuppliers || []);
   }, [node.data]);
 
-  const handleWebsiteChange = (index: number, value: string) => {
-    const newWebsites = [...websites];
-    newWebsites[index] = value;
-    setWebsites(newWebsites);
-    onChange(node.id, { ...node.data, websites: newWebsites });
+  const handleSupplierChange = (index: number, value: string) => {
+    const newSuppliers = [...approvedSuppliers];
+    newSuppliers[index] = value;
+    setApprovedSuppliers(newSuppliers);
+    onChange(node.id, { ...node.data, approvedSuppliers: newSuppliers });
   };
 
-  const addWebsite = () => {
-    const newWebsites = [...websites, ''];
-    setWebsites(newWebsites);
-    onChange(node.id, { ...node.data, websites: newWebsites });
+  const addSupplier = () => {
+    const newSuppliers = [...approvedSuppliers, ''];
+    setApprovedSuppliers(newSuppliers);
+    onChange(node.id, { ...node.data, approvedSuppliers: newSuppliers });
   };
 
-  const removeWebsite = (index: number) => {
-    const newWebsites = websites.filter((_, i) => i !== index);
-    setWebsites(newWebsites);
-    onChange(node.id, { ...node.data, websites: newWebsites });
+  const removeSupplier = (index: number) => {
+    const newSuppliers = approvedSuppliers.filter((_, i) => i !== index);
+    setApprovedSuppliers(newSuppliers);
+    onChange(node.id, { ...node.data, approvedSuppliers: newSuppliers });
   };
 
   return (
@@ -40,24 +40,25 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
 
 
       <div className="space-y-4">
+
         <div>
           <label className="block text-sm font-medium mb-2">
-            Target Websites
+            Approved Suppliers
           </label>
           <div className="space-y-2">
-            {websites.map((website, index) => (
+            {approvedSuppliers.map((supplier, index) => (
               <div key={index} className="flex gap-2">
                 <Input
-                  value={website}
-                  onChange={(e) => handleWebsiteChange(index, e.target.value)}
-                  placeholder="https://example.com"
+                  value={supplier}
+                  onChange={(e) => handleSupplierChange(index, e.target.value)}
+                  placeholder="e.g. DigiKey"
                   className="flex-1"
                 />
-                {websites.length > 1 && (
+                {approvedSuppliers.length > 1 && (
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => removeWebsite(index)}
+                    onClick={() => removeSupplier(index)}
                     className="shrink-0"
                   >
                     <X className="h-4 w-4" />
@@ -67,11 +68,11 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
             ))}
             <Button
               variant="outline"
-              onClick={addWebsite}
+              onClick={addSupplier}
               className="w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Website
+              Add Supplier
             </Button>
           </div>
         </div>

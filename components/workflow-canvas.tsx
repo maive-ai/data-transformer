@@ -372,6 +372,10 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
       const formData = new FormData();
       formData.append('bomFile', bomFile);
+      // Add approvedSuppliers if present
+      if (node.data.approvedSuppliers && Array.isArray(node.data.approvedSuppliers)) {
+        formData.append('approvedSuppliers', JSON.stringify(node.data.approvedSuppliers));
+      }
 
       const response = await fetch('/api/nexar-search', {
         method: 'POST',

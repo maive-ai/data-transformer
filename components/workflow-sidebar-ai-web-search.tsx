@@ -90,7 +90,7 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
           </div>
         )}
         
-        {node.data.runState === 'done' && node.data.enrichedData ? (
+        {node.data.enrichedData ? (
           <div className="border rounded-lg p-4 bg-gray-50">
             <JsonDisplay data={node.data.enrichedData} className="max-h-96 overflow-auto" />
           </div>

@@ -4,6 +4,8 @@ import { Readable } from 'stream';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+const APPROVED_SUPPLIERS = ["DigiKey"]
+
 // Use require for csv-parser to avoid TypeScript issues
 const csvParser = require('csv-parser');
 
@@ -172,7 +174,9 @@ async function processBomRow(row: Record<string, any>, mpnColumnIndex: number): 
       const response = await nexar.query<SearchResponse>(gqlQuery, { mpn });
       const results = response?.data?.supSearch?.results;
       if (results && results.length > 0) {
-        const part = results[0].part; // Use first result
+        let part = results[0].part; // Use first result
+        // Filter sellers to only approved suppliers
+        part = filterApprovedSellers(part);
         nexarData = part;
       }
     } catch (error) {
@@ -263,6 +267,28 @@ export async function searchBomComponents(bomCsvContent: string, logToFile: bool
   } catch (error) {
     console.error('❌ [NEXAR] Error processing BOM:', error);
     throw error;
+  }
+}
+
+/**
+ * Filter sellers in a Part or array of Parts to only include APPROVED_SUPPLIERS.
+ * @param partOrParts A Part object or array of Part objects
+ * @returns The filtered Part(s) with only approved sellers
+ */
+export function filterApprovedSellers<T extends Part | Part[]>(partOrParts: T): T {
+  function filterPart(part: Part): Part {
+    if (!Array.isArray(part.sellers)) return part;
+    return {
+      ...part,
+      sellers: part.sellers.filter(seller =>
+        APPROVED_SUPPLIERS.includes(seller.company.name)
+      )
+    };
+  }
+  if (Array.isArray(partOrParts)) {
+    return partOrParts.map(filterPart) as T;
+  } else {
+    return filterPart(partOrParts) as T;
   }
 }
 

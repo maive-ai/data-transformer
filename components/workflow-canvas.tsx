@@ -1190,7 +1190,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             displayName: node.data.displayName,
             resultDataLength: result.data?.length || 0,
             resultDataType: typeof result.data,
-            success: result.success
+            success: result.success,
+            hasDebugInfo: !!result.debugInfo
           });
 
           let csvFiles: File[] = [];
@@ -1214,7 +1215,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                   fileUrl,
                   outputFileName: 'P-650-WTH-BKM.json',
                   files: [jsonFile],
-                  file: jsonFile
+                  file: jsonFile,
+                  debugInfo: result.debugInfo || null
                 }
               } : n));
               completedRef.current.add(nodeId);
@@ -1235,7 +1237,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 fileUrl,
                 outputFileName: 'P-650-WTH-BKM.json',
                 files: [jsonFile],
-                file: jsonFile
+                file: jsonFile,
+                debugInfo: result.debugInfo || null
               }
             } : n));
           } else if (result.data && result.data.length > 0) {
@@ -1247,7 +1250,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 ...n.data,
                 runState: RunState.DONE,
                 files: csvFiles,
-                file: csvFiles.length === 1 ? csvFiles[0] : undefined
+                file: csvFiles.length === 1 ? csvFiles[0] : undefined,
+                debugInfo: result.debugInfo || null
               }
             } : n));
           } else {
@@ -1258,7 +1262,8 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 ...n.data,
                 runState: RunState.DONE,
                 files: [],
-                file: undefined
+                file: undefined,
+                debugInfo: result.debugInfo || null
               }
             } : n));
           }

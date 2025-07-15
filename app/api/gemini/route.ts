@@ -196,7 +196,11 @@ export async function POST(request: Request) {
     });
 
     // Log the full prompt for debugging
-    console.log('Gemini prompt being sent:', fullPrompt);
+    if (fullPrompt.length > 10000) {
+      console.log('Gemini prompt being sent:', fullPrompt.substring(0, 10000) + '...');
+    } else {
+      console.log('Gemini prompt being sent:', fullPrompt);
+    }
 
     // Prepare Gemini API request parts
     const parts = [
@@ -309,7 +313,20 @@ export async function POST(request: Request) {
       if (csvBlocks.length > 1) return csvBlocks.map(s => s.replace(/```csv\s*|```/g, '').trim());
       return text.split(/\n{2,}/).map(s => s.replace(/```csv\s*|```/g, '').trim()).filter(Boolean);
     }
+
+    // Extract debug information from Gemini response
+    function extractDebugInfo(text: string): string | null {
+      const debugBlockRegex = /```debug_info\s*([\s\S]*?)```/g;
+      const matches = [];
+      let match;
+      while ((match = debugBlockRegex.exec(text)) !== null) {
+        matches.push(match[1].trim());
+      }
+      return matches.length > 0 ? matches.join('\n\n') : null;
+    }
+
     const csvDataArray = extractCsvsFromResponse(outputContent);
+    const debugInfo = extractDebugInfo(outputContent);
 
     console.log('📝 [GEMINI] Extracted CSV(s):');
     csvDataArray.forEach((item, idx) => {
@@ -320,15 +337,21 @@ export async function POST(request: Request) {
       }
     });
 
+    if (debugInfo) {
+      console.log('🔍 [GEMINI] Extracted debug info:', debugInfo);
+    }
+
     console.log('✅ [GEMINI] Processing completed successfully:', {
       outputDataArrayLength: csvDataArray.length,
-      outputDataArrayTypes: csvDataArray.map(item => item.startsWith('```csv Sheet:') ? 'csv' : 'text')
+      outputDataArrayTypes: csvDataArray.map(item => item.startsWith('```csv Sheet:') ? 'csv' : 'text'),
+      hasDebugInfo: !!debugInfo
     });
 
-    // Return the array of CSV data for the next node
+    // Return the array of CSV data and debug info for the next node
     return NextResponse.json({
       success: true,
-      data: csvDataArray
+      data: csvDataArray,
+      debugInfo: debugInfo
     });
 
   } catch (error) {

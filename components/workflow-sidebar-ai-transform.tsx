@@ -2,9 +2,10 @@ import React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { X, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Eye, Save } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface AiTransformSidebarProps {
   node: any;
@@ -22,6 +23,8 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
   const [csvContents, setCsvContents] = useState<string[]>([]);
   const [csvError, setCsvError] = useState<string | null>(null);
   const [csvIndex, setCsvIndex] = useState(0);
+  const [debugInfoExpanded, setDebugInfoExpanded] = useState(false);
+  const [debugInfoModalOpen, setDebugInfoModalOpen] = useState(false);
 
   // Update state when node changes
   useEffect(() => {
@@ -345,6 +348,63 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
         <Eye className="mr-2" />
         CSV Output
       </Button>
+
+      {/* Debug Info Section */}
+      {node.data.debugInfo && (
+        <div className="border rounded-lg">
+          <button
+            onClick={() => setDebugInfoExpanded(!debugInfoExpanded)}
+            className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50"
+          >
+            <span className="font-medium text-sm">Debug Information</span>
+            <span className="flex items-center gap-2">
+              <button
+                type="button"
+                className="ml-2 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+                onClick={e => { e.stopPropagation(); setDebugInfoModalOpen(true); }}
+                title="Pop out to modal"
+              >
+                Pop Out
+              </button>
+              {debugInfoExpanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </span>
+          </button>
+          {debugInfoExpanded && (
+            <div className="p-3 border-t bg-gray-50 max-h-40 overflow-y-auto">
+              <div className="prose prose-sm text-xs">
+                <ReactMarkdown>
+                  {node.data.debugInfo}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+          {/* Debug Info Modal */}
+          <Dialog open={debugInfoModalOpen} onOpenChange={setDebugInfoModalOpen}>
+            <CustomDialogContent>
+              <button
+                onClick={() => setDebugInfoModalOpen(false)}
+                className="absolute right-4 top-4 z-10 rounded-full p-2 bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-0"
+                tabIndex={0}
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <DialogTitle className="pr-10">Debug Information</DialogTitle>
+              <div className="mt-4 max-h-[60vh] overflow-y-auto prose prose-base text-sm">
+                <ReactMarkdown>
+                  {node.data.debugInfo}
+                </ReactMarkdown>
+              </div>
+            </CustomDialogContent>
+          </Dialog>
+        </div>
+      )}
 
       {/* Modal for CSV output */}
       <Dialog open={csvModalOpen} onOpenChange={setCsvModalOpen}>

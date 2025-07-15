@@ -112,30 +112,30 @@ export async function searchPartByMPN(mpn: string): Promise<void> {
     }
 
     // Print the results
-    for (const result of results) {
-      const part = result.part;
-      console.log(`MPN: ${part.mpn}`);
-      console.log(`Generic MPN: ${part.genericMpn}`);
-      console.log(`Description: ${part.shortDescription}`);
-      console.log(`Manufacturer: ${part.manufacturer.name}`);
-      console.log(`Sellers:`);
+    // for (const result of results) {
+    //   const part = result.part;
+    //   console.log(`MPN: ${part.mpn}`);
+    //   console.log(`Generic MPN: ${part.genericMpn}`);
+    //   console.log(`Description: ${part.shortDescription}`);
+    //   console.log(`Manufacturer: ${part.manufacturer.name}`);
+    //   console.log(`Sellers:`);
       
-      for (const seller of part.sellers) {
-        console.log(`  ${seller.company.name}:`);
+    //   for (const seller of part.sellers) {
+    //     console.log(`  ${seller.company.name}:`);
         
-        for (const offer of seller.offers) {
-          console.log(`    Offer: ${offer.clickUrl}`);
-          console.log(`    Inventory: ${offer.inventoryLevel}`);
-          console.log(`    Prices:`);
+    //     for (const offer of seller.offers) {
+    //       console.log(`    Offer: ${offer.clickUrl}`);
+    //       console.log(`    Inventory: ${offer.inventoryLevel}`);
+    //       console.log(`    Prices:`);
           
-          for (const price of offer.prices) {
-            console.log(`      ${price.price} ${price.currency} per ${price.quantity}`);
-          }
-          console.log();
-        }
-      }
-      console.log('─'.repeat(50));
-    }
+    //       for (const price of offer.prices) {
+    //         console.log(`      ${price.price} ${price.currency} per ${price.quantity}`);
+    //       }
+    //       console.log();
+    //     }
+    //   }
+    //   console.log('─'.repeat(50));
+    // }
   } catch (error) {
     console.error('Error searching for part:', error);
   }

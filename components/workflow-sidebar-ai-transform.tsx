@@ -158,6 +158,40 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
     return rows.filter(row => row.length > 1 || (row.length === 1 && row[0].trim() !== ''));
   }
 
+  // Helper function to detect URLs and create hyperlinks
+  function renderCellWithLinks(cell: string) {
+    // URL regex pattern to match http/https URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = cell.split(urlRegex);
+    
+    if (parts.length === 1) {
+      // No URL found, return plain text
+      return cell;
+    }
+    
+    // URL found, render with links
+    return (
+      <>
+        {parts.map((part, index) => {
+          if (urlRegex.test(part)) {
+            return (
+              <a
+                key={index}
+                href={part}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline break-all"
+              >
+                LINK
+              </a>
+            );
+          }
+          return part;
+        })}
+      </>
+    );
+  }
+
   // Replace the CSV table rendering to use the robust parser
   function renderCsvTable(csv: string, idx: number) {
     const rows = parseCsv(csv);
@@ -178,7 +212,7 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
               {rows.slice(1).map((row, i) => (
                 <tr key={i}>
                   {row.map((cell, j) => (
-                    <td key={j} className="border px-2 py-1">{cell}</td>
+                    <td key={j} className="border px-2 py-1">{renderCellWithLinks(cell)}</td>
                   ))}
                 </tr>
               ))}

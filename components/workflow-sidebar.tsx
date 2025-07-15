@@ -462,7 +462,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
           <div className="text-gray-500 text-sm">Implementation details for this node type coming soon.</div>
         )}
         {/* Run History Section */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <div className="font-semibold mb-2 text-base">Run History</div>
           {runHistory.length === 0 ? (
             <div className="text-gray-400 text-sm">No runs yet.</div>
@@ -480,7 +480,7 @@ export function WorkflowSidebar({ node, onClose, onChange, runHistory = [], node
               ))}
             </ul>
           )}
-        </div>
+        </div> */}
       </div>
       {/* Save button only shown for node types that use the general reducer */}
       {!(node.type === NodeType.HTTP_TRIGGER) &&

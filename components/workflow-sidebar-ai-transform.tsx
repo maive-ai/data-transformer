@@ -21,6 +21,7 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
   const [outputTemplateUrl, setOutputTemplateUrl] = useState(node.data.outputTemplateUrl || "");
   const [csvModalOpen, setCsvModalOpen] = useState(false);
   const [csvContents, setCsvContents] = useState<string[]>([]);
+  const [csvTitles, setCsvTitles] = useState<string[]>([]);
   const [csvError, setCsvError] = useState<string | null>(null);
   const [csvIndex, setCsvIndex] = useState(0);
   const [debugInfoExpanded, setDebugInfoExpanded] = useState(false);
@@ -88,28 +89,97 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
     }
   };
 
+  // Helper function to get files from node data
+  const getFilesFromNodeData = (): File[] => {
+    if (node.data.files && Array.isArray(node.data.files)) {
+      return node.data.files;
+    } else if (node.data.file) {
+      return [node.data.file];
+    }
+    return [];
+  };
+
+  // Helper function to process new format JSON with titles
+  const processNewFormatJson = (parsed: any[], processedContents: string[], processedTitles: string[]): void => {
+    parsed.forEach((item: any) => {
+      if (item.title && item.csvContent) {
+        processedContents.push(item.csvContent);
+        processedTitles.push(item.title);
+      }
+    });
+  };
+
+  // Helper function to process old format or plain CSV
+  const processOldFormatOrPlainCsv = (content: string, processedContents: string[], processedTitles: string[]): void => {
+    processedContents.push(content);
+    processedTitles.push(`CSV ${processedContents.length}`);
+  };
+
+  // Helper function to process a single file content
+  const processFileContent = (content: string, processedContents: string[], processedTitles: string[]): void => {
+    try {
+      // Try to parse as JSON to see if it's the new format
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'object' && parsed[0].title && parsed[0].csvContent) {
+        // New format with titles
+        processNewFormatJson(parsed, processedContents, processedTitles);
+      } else {
+        // Old format - treat as plain CSV
+        processOldFormatOrPlainCsv(content, processedContents, processedTitles);
+      }
+    } catch {
+      // Not JSON, treat as plain CSV
+      processOldFormatOrPlainCsv(content, processedContents, processedTitles);
+    }
+  };
+
   // Function to load CSV(s) from node.data.file or node.data.files
   const loadCsvFiles = async () => {
-    let files: File[] = [];
-    if (node.data.files && Array.isArray(node.data.files)) {
-      files = node.data.files;
-    } else if (node.data.file) {
-      files = [node.data.file];
-    }
+    const files = getFilesFromNodeData();
+    
     if (!files.length) {
       setCsvContents([]);
+      setCsvTitles([]);
       setCsvError("CSV_OUTPUT_NOT_FOUND: No CSV output data is available for this node. Please run the node and try again.");
       return;
     }
+
     try {
       const contents = await Promise.all(files.map(file => file.text()));
-      setCsvContents(contents);
+      
+      // Use titles from node data if available, otherwise process from files
+      if (node.data.csvTitles && Array.isArray(node.data.csvTitles) && node.data.csvTitles.length === contents.length) {
+        setCsvContents(contents);
+        setCsvTitles(node.data.csvTitles);
+      } else {
+        // Fallback: process titles from file content
+        const processedContents: string[] = [];
+        const processedTitles: string[] = [];
+        
+        for (const content of contents) {
+          processFileContent(content, processedContents, processedTitles);
+        }
+        
+        setCsvContents(processedContents);
+        setCsvTitles(processedTitles);
+      }
+      
       setCsvError(null);
     } catch (err) {
       setCsvContents([]);
+      setCsvTitles([]);
       setCsvError("CSV_READ_ERROR: Failed to read CSV output file(s). Please check the node execution and try again.");
     }
   };
+
+  // Load CSV titles from node data on component mount and when node changes
+  useEffect(() => {
+    if (node.data.csvTitles && Array.isArray(node.data.csvTitles)) {
+      setCsvTitles(node.data.csvTitles);
+    } else {
+      setCsvTitles([]);
+    }
+  }, [node.data.csvTitles, node.id]);
 
   // Open modal and load CSVs
   const handleOpenCsvModal = async () => {
@@ -434,7 +504,9 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
                   >
                     Previous
                   </button>
-                  <span className="text-sm">CSV {csvIndex + 1} of {csvContents.length}</span>
+                  <span className="text-sm">
+                    {csvTitles[csvIndex] || `CSV ${csvIndex + 1}`} ({csvIndex + 1} of {csvContents.length})
+                  </span>
                   <button
                     className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
                     onClick={() => setCsvIndex(i => Math.min(csvContents.length - 1, i + 1))}

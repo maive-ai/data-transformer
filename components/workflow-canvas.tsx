@@ -95,6 +95,27 @@ function slugify(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+// Helper function to create CSV files from result data
+function createCsvFilesFromResult(data: any[]): { files: File[]; titles: string[] } {
+  // Handle new structure with titles or old structure
+  if (typeof data[0] === 'object' && data[0].title && data[0].csvContent) {
+    // New structure with titles
+    const files = data.map((item: any, index: number) => {
+      const fileName = item.title ? 
+        `${slugify(item.title)}.csv` : 
+        `bom ${index + 1}.csv`;
+      return new File([item.csvContent], fileName, { type: 'text/csv' });
+    });
+    const titles = data.map((item: any) => item.title || 'Untitled CSV');
+    return { files, titles };
+  } else {
+    // Old structure - plain CSV strings
+    const files = data.map((csvData: string, index: number) => new File([csvData], `bom ${index + 1}.csv`, { type: 'text/csv' }));
+    const titles = data.map((_, index: number) => `CSV ${index + 1}`);
+    return { files, titles };
+  }
+}
+
 // Helper to get readable timestamp
 function getReadableTimestamp() {
   const now = new Date();
@@ -1354,7 +1375,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               }
             } : n));
           } else if (result.data && result.data.length > 0) {
-            csvFiles = result.data.map((csvData: string, index: number) => new File([csvData], `bom ${index}.csv`, { type: 'text/csv' }));
+            const { files: csvFiles, titles: csvTitles } = createCsvFilesFromResult(result.data);
             nodeData.set(nodeId, { files: csvFiles });
             setNodes(nds => nds.map(n => n.id === nodeId ? {
               ...n,
@@ -1363,6 +1384,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
                 runState: RunState.DONE,
                 files: csvFiles,
                 file: csvFiles.length === 1 ? csvFiles[0] : undefined,
+                csvTitles: csvTitles,
                 debugInfo: result.debugInfo || null
               }
             } : n));

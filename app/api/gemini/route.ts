@@ -14,6 +14,7 @@ const MIME_TYPES: { [key: string]: string } = {
   'docx': MimeType.APPLICATION_DOCX,
   'csv': MimeType.TEXT_CSV,
   'xlsx': MimeType.APPLICATION_XLSX,
+  'xls': MimeType.APPLICATION_XLS,
   'json': MimeType.APPLICATION_JSON,
   'xml': MimeType.APPLICATION_XML,
   'txt': MimeType.TEXT_PLAIN
@@ -316,12 +317,23 @@ export async function POST(request: Request) {
 
     // Extract debug information from Gemini response
     function extractDebugInfo(text: string): string | null {
-      const debugBlockRegex = /```debug_info\s*([\s\S]*?)```/g;
+      // Try both code block format and XML tag format
+      const codeBlockRegex = /```debug_info\s*([\s\S]*?)```/g;
+      const xmlTagRegex = /<debug_info>\s*([\s\S]*?)<\/debug_info>/g;
+      
       const matches = [];
       let match;
-      while ((match = debugBlockRegex.exec(text)) !== null) {
+      
+      // Check for code block format
+      while ((match = codeBlockRegex.exec(text)) !== null) {
         matches.push(match[1].trim());
       }
+      
+      // Check for XML tag format
+      while ((match = xmlTagRegex.exec(text)) !== null) {
+        matches.push(match[1].trim());
+      }
+      
       return matches.length > 0 ? matches.join('\n\n') : null;
     }
 

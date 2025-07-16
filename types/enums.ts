@@ -66,6 +66,7 @@ export enum MimeType {
   APPLICATION_MSWORD = 'application/msword',
   APPLICATION_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   APPLICATION_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  APPLICATION_XLS = 'application/vnd.ms-excel',
   TEXT_PLAIN = 'text/plain',
   APPLICATION_XML = 'application/xml'
 }

@@ -117,6 +117,66 @@ function getPdtTimestamp() {
   }).replace(/[/:]/g, '-').replace(/, /g, '_').replace(/ /g, '');
 }
 
+// Helper function to check if a file is an Excel file
+function isExcelFile(file: File): boolean {
+  const fileName = file.name.toLowerCase();
+  return fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || 
+         file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+         file.type === 'application/vnd.ms-excel';
+}
+
+// Helper function to convert a single Excel file to CSV files
+async function convertExcelToCsv(file: File): Promise<File[]> {
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: 'array' });
+  const csvFiles: File[] = [];
+  
+  workbook.SheetNames.forEach(sheetName => {
+    const worksheet = workbook.Sheets[sheetName];
+    const csv = XLSX.utils.sheet_to_csv(worksheet);
+    const csvFile = new File([csv], `${file.name.replace(/\.(xlsx|xls)$/, '')}_${sheetName}.csv`, { type: 'text/csv' });
+    csvFiles.push(csvFile);
+  });
+  
+  return csvFiles;
+}
+
+// Helper function to convert Excel files in node data to CSV
+async function convertExcelFilesInNodeData(nodeData: Map<string, any>, upstreamIds: string[]): Promise<void> {
+  for (const upstreamId of upstreamIds) {
+    const upstreamData = nodeData.get(upstreamId);
+    if (!upstreamData) continue;
+
+    if (upstreamData.file && isExcelFile(upstreamData.file)) {
+      console.log(`🔄 [WORKFLOW] Converting Excel file to CSV before processing: ${upstreamData.file.name}`);
+      const csvFiles = await convertExcelToCsv(upstreamData.file);
+      // Replace the Excel file with the first CSV file, or add all CSV files
+      if (csvFiles.length === 1) {
+        nodeData.set(upstreamId, { file: csvFiles[0] });
+      } else {
+        nodeData.set(upstreamId, { files: csvFiles, file: csvFiles[0] });
+      }
+      console.log(`✅ [WORKFLOW] Excel file converted to ${csvFiles.length} CSV file(s)`);
+    } else if (upstreamData.files) {
+      // Handle multiple files, convert any Excel files
+      const convertedFiles: File[] = [];
+      for (const file of upstreamData.files) {
+        if (isExcelFile(file)) {
+          console.log(`🔄 [WORKFLOW] Converting Excel file to CSV: ${file.name}`);
+          const csvFiles = await convertExcelToCsv(file);
+          convertedFiles.push(...csvFiles);
+        } else {
+          convertedFiles.push(file);
+        }
+      }
+      if (convertedFiles.length !== upstreamData.files.length) {
+        nodeData.set(upstreamId, { files: convertedFiles, file: convertedFiles[0] });
+        console.log(`✅ [WORKFLOW] Converted Excel files, now have ${convertedFiles.length} CSV files`);
+      }
+    }
+  }
+}
+
 // Config: enable node outlines/highlights
 const HIGHLIGHT_NODES_WHEN_RUNNING = true;
 
@@ -427,6 +487,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         // After dependencies are done, re-run
         return runNode(nodeId);
       }
+      
       // Short-circuit for markdown output type: create a dummy markdown file and pass it downstream, skipping Gemini/model call
       if (node.data.ioConfig?.outputType?.type === FileType.MARKDOWN) {
         // Sleep for 7 seconds before outputting the dummy markdown file
@@ -621,6 +682,35 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             uploadedFileNames: [files[0].name],
           }
         } : n));
+        
+        // Convert Excel files to CSV once when they first enter the workflow
+        if (isExcelFile(files[0])) {
+          console.log(`🔄 [WORKFLOW] Converting Excel file to CSV on upload: ${files[0].name}`);
+          const csvFiles = await convertExcelToCsv(files[0]);
+          if (csvFiles.length === 1) {
+            nodeData.set(nodeId, { file: csvFiles[0] });
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: RunState.DONE,
+                uploadedFileNames: [csvFiles[0].name],
+              }
+            } : n));
+          } else {
+            nodeData.set(nodeId, { files: csvFiles, file: csvFiles[0] });
+            setNodes(nds => nds.map(n => n.id === nodeId ? {
+              ...n,
+              data: {
+                ...n.data,
+                runState: RunState.DONE,
+                uploadedFileNames: csvFiles.map(f => f.name),
+              }
+            } : n));
+          }
+          console.log(`✅ [WORKFLOW] Excel file converted to ${csvFiles.length} CSV file(s) on upload`);
+        }
+        
         completedRef.current.add(nodeId);
         for (const downstreamId of getDownstream(nodeId)) {
           await runNode(downstreamId);
@@ -638,61 +728,83 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           }
           if (!inputFiles.length) throw new Error('No input files available');
 
-          // Log each input CSV as a trace
+          // Convert Excel files to CSV and collect all CSV files
+          const allCsvFiles: File[] = [];
           for (let i = 0; i < inputFiles.length; i++) {
             const file = inputFiles[i];
-            if (file.type === MimeType.TEXT_CSV) {
-              const labelSlug = slugify(node.data.label || nodeId);
-              const timestamp = getReadableTimestamp();
-              const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-              const ext = file.name.split('.').pop() || 'csv';
-              const traceName = `${labelSlug}-input-${timestamp}-${i + 1}-${uuid}.${ext}`;
-              const inputFormData = new FormData();
-              inputFormData.append('nodeId', nodeId);
-              inputFormData.append('type', 'input');
-              inputFormData.append('file', file, traceName);
-              await fetch('/api/trace', { method: 'POST', body: inputFormData });
+            
+            // All files should be CSV by now, but handle any remaining Excel files as a fallback
+            if (isExcelFile(file)) {
+              console.warn(`⚠️ [WORKFLOW] Excel file found in Excel export node, converting: ${file.name}`);
+              const csvFiles = await convertExcelToCsv(file);
+              allCsvFiles.push(...csvFiles);
+            } else if (file.type === MimeType.TEXT_CSV) {
+              // Already a CSV file, add directly
+              allCsvFiles.push(file);
+            } else {
+              console.warn(`⚠️ [WORKFLOW] Skipping unsupported file type: ${file.name} (${file.type})`);
             }
+            
+            // Log the file as trace
+            const labelSlug = slugify(node.data.label || nodeId);
+            const timestamp = getReadableTimestamp();
+            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+            const ext = file.name.split('.').pop() || 'csv';
+            const traceName = `${labelSlug}-input-${timestamp}-${i + 1}-${uuid}.${ext}`;
+            const inputFormData = new FormData();
+            inputFormData.append('nodeId', nodeId);
+            inputFormData.append('type', 'input');
+            inputFormData.append('file', file, traceName);
+            await fetch('/api/trace', { method: 'POST', body: inputFormData });
           }
 
-          // Merge all input CSVs into a single multi-sheet XLSX file
+          if (allCsvFiles.length === 0) {
+            throw new Error('No valid CSV or Excel files found to process');
+          }
+
+          console.log(`📊 [WORKFLOW] Processing ${allCsvFiles.length} CSV files for Excel export`);
+
+          // Merge all CSV files into a single multi-sheet XLSX file
           const wb = XLSX.utils.book_new();
           let sheetCount = 1;
           const sheetNamesFromNode = Array.isArray(node.data.sheetNames) ? node.data.sheetNames : [];
-          for (let i = 0; i < inputFiles.length; i++) {
-            const file = inputFiles[i];
-            if (file.type === MimeType.TEXT_CSV) {
-              const csvContent = await file.text();
-              const rows = csvContent.split('\n').map(row => row.split(','));
-              const headers = rows[0];
-              const data = rows.slice(1).map(row => {
-                const obj: Record<string, any> = {};
-                headers.forEach((header, index) => {
-                  const value = row[index] || '';
-                  // Try to convert to number if possible
-                  const numValue = Number(value);
-                  obj[header] = !isNaN(numValue) && value.trim() !== '' ? numValue : value;
-                });
-                return obj;
+          
+          for (let i = 0; i < allCsvFiles.length; i++) {
+            const file = allCsvFiles[i];
+            const csvContent = await file.text();
+            const rows = csvContent.split('\n').map(row => row.split(','));
+            const headers = rows[0];
+            const data = rows.slice(1).map(row => {
+              const obj: Record<string, any> = {};
+              headers.forEach((header, index) => {
+                const value = row[index] || '';
+                // Try to convert to number if possible
+                const numValue = Number(value);
+                obj[header] = !isNaN(numValue) && value.trim() !== '' ? numValue : value;
               });
-              const ws = XLSX.utils.json_to_sheet(data, { cellDates: true });
-              // Sheet name: use user-specified name, fallback to SheetN, ensure uniqueness
-              let baseSheetName = (sheetNamesFromNode[i] || '').trim() || `Sheet${sheetCount}`;
-              let sheetName = baseSheetName;
-              let suffix = 1;
-              while (wb.SheetNames.includes(sheetName)) {
-                sheetName = `${baseSheetName}_${suffix}`;
-                suffix++;
-              }
-              XLSX.utils.book_append_sheet(wb, ws, sheetName);
-              sheetCount++;
+              return obj;
+            });
+            const ws = XLSX.utils.json_to_sheet(data, { cellDates: true });
+            
+            // Sheet name: use user-specified name, fallback to SheetN, ensure uniqueness
+            let baseSheetName = (sheetNamesFromNode[i] || '').trim() || `Sheet${sheetCount}`;
+            let sheetName = baseSheetName;
+            let suffix = 1;
+            while (wb.SheetNames.includes(sheetName)) {
+              sheetName = `${baseSheetName}_${suffix}`;
+              suffix++;
             }
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            sheetCount++;
           }
+          
           // Generate single Excel file
           const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
           const mergedExcelFile = new File([excelBuffer], 'merged_output.xlsx', {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           });
+
+          console.log(`✅ [WORKFLOW] Excel export completed: ${allCsvFiles.length} sheets merged into ${mergedExcelFile.name}`);
 
           // Store the file data without triggering download
           nodeData.set(nodeId, { files: [mergedExcelFile] });

@@ -352,27 +352,27 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
       {/* Debug Info Section */}
       {node.data.debugInfo && (
         <div className="border rounded-lg">
-          <button
-            onClick={() => setDebugInfoExpanded(!debugInfoExpanded)}
-            className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50"
-          >
-            <span className="font-medium text-sm">Debug Information</span>
-            <span className="flex items-center gap-2">
-              <button
-                type="button"
-                className="ml-2 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
-                onClick={e => { e.stopPropagation(); setDebugInfoModalOpen(true); }}
-                title="Pop out to modal"
-              >
-                Pop Out
-              </button>
+          <div className="flex items-center justify-between p-3">
+            <button
+              onClick={() => setDebugInfoExpanded(!debugInfoExpanded)}
+              className="flex-1 flex items-center justify-between text-left hover:bg-gray-50 rounded p-2 -m-2"
+            >
+              <span className="font-medium text-sm">Debug Information</span>
               {debugInfoExpanded ? (
                 <ChevronDown className="w-4 h-4" />
               ) : (
                 <ChevronRight className="w-4 h-4" />
               )}
-            </span>
-          </button>
+            </button>
+            <button
+              type="button"
+              className="ml-2 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
+              onClick={() => setDebugInfoModalOpen(true)}
+              title="Pop out to modal"
+            >
+              Pop Out
+            </button>
+          </div>
           {debugInfoExpanded && (
             <div className="p-3 border-t bg-gray-50 max-h-40 overflow-y-auto">
               <div className="prose prose-sm text-xs">

@@ -7,6 +7,306 @@ import { MimeType } from '@/types/enums';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
+// Helper function to escape CSV values
+function escapeCsvValue(val: any): string {
+  if (val == null) return '';
+  const strVal = String(val);
+  if (typeof val === 'string') {
+    // Escape quotes and commas
+    return '"' + strVal.replace(/"/g, '""') + '"';
+  }
+  return strVal;
+}
+
+// Helper function to convert JSON array to CSV string
+function jsonArrayToCsv(jsonArray: any[]): string {
+  if (!Array.isArray(jsonArray) || jsonArray.length === 0) return '';
+  
+  const headers = Object.keys(jsonArray[0]);
+  const csvRows = [headers.join(',')];
+  
+  for (const row of jsonArray) {
+    csvRows.push(headers.map(h => escapeCsvValue(row[h])).join(','));
+  }
+  
+  return csvRows.join('\n');
+}
+
+// Helper function to process new structure with title and data
+function processNewStructure(json: any[], jsonBlockIndex: number): Array<{ title: string; csvContent: string }> {
+  return json.map((item: any) => {
+    if (item.title && Array.isArray(item.data) && item.data.length > 0) {
+      // Convert title to string if object
+      const titleValue = typeof item.title === 'object'
+        ? Object.entries(item.title).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`).join(' | ')
+        : String(item.title);
+      const csvContent = jsonArrayToCsv(item.data);
+      return { title: titleValue, csvContent };
+    }
+    return null;
+  }).filter((item): item is { title: string; csvContent: string } => item !== null);
+}
+
+// Helper function to process single object with title and data
+function processSingleObjectWithTitle(json: any, jsonBlockIndex: number): Array<{ title: string; csvContent: string }> {
+  // Convert title (which may be an object) to a readable string
+  const titleValue = typeof json.title === 'object'
+    ? Object.entries(json.title).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`).join(' | ')
+    : String(json.title);
+  console.log(`🔍 [GEMINI] Entering processSingleObjectWithTitle for block ${jsonBlockIndex}. Title: ${titleValue}, data length: ${json.data.length}`);
+  const csvContent = jsonArrayToCsv(json.data);
+  console.log(`🔍 [GEMINI] jsonArrayToCsv returned content length: ${csvContent.length}`);
+  return [{
+    title: titleValue,
+    csvContent
+  }];
+}
+
+// Helper function to process old structure (array of objects without title)
+function processOldStructure(json: any[], jsonBlockIndex: number): Array<{ title: string; csvContent: string }> {
+  console.log(`🔍 [GEMINI] Entering processOldStructure for block ${jsonBlockIndex}. Input JSON (first item):`, JSON.stringify(json[0], null, 2));
+  if (json.length > 0) {
+    const csvContent = jsonArrayToCsv(json);
+    console.log(`🔍 [GEMINI] jsonArrayToCsv returned content length: ${csvContent.length}`);
+    return [{
+      title: `CSV Output ${jsonBlockIndex + 1}`,
+      csvContent: csvContent
+    }];
+  }
+  console.warn(`⚠️ [GEMINI] Old structure format array was empty:`, { json });
+  return [];
+}
+
+// Helper function to extract JSON blocks from text
+function extractJsonBlocks(text: string): string[] {
+  // Allow JSON blocks terminated by closing ``` or by <debug_info> tag if closing fence is missing
+  const jsonBlockRegex = /```json\s*([\s\S]*?)(?:```|<debug_info>)/g;
+  const jsonBlocks: string[] = [];
+  let jsonMatch;
+  
+  while ((jsonMatch = jsonBlockRegex.exec(text)) !== null) {
+    let jsonContent = jsonMatch[1].trim();
+    // If content contains debug_info tags, remove everything from the tag onward
+    jsonContent = jsonContent.replace(/<debug_info>[\s\S]*$/g, '').trim();
+    
+    // Find the end of the actual JSON object/array
+    let braceCount = 0;
+    let bracketCount = 0;
+    let inString = false;
+    let escapeNext = false;
+    let jsonEndIndex = -1;
+    
+    for (let i = 0; i < jsonContent.length; i++) {
+      const char = jsonContent[i];
+      
+      if (escapeNext) {
+        escapeNext = false;
+        continue;
+      }
+      
+      if (char === '\\') {
+        escapeNext = true;
+        continue;
+      }
+      
+      if (char === '"' && !escapeNext) {
+        inString = !inString;
+        continue;
+      }
+      
+      if (!inString) {
+        if (char === '{') braceCount++;
+        else if (char === '}') braceCount--;
+        else if (char === '[') bracketCount++;
+        else if (char === ']') bracketCount--;
+        
+        // If we've closed all braces and brackets, we've found the end of JSON
+        if (braceCount === 0 && bracketCount === 0 && (char === '}' || char === ']')) {
+          jsonEndIndex = i + 1;
+          break;
+        }
+      }
+    }
+    
+    // If we found the end of JSON, trim to that point
+    if (jsonEndIndex > 0) {
+      jsonContent = jsonContent.substring(0, jsonEndIndex);
+    } else {
+      console.warn("⚠️ [GEMINI] Could not reliably determine JSON block end, using full extracted content.");
+    }
+    
+    jsonBlocks.push(jsonContent);
+  }
+  
+  return jsonBlocks;
+}
+
+// Helper function to process JSON blocks
+function processJsonBlocks(jsonBlocks: string[]): Array<{ title: string; csvContent: string }> {
+  console.log(`🔍 [GEMINI] Entering processJsonBlocks. Found ${jsonBlocks.length} blocks.`);
+  return jsonBlocks.map((jsonStr, index) => {
+    try {
+      console.log(`🔍 [GEMINI] Attempting to parse JSON block ${index + 1}:`, { 
+        length: jsonStr.length, 
+        preview: jsonStr.substring(0, 100), 
+        trimmed: jsonStr.trim().substring(0, 200) 
+      });
+      const json = JSON.parse(jsonStr);
+      console.log(`🔍 [GEMINI] Successfully parsed JSON block ${index + 1}. Is Array: ${Array.isArray(json)}, Has title: ${json?.title}, Has data: ${json?.data}`);
+      
+      // Handle array of objects
+      if (Array.isArray(json) && json.length > 0) {
+        // Check if this is the new structure with title and data
+        if (typeof json[0] === 'object' && json[0].title && json[0].data) {
+          console.log(`🔍 [GEMINI] Detected new structure (array of objects with title/data).`);
+          return processNewStructure(json, index);
+        } else if (typeof json[0] === 'object') {
+          console.log(`🔍 [GEMINI] Detected old structure (array of objects without title).`);
+          return processOldStructure(json, index);
+        }
+      }
+      // Handle single object with title and data
+      else if (typeof json === 'object' && json !== null && json.title && Array.isArray(json.data)) {
+        console.log(`🔍 [GEMINI] Detected single object with title/data.`);
+        return processSingleObjectWithTitle(json, index);
+      }
+      console.warn(`⚠️ [GEMINI] JSON block ${index + 1} did not match any known structure for CSV conversion.`, { json });
+    } catch (error) {
+      console.error(`❌ [GEMINI] Error parsing JSON block ${index + 1}:`, error);
+    }
+    return null;
+  }).filter((item): item is Array<{ title: string; csvContent: string }> => item !== null).flat();
+}
+
+// Helper function to extract CSV blocks with titles
+function extractCsvBlocksWithTitles(text: string): Array<{ title: string; csvContent: string }> {
+  const regex = /```csv Sheet: ([^\n]+)\n([\s\S]*?)```/g;
+  const matches = [];
+  let match;
+  
+  while ((match = regex.exec(text)) !== null) {
+    matches.push({
+      title: match[1].trim(),
+      csvContent: match[2].trim()
+    });
+  }
+  
+  return matches;
+}
+
+// Helper function to extract fallback CSV blocks
+function extractFallbackCsvBlocks(text: string): Array<{ title: string; csvContent: string }> {
+  const csvBlocks = text.split(/```csv[\s\S]*?```/g).filter(Boolean);
+  
+  if (csvBlocks.length > 1) {
+    return csvBlocks.map((s, index) => ({
+      title: `CSV Output ${index + 1}`,
+      csvContent: s.replace(/```csv\s*|```/g, '').trim()
+    }));
+  }
+  
+  return [{
+    title: 'CSV Output',
+    csvContent: text.split(/\n{2,}/).map(s => s.replace(/```csv\s*|```/g, '').trim()).filter(Boolean).join('\n\n')
+  }];
+}
+
+// Main function to extract CSVs from response
+function extractCsvsFromResponse(text: string, outputType: string): Array<{ title: string; csvContent: string }> {
+  const jsonBlocks = extractJsonBlocks(text);
+
+  if (jsonBlocks.length > 0) {
+    console.log("🔍 [GEMINI] Detected JSON blocks, attempting to process as CSV.");
+    const processedJsonAsCsv = processJsonBlocks(jsonBlocks);
+    if (processedJsonAsCsv.length > 0) {
+      return processedJsonAsCsv;
+    }
+    console.log("⚠️ [GEMINI] JSON blocks found but could not be processed into CSV. Falling back...");
+  }
+  
+  // If output type is CSV, but the model returned JSON, convert JSON to CSV
+  if (outputType && outputType.toLowerCase() === 'csv') {
+    // This block is now mostly redundant if JSON is prioritized, but kept for explicit CSV type handling
+    const jsonBlocksIfCsvOutput = extractJsonBlocks(text); // Re-extract if not already done
+    if (jsonBlocksIfCsvOutput.length > 0) {
+        const processed = processJsonBlocks(jsonBlocksIfCsvOutput);
+        if (processed.length > 0) return processed;
+    }
+  }
+  
+  // Try to extract blocks in the format ```csv Sheet: SheetName\n<CSV>```
+  const csvBlocksWithTitles = extractCsvBlocksWithTitles(text);
+  if (csvBlocksWithTitles.length > 0) {
+    console.log("🔍 [GEMINI] Detected CSV blocks with titles.");
+    return csvBlocksWithTitles;
+  }
+  
+  // Fallback: extract any CSV blocks
+  console.log("🔍 [GEMINI] Falling back to generic CSV block extraction.");
+  return extractFallbackCsvBlocks(text);
+}
+
+// Helper function to extract debug information from Gemini response
+function extractDebugInfo(text: string): string | null {
+  // Extract content between <debug_info> and </debug_info>
+  const debugRegex = /<debug_info>([\s\S]*?)<\/debug_info>/i;
+  const debugMatch = text.match(debugRegex);
+  return debugMatch ? debugMatch[1].trim() : null;
+}
+
+// Helper function to make Gemini API call and extract basic results
+async function callGeminiAndExtractResults(parts: any[]) {
+  console.log('📡 [GEMINI] Calling Gemini API with parts:', {
+    textParts: parts.filter(p => p.text).length,
+    fileParts: parts.filter(p => p.file_data).length,
+    totalParts: parts.length
+  });
+
+  const startTime = Date.now();
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const body: any = {
+    contents: [{ parts }],
+    generationConfig: {
+      responseMimeType: 'text/plain',
+      temperature: 0.0,
+      thinkingConfig: {
+        thinkingBudget: 8000
+      }
+    },
+  };
+  const response = await fetch(geminiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  const responseTime = Date.now() - startTime;
+  console.log(`⏱️ [GEMINI] Gemini API response time: ${responseTime}ms`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('❌ [GEMINI] Gemini API error:', error);
+    throw new Error(`Failed to process files with Gemini: ${error.message || response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log('🧾 [GEMINI] Full Gemini API response:', JSON.stringify(data, null, 2));
+  const outputContent = data.candidates[0].content.parts[0].text;
+
+  console.log('📄 [GEMINI] Received response from Gemini API:', {
+    outputContentLength: outputContent.length,
+    outputContentPreview: outputContent.substring(0, 200) + (outputContent.length > 200 ? '...' : '')
+  });
+
+  return {
+    outputContent,
+    debugInfo: extractDebugInfo(outputContent),
+    rawResponse: data
+  };
+}
+
 // Map file extensions to MIME types using enum values
 const MIME_TYPES: { [key: string]: string } = {
   'pdf': MimeType.APPLICATION_PDF,
@@ -17,7 +317,10 @@ const MIME_TYPES: { [key: string]: string } = {
   'xls': MimeType.APPLICATION_XLS,
   'json': MimeType.APPLICATION_JSON,
   'xml': MimeType.APPLICATION_XML,
-  'txt': MimeType.TEXT_PLAIN
+  'txt': MimeType.TEXT_PLAIN,
+  'png': MimeType.IMAGE_PNG,
+  'jpg': MimeType.IMAGE_JPEG,
+  'jpeg': MimeType.IMAGE_JPEG
 };
 
 // Utility: Generate JSON schema from CSV header row
@@ -173,275 +476,71 @@ export async function POST(request: Request) {
       }
     }
 
-    const systemPrompt =
-      (globalSystemPrompt ? `GLOBAL SYSTEM PROMPT:\n${globalSystemPrompt}\n\n` : '')
-
     // Build the prompt with JSON data first
-    let fullPrompt = '';
-    
-    // Add JSON content first if any
+    const baseSystemInstructions = globalSystemPrompt ? `GLOBAL SYSTEM PROMPT:\n${globalSystemPrompt}\n\n` : '';
+    const basePrompt = `\n\nSYSTEM INSTRUCTIONS:\n${baseSystemInstructions}\n\n${schemaText}\n\nUSER INSTRUCTIONS:\n${prompt || '[none]'}`;
+
+    const allCsvDataResults: Array<{ title: string; csvContent: string }> = [];
+    const allDebugInfo: string[] = [];
+    let lastRawGeminiResponse: any = null;
+
     if (jsonFiles.length > 0) {
-      fullPrompt += 'JSON Data:\n';
-      jsonFiles.forEach((jsonContent, index) => {
-        fullPrompt += `\n--- JSON File ${index + 1} ---\n${jsonContent}\n`;
-      });
-      fullPrompt += '\n';
-    }
-    
-    fullPrompt += `\n\nSYSTEM INSTRUCTIONS:\n${systemPrompt}\n\n${schemaText}\n\nUSER INSTRUCTIONS:\n${prompt || '[none]'}`;
+      console.log(`🔄 [GEMINI] Processing ${jsonFiles.length} JSON input file(s) individually.`);
+      for (const jsonContent of jsonFiles) {
+        const currentFullPrompt = `JSON Data:\n--- JSON File ---\n${jsonContent}\n` + basePrompt;
 
-    console.log('📝 [GEMINI] Prepared prompt for Gemini API:', {
-      promptLength: fullPrompt.length,
-      hasGlobalSystemPrompt: !!globalSystemPrompt,
-      userPromptLength: prompt?.length || 0
-    });
-
-    // Log the full prompt for debugging
-    if (fullPrompt.length > 10000) {
-      console.log('Gemini prompt being sent:', fullPrompt.substring(0, 10000) + '...');
-    } else {
-      console.log('Gemini prompt being sent:', fullPrompt);
-    }
-
-    // Prepare Gemini API request parts
-    const parts = [
-      { text: fullPrompt },
-      ...inputFileUrls.map((url: string, index: number) => {
-        const file = nonJsonFiles[index];
-        const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-        const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
-        return { file_data: { file_uri: url, mime_type: mimeType } };
-      }),
-    ];
-    if (shouldUploadTemplate && outputTemplateUrls.length > 0) {
-      parts.push(...outputTemplateUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: 'text/csv' } })));
-    }
-
-    console.log('📡 [GEMINI] Calling Gemini API with parts:', {
-      textParts: 1,
-      fileParts: inputFileUrls.length + outputTemplateUrls.length,
-      totalParts: parts.length
-    });
-
-    // Send request to Gemini API
-    const startTime = Date.now();
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    const body: any = {
-      contents: [{ parts }],
-      generationConfig: {
-        responseMimeType: 'text/plain',
-        thinkingConfig: {
-          thinkingBudget: 1000
+        const currentParts = [
+          { text: currentFullPrompt },
+          ...inputFileUrls.map((url: string, index: number) => {
+            const file = nonJsonFiles[index];
+            const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+            const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
+            return { file_data: { file_uri: url, mime_type: mimeType } };
+          }),
+        ];
+        if (shouldUploadTemplate && outputTemplateUrls.length > 0) {
+          currentParts.push(...outputTemplateUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: 'text/csv' } })));
         }
-      },
-    };
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-        // No Authorization header for API key auth
-      },
-      body: JSON.stringify(body)
-    });
 
-    const responseTime = Date.now() - startTime;
-    console.log(`⏱️ [GEMINI] Gemini API response time: ${responseTime}ms`);
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('❌ [GEMINI] Gemini API error:', error);
-      return NextResponse.json({ error: 'Failed to process files' }, { status: 500 });
-    }
-
-    const data = await response.json();
-    console.log('🧾 [GEMINI] Full Gemini API response:', JSON.stringify(data, null, 2));
-    const outputContent = data.candidates[0].content.parts[0].text;
-
-    console.log('📄 [GEMINI] Received response from Gemini API:', {
-      outputContentLength: outputContent.length,
-      outputContentPreview: outputContent.substring(0, 200) + (outputContent.length > 200 ? '...' : '')
-    });
-
-    // Helper function to escape CSV values
-    function escapeCsvValue(val: any): string {
-      if (val == null) return '';
-      const strVal = String(val);
-      if (typeof val === 'string') {
-        // Escape quotes and commas
-        return '"' + strVal.replace(/"/g, '""') + '"';
-      }
-      return strVal;
-    }
-
-    // Helper function to convert JSON array to CSV string
-    function jsonArrayToCsv(jsonArray: any[]): string {
-      if (!Array.isArray(jsonArray) || jsonArray.length === 0) return '';
-      
-      const headers = Object.keys(jsonArray[0]);
-      const csvRows = [headers.join(',')];
-      
-      for (const row of jsonArray) {
-        csvRows.push(headers.map(h => escapeCsvValue(row[h])).join(','));
-      }
-      
-      return csvRows.join('\n');
-    }
-
-    // Helper function to process new structure with title and data
-    function processNewStructure(json: any[], jsonBlockIndex: number): Array<{ title: string; csvContent: string }> {
-      return json.map((item: any) => {
-        if (item.title && Array.isArray(item.data) && item.data.length > 0) {
-          return {
-            title: item.title,
-            csvContent: jsonArrayToCsv(item.data)
-          };
-        }
-        return null;
-      }).filter((item): item is { title: string; csvContent: string } => item !== null);
-    }
-
-    // Helper function to process old structure (array of objects without title)
-    function processOldStructure(json: any[], jsonBlockIndex: number): Array<{ title: string; csvContent: string }> {
-      return [{
-        title: `CSV Output ${jsonBlockIndex + 1}`,
-        csvContent: jsonArrayToCsv(json)
-      }];
-    }
-
-    // Helper function to extract JSON blocks from text
-    function extractJsonBlocks(text: string): string[] {
-      const jsonBlockRegex = /```json\s*([\s\S]*?)```/g;
-      const jsonBlocks: string[] = [];
-      let jsonMatch;
-      
-      while ((jsonMatch = jsonBlockRegex.exec(text)) !== null) {
-        jsonBlocks.push(jsonMatch[1].trim());
-      }
-      
-      return jsonBlocks;
-    }
-
-    // Helper function to process JSON blocks
-    function processJsonBlocks(jsonBlocks: string[]): Array<{ title: string; csvContent: string }> {
-      return jsonBlocks.map((jsonStr, index) => {
         try {
-          const json = JSON.parse(jsonStr);
-          if (Array.isArray(json) && json.length > 0) {
-            // Check if this is the new structure with title and data
-            if (typeof json[0] === 'object' && json[0].title && json[0].data) {
-              return processNewStructure(json, index);
-            } else if (typeof json[0] === 'object') {
-              return processOldStructure(json, index);
-            }
-          }
+          const { outputContent, debugInfo, rawResponse } = await callGeminiAndExtractResults(currentParts);
+          allCsvDataResults.push(...extractCsvsFromResponse(outputContent, outputType)); // Pass outputType
+          if (debugInfo) allDebugInfo.push(debugInfo);
+          lastRawGeminiResponse = rawResponse;
         } catch (error) {
-          console.error('❌ [GEMINI] Error parsing JSON block:', error);
-        }
-        return null;
-      }).filter((item): item is Array<{ title: string; csvContent: string }> => item !== null).flat();
-    }
-
-    // Helper function to extract CSV blocks with titles
-    function extractCsvBlocksWithTitles(text: string): Array<{ title: string; csvContent: string }> {
-      const regex = /```csv Sheet: ([^\n]+)\n([\s\S]*?)```/g;
-      const matches = [];
-      let match;
-      
-      while ((match = regex.exec(text)) !== null) {
-        matches.push({
-          title: match[1].trim(),
-          csvContent: match[2].trim()
-        });
-      }
-      
-      return matches;
-    }
-
-    // Helper function to extract fallback CSV blocks
-    function extractFallbackCsvBlocks(text: string): Array<{ title: string; csvContent: string }> {
-      const csvBlocks = text.split(/```csv[\s\S]*?```/g).filter(Boolean);
-      
-      if (csvBlocks.length > 1) {
-        return csvBlocks.map((s, index) => ({
-          title: `CSV Output ${index + 1}`,
-          csvContent: s.replace(/```csv\s*|```/g, '').trim()
-        }));
-      }
-      
-      return [{
-        title: 'CSV Output',
-        csvContent: text.split(/\n{2,}/).map(s => s.replace(/```csv\s*|```/g, '').trim()).filter(Boolean).join('\n\n')
-      }];
-    }
-
-    // Main function to extract CSVs from response
-    function extractCsvsFromResponse(text: string): Array<{ title: string; csvContent: string }> {
-      // If output type is CSV, but the model returned JSON, convert JSON to CSV
-      if (outputType && outputType.toLowerCase() === 'csv') {
-        const jsonBlocks = extractJsonBlocks(text);
-        
-        if (jsonBlocks.length > 0) {
-          return processJsonBlocks(jsonBlocks);
+          console.error(`❌ [GEMINI] Error processing one JSON file:`, error);
+          // Decide: stop or continue with other files? For now, continue.
         }
       }
-      
-      // Try to extract blocks in the format ```csv Sheet: SheetName\n<CSV>```
-      const csvBlocksWithTitles = extractCsvBlocksWithTitles(text);
-      if (csvBlocksWithTitles.length > 0) {
-        return csvBlocksWithTitles;
+    } else {
+      console.log(`🚀 [GEMINI] No JSON input files. Sending single combined request.`);
+      // Original single API call logic if no JSON files are provided
+      const parts = [
+        { text: basePrompt },
+        ...inputFileUrls.map((url: string, index: number) => {
+          const file = nonJsonFiles[index];
+          const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+          const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
+          return { file_data: { file_uri: url, mime_type: mimeType } };
+        }),
+      ];
+      if (shouldUploadTemplate && outputTemplateUrls.length > 0) {
+        parts.push(...outputTemplateUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: 'text/csv' } })));
       }
-      
-      // Fallback: extract any CSV blocks
-      return extractFallbackCsvBlocks(text);
-    }
 
-    // Extract debug information from Gemini response
-    function extractDebugInfo(text: string): string | null {
-      // Try both code block format and XML tag format
-      const codeBlockRegex = /```debug_info\s*([\s\S]*?)```/g;
-      const xmlTagRegex = /<debug_info>\s*([\s\S]*?)<\/debug_info>/g;
-      
-      const matches = [];
-      let match;
-      
-      // Check for code block format
-      while ((match = codeBlockRegex.exec(text)) !== null) {
-        matches.push(match[1].trim());
+      try {
+        const { outputContent, debugInfo, rawResponse } = await callGeminiAndExtractResults(parts);
+        allCsvDataResults.push(...extractCsvsFromResponse(outputContent, outputType)); // Pass outputType
+        if (debugInfo) allDebugInfo.push(debugInfo);
+        lastRawGeminiResponse = rawResponse;
+      } catch (error) {
+        console.error(`❌ [GEMINI] Error processing single combined request:`, error);
       }
-      
-      // Check for XML tag format
-      while ((match = xmlTagRegex.exec(text)) !== null) {
-        matches.push(match[1].trim());
-      }
-      
-      return matches.length > 0 ? matches.join('\n\n') : null;
-    }
-
-    const csvDataArray = extractCsvsFromResponse(outputContent);
-    const debugInfo = extractDebugInfo(outputContent);
-
-    console.log('📝 [GEMINI] Extracted CSV(s):');
-    csvDataArray.forEach((item: any, idx) => {
-      if (typeof item === 'string') {
-        // Handle old string format
-        if (item.startsWith('```csv Sheet:')) {
-          console.log(`--- CSV #${idx + 1} ---\n${item}\n`);
-        } else {
-          console.log(`--- CSV #${idx + 1} ---\n${item}\n`);
-        }
-      } else if (item && typeof item === 'object' && item.title && item.csvContent) {
-        // Handle new object format with title
-        console.log(`--- ${item.title} ---\n${item.csvContent}\n`);
-      }
-    });
-
-    if (debugInfo) {
-      console.log('🔍 [GEMINI] Extracted debug info:', debugInfo);
     }
 
     console.log('✅ [GEMINI] Processing completed successfully:', {
-      outputDataArrayLength: csvDataArray.length,
-      outputDataArrayTypes: csvDataArray.map((item: any) => {
+      outputDataArrayLength: allCsvDataResults.length,
+      outputDataArrayTypes: allCsvDataResults.map((item: any) => {
         if (typeof item === 'string') {
           return item.startsWith('```csv Sheet:') ? 'csv' : 'text';
         } else if (item && typeof item === 'object' && item.title) {
@@ -449,14 +548,15 @@ export async function POST(request: Request) {
         }
         return 'unknown';
       }),
-      hasDebugInfo: !!debugInfo
+      hasDebugInfo: allDebugInfo.length > 0
     });
 
     // Return the array of CSV data and debug info for the next node
     return NextResponse.json({
       success: true,
-      data: csvDataArray,
-      debugInfo: debugInfo
+      data: allCsvDataResults,
+      debugInfo: allDebugInfo.length > 0 ? allDebugInfo.join('\n\n') : null,
+      rawGeminiResponse: lastRawGeminiResponse
     });
 
   } catch (error) {

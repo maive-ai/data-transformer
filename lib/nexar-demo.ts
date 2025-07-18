@@ -149,7 +149,8 @@ function findMpnColumnIndex(header: string): number {
     col === 'manufacturer part number' || 
     col === 'part number' || 
     col === 'partnumber' ||
-    col === 'manufacturerpartnumber'
+    col === 'manufacturerpartnumber' ||
+    col === 'preferred mpn'
   );
   
   if (mpnColumnIndex === -1) {
@@ -222,11 +223,11 @@ export async function parseCsvToJson(csvContent: string): Promise<any[]> {
 }
 
 // Helper function to log enriched BOM data to file
-async function logEnrichedBomToFile(enrichedData: any[], outputPath?: string): Promise<string> {
+async function logEnrichedBomToFile(filename: string, enrichedData: any[]): Promise<string> {
   try {
     // Default output path in the data directory
-    const defaultPath = path.join(process.cwd(), 'data', 'enriched_bom.json');
-    const filePath = outputPath || defaultPath;
+    const defaultPath = path.join(process.cwd(), 'data', `enriched_bom_${filename.replace(/\.[^/.]+$/, "")}.json`);
+    const filePath = defaultPath; // No outputPath parameter now
     
     // Ensure the directory exists
     const dir = path.dirname(filePath);
@@ -239,7 +240,7 @@ async function logEnrichedBomToFile(enrichedData: any[], outputPath?: string): P
     await fs.writeFile(filePath, jsonContent, 'utf8');
     
     console.log(`✅ [NEXAR] Enriched BOM data logged to: ${filePath}`);
-    console.log(`📊 [NEXAR] Logged ${enrichedData.length} enriched rows`);
+    console.log(`📊 [NEXAR] Logged ${enrichedData.length} enriched rows for ${filename}`);
     
     return filePath;
   } catch (error) {
@@ -248,44 +249,54 @@ async function logEnrichedBomToFile(enrichedData: any[], outputPath?: string): P
   }
 }
 
-// New function for BOM processing
-export async function searchBomComponents(bomCsvContent: string, approvedSuppliers: string[], logToFile: boolean = true): Promise<any[]> {
-  try {
-    // Parse CSV to JSON first
-    const bomData = await parseCsvToJson(bomCsvContent);
-    
-    if (bomData.length === 0) {
-      throw new Error('No data found in CSV');
+// New function for BOM processing (now handles multiple BOMs)
+export async function searchMultipleBomComponents(bomFiles: Array<{ filename: string; content: string }>, approvedSuppliers: string[], logToFile: boolean = true): Promise<Array<{ filename: string; enrichedData: any[] }>> {
+  const allResults: Array<{ filename: string; enrichedData: any[] }> = [];
+
+  for (const bomFile of bomFiles) {
+    try {
+      console.log(`
+--- Processing BOM file: ${bomFile.filename} ---`);
+      // Parse CSV to JSON first
+      const bomData = await parseCsvToJson(bomFile.content);
+      
+      if (bomData.length === 0) {
+        console.warn(`⚠️ [NEXAR] No data found in ${bomFile.filename}, skipping.`);
+        continue;
+      }
+      
+      // Get headers from the first row
+      const headers = Object.keys(bomData[0]);
+      
+      // Find MPN and description column indices
+      const mpnColumnIndex = findMpnColumnIndex(headers.join(','));
+      const descriptionColumnIndex = findDescriptionColumnIndex(headers.join(','));
+      
+      console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows for ${bomFile.filename} with MPN column at index ${mpnColumnIndex}, description column at index ${descriptionColumnIndex}`);
+      
+      // Process each BOM row using the refactored processBomRow
+      const enrichedRows = await Promise.all(
+        bomData.map(row => processBomRow(row, mpnColumnIndex, descriptionColumnIndex, approvedSuppliers))
+      );
+      
+      // Log to file if requested
+      if (logToFile) {
+        await logEnrichedBomToFile(bomFile.filename, enrichedRows);
+      }
+      
+      console.log(`✅ [NEXAR] Successfully processed ${enrichedRows.length} BOM rows for ${bomFile.filename}`);
+      allResults.push({ filename: bomFile.filename, enrichedData: enrichedRows });
+      
+    } catch (error) {
+      console.error(`❌ [NEXAR] Error processing BOM file ${bomFile.filename}:`, error);
+      // Continue processing other files even if one fails
     }
-    
-    // Get headers from the first row
-    const headers = Object.keys(bomData[0]);
-    
-    // Find MPN and description column indices
-    const mpnColumnIndex = findMpnColumnIndex(headers.join(','));
-    const descriptionColumnIndex = findDescriptionColumnIndex(headers.join(','));
-    
-    console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows with MPN column at index ${mpnColumnIndex}, description column at index ${descriptionColumnIndex}`);
-    
-    // Process each BOM row using the refactored processBomRow
-    const enrichedRows = await Promise.all(
-      bomData.map(row => processBomRow(row, mpnColumnIndex, descriptionColumnIndex, approvedSuppliers))
-    );
-    
-    // Log to file if requested
-    if (logToFile) {
-      await logEnrichedBomToFile(enrichedRows);
-    }
-    
-    console.log(`✅ [NEXAR] Successfully processed ${enrichedRows.length} BOM rows`);
-    
-    return enrichedRows;
-    
-  } catch (error) {
-    console.error('❌ [NEXAR] Error processing BOM:', error);
-    throw error;
   }
-}
+
+  console.log(`
+✅ [NEXAR] Finished processing all ${bomFiles.length} BOM files. Total results: ${allResults.length}`);
+  return allResults;
+}  
 
 /**
  * Filter sellers in a Part or array of Parts to only include approved suppliers.

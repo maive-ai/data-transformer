@@ -68,7 +68,9 @@ export enum MimeType {
   APPLICATION_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   APPLICATION_XLS = 'application/vnd.ms-excel',
   TEXT_PLAIN = 'text/plain',
-  APPLICATION_XML = 'application/xml'
+  APPLICATION_XML = 'application/xml',
+  IMAGE_PNG = 'image/png',
+  IMAGE_JPEG = 'image/jpeg'
 }
 
 // Pipeline run status

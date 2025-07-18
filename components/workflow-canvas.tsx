@@ -99,7 +99,7 @@ function slugify(str: string) {
 function createCsvFilesFromResult(data: any[]): { files: File[]; titles: string[] } {
   // Handle new structure with titles or old structure
   if (typeof data[0] === 'object' && data[0].title && data[0].csvContent) {
-    // New structure with titles
+    // New structure with titles (array of objects)
     const files = data.map((item: any, index: number) => {
       const fileName = item.title ? 
         `${slugify(item.title)}.csv` : 
@@ -108,6 +108,17 @@ function createCsvFilesFromResult(data: any[]): { files: File[]; titles: string[
     });
     const titles = data.map((item: any) => item.title || 'Untitled CSV');
     return { files, titles };
+  } else if (data.length === 1 && typeof data[0] === 'object' && data[0].title && data[0].csvContent) {
+    // Single object with title and csvContent
+    const item = data[0];
+    const fileName = item.title ? 
+      `${slugify(item.title)}.csv` : 
+      `bom.csv`;
+    const file = new File([item.csvContent], fileName, { type: 'text/csv' });
+    return { 
+      files: [file], 
+      titles: [item.title || 'Untitled CSV'] 
+    };
   } else {
     // Old structure - plain CSV strings
     const files = data.map((csvData: string, index: number) => new File([csvData], `bom ${index + 1}.csv`, { type: 'text/csv' }));
@@ -350,30 +361,36 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     const getUpstream = (nodeId: string) => edges.filter(e => e.target === nodeId).map(e => e.source);
 
     // Helper functions for AI Web Search node
-    const getInputFileFromUpstream = (nodeId: string, nodeData: Map<string, any>, getUpstream: (id: string) => string[]) => {
-      const upstreamId = getUpstream(nodeId)[0];
-      const upstreamData = nodeData.get(upstreamId);
+    const getInputFilesFromUpstream = (nodeId: string, nodeData: Map<string, any>, getUpstream: (id: string) => string[]): File[] => {
+      const allInputFiles: File[] = [];
+      const upstreamIds = getUpstream(nodeId);
       
-      // Check for both 'file' and 'files' properties
-      if (upstreamData?.file) {
-        return upstreamData.file;
-      } else if (upstreamData?.files && upstreamData.files.length > 0) {
-        // Use the first file if multiple files are available
-        return upstreamData.files[0];
-      } else {
-        throw new Error('No input file available');
+      for (const upstreamId of upstreamIds) {
+        const upstreamData = nodeData.get(upstreamId);
+        
+        if (upstreamData?.files && upstreamData.files.length > 0) {
+          allInputFiles.push(...upstreamData.files);
+        } else if (upstreamData?.file) {
+          allInputFiles.push(upstreamData.file);
+        }
       }
+      
+      if (allInputFiles.length === 0) {
+        throw new Error('No input files available from upstream nodes.');
+      }
+      
+      return allInputFiles;
     };
 
-    const callNexarApi = async (bomFile: File, nodeId: string, node: any) => {
+    const callNexarApi = async (bomFiles: File[], nodeId: string, node: any) => {
       console.log(`📡 [WORKFLOW] Calling Nexar API for node ${nodeId}:`, {
         nodeLabel: node.data.label,
         displayName: node.data.displayName,
-        inputFileName: bomFile.name
+        inputFileNames: bomFiles.map(f => f.name)
       });
 
       const formData = new FormData();
-      formData.append('bomFile', bomFile);
+      bomFiles.forEach(file => formData.append('bomFile', file));
       // Add approvedSuppliers if present
       if (node.data.approvedSuppliers && Array.isArray(node.data.approvedSuppliers)) {
         formData.append('approvedSuppliers', JSON.stringify(node.data.approvedSuppliers));
@@ -434,51 +451,57 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
         await new Promise(resolve => setTimeout(resolve, 5000));
         console.log(`✅ [WORKFLOW] 5-second delay completed for AI Web Search node ${nodeId}`);
         
-        const bomFile = getInputFileFromUpstream(nodeId, nodeData, getUpstream);
+        const bomFiles = getInputFilesFromUpstream(nodeId, nodeData, getUpstream);
         
         console.log(`🚀 [WORKFLOW] Starting AI Web Search (Nexar) node execution:`, {
           nodeId,
           nodeType: node.type,
           nodeLabel: node.data.label,
           displayName: node.data.displayName,
-          inputFileName: bomFile.name
+          inputFileNames: bomFiles.map(f => f.name)
         });
 
-        const result = await callNexarApi(bomFile, nodeId, node);
+        const result = await callNexarApi(bomFiles, nodeId, node);
         
         console.log(`✅ [WORKFLOW] Nexar API processing completed for node ${nodeId}:`, {
           nodeLabel: node.data.label,
           displayName: node.data.displayName,
-          resultDataLength: result.data?.length || 0,
+          resultDataLength: result.data?.length || 0, // Now an array of { filename, enrichedData } objects
           success: result.success
         });
 
-        // After creating the enriched JSON file, update the node data to include the actual data
-        const { jsonFile, fileUrl } = createEnrichedJsonFile(result.data);
+        // Nexar API now returns an array of { filename, enrichedData } for multiple BOMs
+        const enrichedResults = result.data;
 
-        // Store both the file and the actual data
-        nodeData.set(nodeId, { files: [jsonFile] });
-        updateNodeState(nodeId, jsonFile, fileUrl, setNodes);
+        // Create individual JSON files from each enriched result
+        const enrichedJsonFiles = enrichedResults.map((item: { filename: string; enrichedData: any[] }) => {
+          const jsonBlob = new Blob([JSON.stringify(item.enrichedData, null, 2)], { type: 'application/json' });
+          const jsonFile = new File([jsonBlob], `enriched_bom_${item.filename.replace(/\.csv$/, '')}.json`, { type: 'application/json' });
+          return jsonFile;
+        });
 
-        // ALSO update the node data to include the enriched JSON
+        // Store the individual JSON files and the structured enrichedData array on the node
+        nodeData.set(nodeId, {
+          files: enrichedJsonFiles,
+          enrichedData: enrichedResults // Store the array of results for sidebar display
+        });
+
         console.log(`🔄 [WORKFLOW] Setting AI Web Search node ${nodeId} to DONE state`);
         setNodes(nds => nds.map(n => n.id === nodeId ? {
           ...n,
           data: {
             ...n.data,
-            enrichedData: result.data, // Add this line
+            enrichedData: enrichedResults, // Store the array of results
             runState: RunState.DONE,
-            fileUrl,
-            outputFileName: 'enriched_bom.json',
-            files: [jsonFile],
-            file: jsonFile
+            files: enrichedJsonFiles,
+            debugInfo: result.debugInfo || null
           }
         } : n));
         
         console.log(`✅ [WORKFLOW] AI Web Search node ${nodeId} completed successfully:`, {
           nodeLabel: node.data.label,
           displayName: node.data.displayName,
-          outputFileName: 'enriched_bom.json'
+          outputFileNames: enrichedJsonFiles.map((f: File) => f.name)
         });
         
         completedRef.current.add(nodeId);
@@ -497,17 +520,54 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
 
     // Helper: run a node if all its dependencies are satisfied
     const runNode = async (nodeId: string): Promise<void> => {
+      console.log(`🎯 [WORKFLOW] runNode called for ${nodeId}`);
       const node = nodes.find(n => n.id === nodeId);
-      if (!node || completedRef.current.has(nodeId)) return;
+      if (!node) {
+        console.log(`❌ [WORKFLOW] Node ${nodeId} not found`);
+        return;
+      }
+      if (completedRef.current.has(nodeId)) {
+        console.log(`⏭️ [WORKFLOW] Node ${nodeId} already completed, skipping`);
+        return;
+      }
       // Check if all upstream nodes are completed
       const upstream = getUpstream(nodeId);
+      console.log(`🔍 [WORKFLOW] Checking dependencies for ${nodeId}:`, {
+        upstream,
+        upstreamCompleted: upstream.map(id => ({ id, completed: completedRef.current.has(id) })),
+        completedRefSize: completedRef.current.size,
+        allCompletedIds: Array.from(completedRef.current)
+      });
+      
       if (upstream.some(id => !completedRef.current.has(id))) {
+        const missingDeps = upstream.filter(id => !completedRef.current.has(id));
+        console.log(`⏳ [WORKFLOW] Node ${nodeId} waiting for dependencies:`, {
+          missingDependencies: missingDeps,
+          allUpstream: upstream,
+          completedUpstream: upstream.filter(id => completedRef.current.has(id))
+        });
+        console.log(`🔍 [WORKFLOW] Upstream node details for ${nodeId}:`, {
+          upstreamIds: upstream,
+          missingIds: missingDeps,
+          completedIds: upstream.filter(id => completedRef.current.has(id)),
+          allCompletedIds: Array.from(completedRef.current)
+        });
+        console.log(`🔍 [WORKFLOW] Missing upstream node ID: ${missingDeps[0]}`);
+        const missingNode = nodes.find(n => n.id === missingDeps[0]);
+        console.log(`🔍 [WORKFLOW] Missing node details:`, {
+          id: missingDeps[0],
+          type: missingNode?.type,
+          label: missingNode?.data?.label,
+          displayName: missingNode?.data?.displayName
+        });
         // Wait for dependencies
         if (!waiting[nodeId]) waiting[nodeId] = [];
         await new Promise<void>(resolve => waiting[nodeId].push(resolve));
         // After dependencies are done, re-run
         return runNode(nodeId);
       }
+      
+      console.log(`✅ [WORKFLOW] All dependencies satisfied for ${nodeId}, starting execution`);
       
       // Short-circuit for markdown output type: create a dummy markdown file and pass it downstream, skipping Gemini/model call
       if (node.data.ioConfig?.outputType?.type === FileType.MARKDOWN) {
@@ -576,6 +636,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           } : n));
 
           completedRef.current.add(nodeId);
+          console.log(`✅ [WORKFLOW] Node ${nodeId} marked as completed. Completed nodes:`, Array.from(completedRef.current));
           for (const downstreamId of getDownstream(nodeId)) {
             runNode(downstreamId);
           }
@@ -767,17 +828,17 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             }
             
             // Log the file as trace
-            const labelSlug = slugify(node.data.label || nodeId);
-            const timestamp = getReadableTimestamp();
-            const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-            const ext = file.name.split('.').pop() || 'csv';
-            const traceName = `${labelSlug}-input-${timestamp}-${i + 1}-${uuid}.${ext}`;
-            const inputFormData = new FormData();
-            inputFormData.append('nodeId', nodeId);
-            inputFormData.append('type', 'input');
-            inputFormData.append('file', file, traceName);
-            await fetch('/api/trace', { method: 'POST', body: inputFormData });
-          }
+              const labelSlug = slugify(node.data.label || nodeId);
+              const timestamp = getReadableTimestamp();
+              const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+              const ext = file.name.split('.').pop() || 'csv';
+              const traceName = `${labelSlug}-input-${timestamp}-${i + 1}-${uuid}.${ext}`;
+              const inputFormData = new FormData();
+              inputFormData.append('nodeId', nodeId);
+              inputFormData.append('type', 'input');
+              inputFormData.append('file', file, traceName);
+              await fetch('/api/trace', { method: 'POST', body: inputFormData });
+            }
 
           if (allCsvFiles.length === 0) {
             throw new Error('No valid CSV or Excel files found to process');
@@ -792,32 +853,32 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           
           for (let i = 0; i < allCsvFiles.length; i++) {
             const file = allCsvFiles[i];
-            const csvContent = await file.text();
-            const rows = csvContent.split('\n').map(row => row.split(','));
-            const headers = rows[0];
-            const data = rows.slice(1).map(row => {
-              const obj: Record<string, any> = {};
-              headers.forEach((header, index) => {
-                const value = row[index] || '';
-                // Try to convert to number if possible
-                const numValue = Number(value);
-                obj[header] = !isNaN(numValue) && value.trim() !== '' ? numValue : value;
+              const csvContent = await file.text();
+              const rows = csvContent.split('\n').map(row => row.split(','));
+              const headers = rows[0];
+              const data = rows.slice(1).map(row => {
+                const obj: Record<string, any> = {};
+                headers.forEach((header, index) => {
+                  const value = row[index] || '';
+                  // Try to convert to number if possible
+                  const numValue = Number(value);
+                  obj[header] = !isNaN(numValue) && value.trim() !== '' ? numValue : value;
+                });
+                return obj;
               });
-              return obj;
-            });
-            const ws = XLSX.utils.json_to_sheet(data, { cellDates: true });
+              const ws = XLSX.utils.json_to_sheet(data, { cellDates: true });
             
-            // Sheet name: use user-specified name, fallback to SheetN, ensure uniqueness
-            let baseSheetName = (sheetNamesFromNode[i] || '').trim() || `Sheet${sheetCount}`;
-            let sheetName = baseSheetName;
-            let suffix = 1;
-            while (wb.SheetNames.includes(sheetName)) {
-              sheetName = `${baseSheetName}_${suffix}`;
-              suffix++;
+              // Sheet name: use user-specified name, fallback to SheetN, ensure uniqueness
+              let baseSheetName = (sheetNamesFromNode[i] || '').trim() || `Sheet${sheetCount}`;
+              let sheetName = baseSheetName;
+              let suffix = 1;
+              while (wb.SheetNames.includes(sheetName)) {
+                sheetName = `${baseSheetName}_${suffix}`;
+                suffix++;
+              }
+              XLSX.utils.book_append_sheet(wb, ws, sheetName);
+              sheetCount++;
             }
-            XLSX.utils.book_append_sheet(wb, ws, sheetName);
-            sheetCount++;
-          }
           
           // Generate single Excel file
           const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -1273,7 +1334,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           });
 
           const formData = new FormData();
-          formData.append('inputFile', inputFiles[0]);
+          inputFiles.forEach(file => formData.append('inputFile', file));
           if (node.data.prompt) formData.append('prompt', node.data.prompt);
           if (node.data.useOutputTemplate && node.data.outputTemplateUrl) {
             const outputTemplate = await fetch(node.data.outputTemplateUrl).then(r => r.blob());
@@ -1327,7 +1388,28 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             hasDebugInfo: !!result.debugInfo
           });
 
+          // Debug: Log the actual result.data structure
+          console.log(`🔍 [WORKFLOW] Result data structure for node ${nodeId}:`, {
+            resultData: result.data,
+            resultDataType: typeof result.data,
+            isArray: Array.isArray(result.data),
+            length: result.data?.length,
+            firstItem: result.data?.[0],
+            firstItemType: typeof result.data?.[0]
+          });
+
           let csvFiles: File[] = [];
+          let csvTitles: string[] = [];
+          
+          console.log(`🔍 [WORKFLOW] Processing conditions for node ${nodeId}:`, {
+            outputType: node.data.ioConfig?.outputType?.type,
+            isJsonOutput: node.data.ioConfig?.outputType?.type === FileType.JSON,
+            hasResultData: !!result.data,
+            resultDataLength: result.data?.length || 0,
+            condition1: node.data.ioConfig?.outputType?.type === FileType.JSON && result.data && result.data.length > 0,
+            condition2: result.data && result.data.length > 0
+          });
+          
           // If output type is json, create a downloadable file from the result (including hardcoded JSON)
           if (node.data.ioConfig?.outputType?.type === FileType.JSON && result.data && result.data.length > 0) {
             const jsonData = result.data.length === 1 ? result.data[0] : result.data;
@@ -1375,7 +1457,20 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
               }
             } : n));
           } else if (result.data && result.data.length > 0) {
-            const { files: csvFiles, titles: csvTitles } = createCsvFilesFromResult(result.data);
+            console.log(`🔍 [WORKFLOW] Processing CSV data for node ${nodeId}:`, {
+              dataLength: result.data.length,
+              dataType: typeof result.data[0],
+              hasTitle: result.data[0]?.title,
+              hasCsvContent: result.data[0]?.csvContent
+            });
+            const csvResult = createCsvFilesFromResult(result.data);
+            csvFiles = csvResult.files;
+            csvTitles = csvResult.titles;
+            console.log(`📁 [WORKFLOW] Created CSV files for node ${nodeId}:`, {
+              filesCount: csvFiles.length,
+              fileNames: csvFiles.map(f => f.name),
+              titles: csvTitles
+            });
             nodeData.set(nodeId, { files: csvFiles });
             setNodes(nds => nds.map(n => n.id === nodeId ? {
               ...n,
@@ -1411,7 +1506,17 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
           
           // Always mark node as completed and trigger downstream nodes after output is set
           completedRef.current.add(nodeId);
-          for (const downstreamId of getDownstream(nodeId)) {
+          console.log(`✅ [WORKFLOW] Structured Generation node ${nodeId} marked as completed. Completed nodes:`, Array.from(completedRef.current));
+          
+          const downstreamNodes = getDownstream(nodeId);
+          console.log(`🔗 [WORKFLOW] Triggering downstream nodes for ${nodeId}:`, {
+            downstreamNodes,
+            downstreamCount: downstreamNodes.length,
+            allEdges: edges.filter(e => e.source === nodeId)
+          });
+          
+          for (const downstreamId of downstreamNodes) {
+            console.log(`🚀 [WORKFLOW] Starting downstream node: ${downstreamId}`);
             runNode(downstreamId);
           }
         } catch (error: unknown) {
@@ -1701,7 +1806,7 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
             // Debug logging for AI Web Search nodes
             if (n.type === NodeType.AI_WEB_SCRAPE) {
               console.log(`🎯 [REACTFLOW] AI Web Search node ${n.id}: runState=${n.data.runState}, isHighlighted=${isHighlighted}`);
-            }
+              }
             
             return {
               ...n,

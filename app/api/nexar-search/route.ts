@@ -1,38 +1,35 @@
 import { NextResponse } from "next/server";
-import { searchBomComponents} from "@/lib/nexar-demo";
+import { searchMultipleBomComponents } from "@/lib/nexar-demo";
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const bomFile = formData.get('bomFile') as File;
-    const approvedSuppliersRaw = formData.get('approvedSuppliers');
-    
-    if (!bomFile) {
-      return NextResponse.json({ error: 'No BOM file provided' }, { status: 400 });
+    const bomFiles = formData.getAll("bomFile") as File[]; // Get all files
+    const approvedSuppliers = formData.get("approvedSuppliers") as string | null;
+
+    if (!bomFiles || bomFiles.length === 0) {
+      return NextResponse.json(
+        { error: "No BOM file(s) provided" },
+        { status: 400 }
+      );
     }
-    
-    // Parse approvedSuppliers from JSON string, fallback to default
-    let approvedSuppliers: string[] = [];
-    if (approvedSuppliersRaw && typeof approvedSuppliersRaw === 'string') {
-      try {
-        approvedSuppliers = JSON.parse(approvedSuppliersRaw);
-      } catch (e) {
-        console.warn('Failed to parse approvedSuppliers, using default');
-      }
-    }
-    
-    // Read the BOM CSV content
-    const bomContent = await bomFile.text();
-    // Process the BOM using existing Nexar client
-    const enrichedBomData = await searchBomComponents(bomContent, approvedSuppliers);
-    return NextResponse.json({
-      success: true,
-      data: enrichedBomData
-    });
+
+    const parsedApprovedSuppliers: string[] = approvedSuppliers ? JSON.parse(approvedSuppliers) : [];
+
+    // Convert File objects to the expected format for searchMultipleBomComponents
+    const bomFilesToProcess = await Promise.all(bomFiles.map(async (file) => ({
+      filename: file.name,
+      content: await file.text(),
+    })));
+
+    // Use the new function to search multiple BOM components
+    const results = await searchMultipleBomComponents(bomFilesToProcess, parsedApprovedSuppliers);
+
+    return NextResponse.json({ success: true, data: results });
   } catch (error) {
-    console.error('Nexar search error:', error);
+    console.error("[NEXAR API] Error processing BOM file:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to search components' },
+      { error: error instanceof Error ? error.message : "Failed to process BOM file" },
       { status: 500 }
     );
   }

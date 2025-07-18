@@ -149,7 +149,7 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
       
       // Use titles from node data if available, otherwise process from files
       if (node.data.csvTitles && Array.isArray(node.data.csvTitles) && node.data.csvTitles.length === contents.length) {
-        setCsvContents(contents);
+      setCsvContents(contents);
         setCsvTitles(node.data.csvTitles);
       } else {
         // Fallback: process titles from file content
@@ -531,7 +531,7 @@ export function AiTransformSidebar({ node, onChange }: AiTransformSidebarProps) 
         <Button
           variant="primary"
           className="w-full"
-          onClick={handleSave}
+        onClick={handleSave}
         >
           <Save className="mr-2" />
           Save

@@ -91,9 +91,18 @@ export function AiWebSearchSidebar({ node, onChange }: AiWebSearchSidebarProps) 
         )}
         
         {node.data.enrichedData ? (
-          <div className="border rounded-lg p-4 bg-gray-50">
-            <JsonDisplay data={node.data.enrichedData} className="max-h-96 overflow-auto" />
-          </div>
+          Array.isArray(node.data.enrichedData) ? (
+            node.data.enrichedData.map((fileResult: { filename: string; enrichedData: any[] }, index: number) => (
+              <div key={index} className="space-y-2 border rounded-lg p-4 bg-gray-50">
+                <h5 className="text-sm font-semibold">File: {fileResult.filename}</h5>
+                <JsonDisplay data={fileResult.enrichedData} className="max-h-96 overflow-auto" />
+              </div>
+            ))
+          ) : (
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <JsonDisplay data={node.data.enrichedData} className="max-h-96 overflow-auto" />
+            </div>
+          )
         ) : node.data.runState === 'done' && !node.data.enrichedData ? (
           <div className="border rounded-lg p-4 bg-yellow-50">
             <p className="text-sm text-yellow-600">No enriched data available</p>

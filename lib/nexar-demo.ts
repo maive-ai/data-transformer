@@ -4,6 +4,8 @@ import { Readable } from 'stream';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+const NEXAR_FILTER_MPN_MISMATCH = false;
+
 // Use require for csv-parser to avoid TypeScript issues
 const csvParser = require('csv-parser');
 
@@ -167,7 +169,8 @@ function findDescriptionColumnIndex(header: string): number {
     col === 'description' || 
     col === 'desc' ||
     col === 'part description' ||
-    col === 'component description'
+    col === 'component description' ||
+    col === 'preferred description'
   );
   
   return descriptionColumnIndex; // Return -1 if not found, which is fine for fallback
@@ -192,9 +195,16 @@ async function processBomRow(row: Record<string, any>, mpnColumnIndex: number, d
       const results = response?.data?.supSearch?.results;
       if (results && results.length > 0) {
         let part = results[0].part; // Use first result
-        // Filter sellers to only approved suppliers
-        part = filterApprovedSellers(part, approvedSuppliers);
-        nexarData = part;
+
+        // Filter out if MPN from response does not exactly match the queried MPN and feature flag is set
+        if (part.mpn.toLowerCase() !== searchTerm.toLowerCase() && NEXAR_FILTER_MPN_MISMATCH) {
+          console.log(`⚠️ [NEXAR] Filtered out part with MPN '${part.mpn}' as it does not exactly match queried term '${searchTerm}'.`);
+          nexarData = null; // Filter it out
+        } else {
+          // Filter sellers to only approved suppliers
+          part = filterApprovedSellers(part, approvedSuppliers);
+          nexarData = part;
+        }
       }
     } catch (error) {
       console.error(`Error searching for term ${searchTerm}:`, error);
@@ -255,8 +265,7 @@ export async function searchMultipleBomComponents(bomFiles: Array<{ filename: st
 
   for (const bomFile of bomFiles) {
     try {
-      console.log(`
---- Processing BOM file: ${bomFile.filename} ---`);
+      console.log(`--- Processing BOM file: ${bomFile.filename} ---`);
       // Parse CSV to JSON first
       const bomData = await parseCsvToJson(bomFile.content);
       
@@ -275,6 +284,7 @@ export async function searchMultipleBomComponents(bomFiles: Array<{ filename: st
       console.log(`🔍 [NEXAR] Processing ${bomData.length} BOM rows for ${bomFile.filename} with MPN column at index ${mpnColumnIndex}, description column at index ${descriptionColumnIndex}`);
       
       // Process each BOM row using the refactored processBomRow
+      console.log("Approved suppliers:", approvedSuppliers);
       const enrichedRows = await Promise.all(
         bomData.map(row => processBomRow(row, mpnColumnIndex, descriptionColumnIndex, approvedSuppliers))
       );
@@ -308,7 +318,7 @@ export function filterApprovedSellers<T extends Part | Part[]>(partOrParts: T, a
   function filterPart(part: Part): Part {
     if (!Array.isArray(part.sellers) || approvedSuppliers.length === 0 || (approvedSuppliers[0] === "" && approvedSuppliers.length === 1)) return part;
     console.log("Filtering sellers for part:", part.mpn);
-    console.log("Approved suppliers:", approvedSuppliers);
+    console.log("Sellers:", part.sellers.map(seller => seller.company.name).join(', '));
     return {
       ...part,
       sellers: part.sellers.filter(seller =>
@@ -354,4 +364,4 @@ export async function exampleUsage(): Promise<void> {
 }
 
 // Export the client for direct use
-export { nexar }; 
+export { nexar };

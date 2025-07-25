@@ -1691,19 +1691,19 @@ export const WorkflowCanvas = forwardRef(function WorkflowCanvas({
     setShowCompletionState(true);
     
     // Reset all nodes to idle state after a delay to show completion state
-    setTimeout(() => {
-      console.log('Resetting all nodes to IDLE state after pipeline completion');
-      setShowCompletionState(false);
-      setNodes(nds =>
-        nds.map(n => ({
-          ...n,
-          data: {
-            ...n.data,
-            runState: RunState.IDLE,
-          },
-        }))
-      );
-    }, 60000); // Show completion state for 5 seconds
+    // setTimeout(() => {
+    //   console.log('Resetting all nodes to IDLE state after pipeline completion');
+    //   setShowCompletionState(false);
+    //   setNodes(nds =>
+    //     nds.map(n => ({
+    //       ...n,
+    //       data: {
+    //         ...n.data,
+    //         runState: RunState.IDLE,
+    //       },
+    //     }))
+    //   );
+    // }, 60000); // Show completion state for 5 seconds
   };
 
   const handleNodesChange = useCallback(

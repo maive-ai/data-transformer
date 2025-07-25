@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "NODE_OPTIONS='--require dotenv/config' DOTENV_CONFIG_PATH='../.env' next dev",
+    "build": "NODE_OPTIONS='--require dotenv/config' DOTENV_CONFIG_PATH='../.env' next build",
+    "start": "NODE_OPTIONS='--require dotenv/config' DOTENV_CONFIG_PATH='../.env' next start",
     "lint": "next lint",
     "prod": "npm-run-all build start",
     "test-nexar": "tsx scripts/test-nexar.ts",
     "test-bom-optimization": "tsx scripts/test-bom-optimization.ts",
-    "test-table-detection": "tsx scripts/test-table-detection.ts"
+    "test-table-detection": "tsx scripts/test-table-detection.ts",
+    "test-gemini-upload-chunks": "NODE_OPTIONS='--require dotenv/config' DOTENV_CONFIG_PATH='../.env' tsx scripts/test-table-detection.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -4,6 +4,56 @@ import fs from 'fs/promises';
 import * as XLSX from 'xlsx';
 import { readFile } from 'fs/promises';
 import { MimeType } from '@/types/enums';
+import { processAndForwardToLandingAi } from "@/lib/landingAiService";
+// No longer needed after synchronous Flask call
+// import { landingAiJobQueue } from "@/lib/jobQueue";
+
+interface GeminiFilePart {
+  file_uri: string;
+  mime_type: string;
+}
+
+// Helper function to handle PDF processing via Landing AI and chunk uploads to Gemini
+async function handleLandingAiPdfProcessingAndChunkUpload(file: File, jobId: string): Promise<GeminiFilePart[]> {
+  console.log(`⏱️ [GEMINI] Forwarding PDF to Flask synchronously for job: ${jobId}`);
+  const flaskJson = await processAndForwardToLandingAi(file, jobId);
+  const topDir = (flaskJson as any).top_dir;
+
+  if (!topDir) {
+    console.warn(`⚠️ [GEMINI] No top_dir returned from Flask for job: ${jobId}`);
+    return [];
+  }
+
+  // topDir is now an absolute path from Flask, so we join subdirectories directly to it.
+  const allTableChunksPath = path.join(topDir, 'chunk_outputs', 'all_table_chunks');
+  console.log(`🔍 [GEMINI] Reading table chunks from: ${allTableChunksPath}`);
+
+  let imageChunkFiles: string[] = [];
+  try {
+    const chunkFiles = await fs.readdir(allTableChunksPath);
+    imageChunkFiles = chunkFiles.filter(fn => fn.match(/\.(png|jpe?g)$/));
+  } catch (err) {
+    console.error(`❌ [GEMINI] Error reading chunk directory ${allTableChunksPath}:`, err);
+    return [];
+  }
+
+  console.log(`🖼️ [GEMINI] Found ${imageChunkFiles.length} image chunks to upload to Gemini.`);
+
+  const uploadedChunkParts: GeminiFilePart[] = await Promise.all(
+    imageChunkFiles.map(async fileName => {
+      const filePath = path.join(allTableChunksPath, fileName);
+      const fileBuffer = await fs.readFile(filePath);
+      const imageFile = new File([fileBuffer], fileName, {
+        type: fileName.endsWith('.png') ? MimeType.IMAGE_PNG : MimeType.IMAGE_JPEG
+      });
+      const file_uri = await uploadFileToGeminiResumable(imageFile, imageFile.type);
+      return { file_uri, mime_type: imageFile.type };
+    })
+  );
+
+  console.log(`✅ [GEMINI] Uploaded ${uploadedChunkParts.length} image chunks:`, uploadedChunkParts);
+  return uploadedChunkParts;
+}
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
@@ -295,8 +345,15 @@ function extractDebugInfo(text: string): string | null {
   return debugMatch ? debugMatch[1].trim() : null;
 }
 
-// Helper function to make Gemini API call and extract basic results
-async function callGeminiAndExtractResults(parts: any[]) {
+export async function callGeminiAndExtractResults(parts: any[]) {
+  console.log('📡 [GEMINI] Calling Gemini API with parts (detailed preview): ', JSON.stringify(parts, (key, value) => {
+    // Redact large base64 strings if present (though not expected for file_uri)
+    if (key === 'file_uri' && typeof value === 'string' && value.length > 50) {
+      return value.substring(0, 50) + '...' + value.substring(value.length - 10);
+    }
+    return value;
+  }, 2));
+
   console.log('📡 [GEMINI] Calling Gemini API with parts:', {
     textParts: parts.filter(p => p.text).length,
     fileParts: parts.filter(p => p.file_data).length,
@@ -349,7 +406,7 @@ async function callGeminiAndExtractResults(parts: any[]) {
 }
 
 // Map file extensions to MIME types using enum values
-const MIME_TYPES: { [key: string]: string } = {
+export const MIME_TYPES: { [key: string]: string } = {
   'pdf': MimeType.APPLICATION_PDF,
   'doc': MimeType.APPLICATION_MSWORD,
   'docx': MimeType.APPLICATION_DOCX,
@@ -381,7 +438,7 @@ function generateJsonSchemaFromCsvHeader(headerLine: string) {
   };
 }
 
-// Utility: Convert Excel file to multiple CSV files (one per sheet)
+// Utility: Convert Excel file to multiple CSV files (one per sheet) 
 async function convertExcelToCsv(file: File): Promise<File[]> {
   const buffer = await file.arrayBuffer();
   const workbook = XLSX.read(buffer, { type: 'array' });
@@ -437,7 +494,8 @@ async function handleInitialRequest(request: Request) {
 
 async function processInputFilesAndUpload(inputFiles: File[]) {
   const jsonFiles: string[] = [];
-  const nonJsonFiles: File[] = [];
+  const allGeminiFileParts: GeminiFilePart[] = []; // Collect all file URLs with their MIME types for Gemini here
+  const filesToUploadToGemini: File[] = []; // Files that will be actually uploaded to Gemini
 
   for (const file of inputFiles) {
     const ext = file.name.split('.').pop()?.toLowerCase();
@@ -446,29 +504,44 @@ async function processInputFilesAndUpload(inputFiles: File[]) {
       jsonFiles.push(jsonContent);
       console.log(`📄 [GEMINI] JSON file detected: ${file.name}, content length: ${jsonContent.length}`);
     } else {
-      nonJsonFiles.push(file);
+      // Check if the file is a PDF and forward it to the landing-ai-upload endpoint
+      if (ext === 'pdf' || file.type === MimeType.APPLICATION_PDF) {
+        // Generate a unique job ID for this PDF processing task
+        const jobId = `landing-ai-pdf-${file.name}-${Date.now()}`;
+        const uploadedChunkUrls = await handleLandingAiPdfProcessingAndChunkUpload(file, jobId);
+        // Add the original PDF and the extracted chunk URLs to the list for Gemini
+        filesToUploadToGemini.push(file); // Original PDF will be uploaded to Gemini
+        allGeminiFileParts.push(...uploadedChunkUrls); // Add chunk URLs and their MIME types directly
+      }
+      else {
+        filesToUploadToGemini.push(file);
+      }
     }
   }
 
   console.log('📤 [GEMINI] File processing summary:', {
     jsonFilesCount: jsonFiles.length,
-    nonJsonFilesCount: nonJsonFiles.length,
-    nonJsonFileNames: nonJsonFiles.map(f => f.name)
+    filesToUploadToGeminiCount: filesToUploadToGemini.length,
+    filesToUploadToGeminiNames: filesToUploadToGemini.map(f => f.name)
   });
 
-  const inputFileUrls = nonJsonFiles.length > 0 
-    ? await Promise.all(nonJsonFiles.map((file: File) => {
-        const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-        const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
-        return uploadFileToGeminiResumable(file, mimeType);
-      }))
-    : [];
+  // Upload all files designated for Gemini (including original PDF if present, and other non-JSON files)
+  const newlyUploadedGeminiParts: GeminiFilePart[] = await Promise.all(
+    filesToUploadToGemini.map(async (file: File) => {
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+      const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
+      const file_uri = await uploadFileToGeminiResumable(file, mimeType);
+      return { file_uri, mime_type: mimeType };
+    })
+  );
+
+  allGeminiFileParts.push(...newlyUploadedGeminiParts);
 
   console.log('✅ [GEMINI] Input files uploaded successfully:', {
-    inputFileUrlsCount: inputFileUrls.length
+    allGeminiFilePartsCount: allGeminiFileParts.length
   });
 
-  return { jsonFiles, inputFileUrls };
+  return { jsonFiles, inputFileParts: allGeminiFileParts };
 }
 
 async function processOutputTemplate(outputTemplate: File | null, useOutputTemplate: boolean) {
@@ -519,14 +592,15 @@ function buildGeminiPrompt(prompt: string, schemaText: string, requestHeaders: H
 
 export async function POST(request: Request) {
   try {
-    console.log('🔍 [GEMINI] API route called');
+    console.log('Current Working Directory:', process.cwd());
+    console.log('�� [GEMINI] API route called');
     
     const { response, inputFiles, prompt, outputTemplate, useOutputTemplate, outputType } = await handleInitialRequest(request);
     if (response) { return response; }
 
     console.log('🚀 [GEMINI] Starting actual Gemini API processing');
 
-    const { jsonFiles, inputFileUrls } = await processInputFilesAndUpload(inputFiles);
+    const { jsonFiles, inputFileParts } = await processInputFilesAndUpload(inputFiles);
     const { outputTemplateUrls, schemaText, shouldUploadTemplate } = await processOutputTemplate(outputTemplate, useOutputTemplate);
     const basePrompt = buildGeminiPrompt(prompt, schemaText, request.headers);
 
@@ -541,12 +615,8 @@ export async function POST(request: Request) {
 
         const currentParts = [
           { text: currentFullPrompt },
-          ...inputFileUrls.map((url: string, index: number) => {
-            const file = inputFiles[index]; // Use original inputFiles for mimeType
-            const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-            const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
-            return { file_data: { file_uri: url, mime_type: mimeType } };
-          }),
+          // Include all input files (PDFs and image chunks)
+          ...inputFileParts.map((part: GeminiFilePart) => ({ file_data: { file_uri: part.file_uri, mime_type: part.mime_type } }))
         ];
         if (shouldUploadTemplate && outputTemplateUrls.length > 0) {
           currentParts.push(...outputTemplateUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: 'text/csv' } })));
@@ -566,12 +636,8 @@ export async function POST(request: Request) {
       console.log(`🚀 [GEMINI] No JSON input files. Sending single combined request.`);
       const parts = [
         { text: basePrompt },
-        ...inputFileUrls.map((url: string, index: number) => {
-          const file = inputFiles[index]; // Use original inputFiles for mimeType
-          const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-          const mimeType = MIME_TYPES[fileExt] || 'application/octet-stream';
-          return { file_data: { file_uri: url, mime_type: mimeType } };
-        }),
+        // Include all input files (PDFs and image chunks)
+        ...inputFileParts.map((part: GeminiFilePart) => ({ file_data: { file_uri: part.file_uri, mime_type: part.mime_type } }))
       ];
       if (shouldUploadTemplate && outputTemplateUrls.length > 0) {
         parts.push(...outputTemplateUrls.map((url: string) => ({ file_data: { file_uri: url, mime_type: 'text/csv' } })));
@@ -615,7 +681,7 @@ export async function POST(request: Request) {
 }
 
 // Helper function to upload files to Gemini
-async function uploadFileToGeminiResumable(file: File, mimeType: string): Promise<string> {
+export async function uploadFileToGeminiResumable(file: File, mimeType: string): Promise<string> {
   console.log(`📤 [GEMINI] Starting file upload to Gemini:`, {
     fileName: file.name,
     fileSize: file.size,
@@ -623,8 +689,9 @@ async function uploadFileToGeminiResumable(file: File, mimeType: string): Promis
   });
 
   // 1. Start resumable upload (send metadata)
-  const metadataRes = await fetch(
-    `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${GEMINI_API_KEY}`,
+  const metadataUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${GEMINI_API_KEY}`;
+  console.log(`📤 [GEMINI] Starting resumable upload metadata request to: ${metadataUrl}`);
+  const metadataRes = await fetch(metadataUrl,
     {
       method: "POST",
       headers: {
@@ -638,7 +705,12 @@ async function uploadFileToGeminiResumable(file: File, mimeType: string): Promis
     }
   );
   const uploadUrl = metadataRes.headers.get("X-Goog-Upload-URL");
-  if (!uploadUrl) throw new Error("No upload URL returned from Gemini");
+  if (!uploadUrl) {
+    const status = metadataRes.status;
+    const bodyText = await metadataRes.text();
+    console.error(`❌ [GEMINI] Metadata request failed. status=${status}, body=${bodyText}`);
+    throw new Error("No upload URL returned from Gemini");
+  }
 
   console.log(`📤 [GEMINI] Upload URL received for ${file.name}`);
 

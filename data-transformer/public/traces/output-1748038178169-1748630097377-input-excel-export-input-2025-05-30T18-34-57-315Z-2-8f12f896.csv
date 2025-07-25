@@ -1,0 +1,3 @@
+Date,Service Order,Vial Configuration (Items/Wrap),Number of vials processed per day,Number of vials rejected,Vial Reconciliation (Processed - Rejected),Mistake Caught
+16-May-2025,1234-25,2,54,0,54,
+15-May-2025,1234-25,2,53,10,43,The batch record states "I tray rejected in APA due to logo defect" in the comments section. However, the "# Rejects" column for "Vial, Stopper, Seal Kits" on this date shows 10. This is a discrepancy; if "1 tray" refers to a single vial kit, then 1 reject is expected, not 10.

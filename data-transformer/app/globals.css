@@ -1,0 +1,198 @@
+@import url('https://api.fontshare.com/v2/css?f[]=mona-sans@400,500,600,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Mona Sans', system-ui, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Maive brand utilities */
+  .maive-gradient {
+    background: linear-gradient(135deg, #FFB519 0%, #FFE00B 100%);
+  }
+  
+  .maive-gradient-animated {
+    background: linear-gradient(270deg, #FFB519, #FFE00B, #FFB519);
+    background-size: 400% 400%;
+    animation: maive-gradient 6s ease infinite;
+  }
+  
+  .maive-text-gradient {
+    background: linear-gradient(135deg, #FFB519 0%, #FFE00B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Add a white background utility */
+  .bg-white-important {
+    background: #fff !important;
+  }
+}
+
+@layer base {
+  :root {
+    /* Light theme using Maive brand colors */
+    --background: 0 0% 100%; /* #fff - white */
+    --foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --card: 0 0% 100%; /* #fff - white */
+    --card-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --popover: 0 0% 100%; /* #fff - white */
+    --popover-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --primary: 42 100% 54%; /* FFB519 - orange */
+    --primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --secondary: 240 4% 26%; /* 424346 - dark gray */
+    --secondary-foreground: 0 0% 100%; /* #fff - white */
+    --muted: 40 50% 92%; /* Lighter cream */
+    --muted-foreground: 240 4% 26%; /* 424346 - dark gray */
+    --accent: 54 100% 52%; /* FFE00B - yellow */
+    --accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%; /* #fff - white */
+    --border: 240 4% 85%; /* Light gray border */
+    --input: 240 4% 90%; /* Light gray input */
+    --ring: 42 100% 54%; /* FFB519 - orange for focus rings */
+    --chart-1: 42 100% 54%; /* FFB519 - orange */
+    --chart-2: 54 100% 52%; /* FFE00B - yellow */
+    --chart-3: 240 4% 26%; /* 424346 - dark gray */
+    --chart-4: 220 25% 8%; /* 0E1317 - darker gray */
+    --chart-5: 0 0% 100%; /* #fff - white */
+    --radius: 0.75rem;
+    --sidebar-background: 40 100% 97%; /* FFF9EF - cream */
+    --sidebar-active: 40 100% 90%; /* #FFEBC2 - heavier cream */
+    --sidebar-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-primary: 42 100% 54%; /* FFB519 - orange */
+    --sidebar-primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-accent: 54 100% 52%; /* FFE00B - yellow */
+    --sidebar-accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-border: 240 4% 85%; /* Light gray border */
+    --sidebar-ring: 42 100% 54%; /* FFB519 - orange */
+  }
+  .dark {
+    /* Dark theme using Maive brand colors */
+    --background: 220 25% 8%; /* 0E1317 - darker gray */
+    --foreground: 40 100% 97%; /* FFF9EF - cream */
+    --card: 220 25% 12%; /* Slightly lighter than background */
+    --card-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --popover: 220 25% 8%; /* 0E1317 - darker gray */
+    --popover-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --primary: 42 100% 54%; /* FFB519 - orange */
+    --primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --secondary: 240 4% 26%; /* 424346 - dark gray */
+    --secondary-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --muted: 240 4% 20%; /* Darker muted */
+    --muted-foreground: 240 4% 70%; /* Lighter muted text */
+    --accent: 54 100% 52%; /* FFE00B - yellow */
+    --accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --border: 240 4% 20%; /* Dark border */
+    --input: 240 4% 15%; /* Dark input */
+    --ring: 42 100% 54%; /* FFB519 - orange for focus rings */
+    --chart-1: 42 100% 54%; /* FFB519 - orange */
+    --chart-2: 54 100% 52%; /* FFE00B - yellow */
+    --chart-3: 240 4% 26%; /* 424346 - dark gray */
+    --chart-4: 40 100% 97%; /* FFF9EF - cream */
+    --chart-5: 240 4% 50%; /* Medium gray */
+    --sidebar-background: 220 25% 10%; /* Slightly lighter than main background */
+    --sidebar-foreground: 40 100% 97%; /* FFF9EF - cream */
+    --sidebar-primary: 42 100% 54%; /* FFB519 - orange */
+    --sidebar-primary-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-accent: 54 100% 52%; /* FFE00B - yellow */
+    --sidebar-accent-foreground: 220 25% 8%; /* 0E1317 - darker gray */
+    --sidebar-border: 240 4% 20%; /* Dark border */
+    --sidebar-ring: 42 100% 54%; /* FFB519 - orange */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Updated rainbow outline with Maive colors */
+.rainbow-outline {
+  position: relative;
+  z-index: 1;
+}
+.rainbow-outline::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  z-index: -1;
+  border-radius: var(--radius, 16px);
+  border: 4px solid transparent;
+  box-sizing: border-box;
+  background: linear-gradient(270deg, #20E3B2, #7C3AED, #A3FFAE, #38BDF8, #20E3B2);
+  background-size: 400% 400%;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  animation: rainbow-circuit 3s linear infinite;
+}
+@keyframes rainbow-circuit {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* Normalize React Flow output node wrapper to match card size and remove extra padding */
+.react-flow__node-output {
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* React Flow background override */
+.react-flow__viewport, .react-flow {
+  background: transparent !important;
+}
+
+.react-flow__handle-connected {
+  display: none !important;
+}
+
+/* Green outline for completed nodes */
+.green-outline {
+  position: relative;
+  z-index: 1;
+}
+.green-outline::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  z-index: -1;
+  border-radius: var(--radius, 16px);
+  border: 4px solid transparent;
+  box-sizing: border-box;
+  /* Light green gradient outline */
+  background: linear-gradient(270deg, #4ADE80, #22D3EE, #4ADE80);
+  background-size: 400% 400%;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+}

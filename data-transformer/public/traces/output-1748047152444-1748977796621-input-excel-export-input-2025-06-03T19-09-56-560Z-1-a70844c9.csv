@@ -1,0 +1,8 @@
+Lot,Time In,Time Out,# of Overwraps/ Item,Target # of Overwrapped Components,# of Overwrapped Components Completed,# of Rejects,% Completed,Primary Recipe #,Primary # of Sealing Plates,Secondary Recipe #,Secondary # of Sealing Plates
+1230-25,730,1100,2,54,54,0,100.00%,12,3,10,3
+1231-25 Day 1,800,1130,2,54,52,2,96.30%,15,2,13,2
+1231-25 Day 2,900,1230,2,54,54,0,100.00%,15,2,13,2
+1232-25,730,1030,2,54,50,4,92.59%,10,1,7,1
+1233-25,800,1030,2,54,54,0,100.00%,11,2,8,2
+1234-25 Day 1,830,1215,2,54,54,0,100.00%,12,3,9,3
+1234-25 Day 2,800,1115,2,54,53,1,98.15%,12,3,9,3

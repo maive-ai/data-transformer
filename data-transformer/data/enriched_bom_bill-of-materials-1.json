@@ -1,0 +1,1176 @@
+[
+  {
+    "Qty": "1",
+    "Preferred MPN": "222D921-25-0",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "HEAT SHRINK BOOT, SINGLE WALL, ELASTOMER, 19.3/6.3 ID Before Shrink, 1.5:1 Shrink Ratio, BLACK",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "222D921-25-0",
+      "genericMpn": "222D",
+      "shortDescription": "Heat Shrink Boot, Single Wall, Elastomer, 19.3/6.3 Id Before Shrink, 1.5: 1 Shrink Ratio, Black",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=hj98N1RtawPZOIAXsb1teEVth968vBNzdO-B4P_9r2Z36sVwzbooap0scglot29ofBmVGq4kDtWen2zaL-qiBSY_WdRUvmthS123AGh_fZKVPRxPGlAxDVjDVARzK-zgTv4u3Q0xdTLWZ33EZ9AyAVBDW4ZhZOm3O7XkmUkT99kA0t-g68BPkh6E9PzFLHXeUqjxnnSC0rDePs98hxSrRM1T9kZie1Cb3cqk-uXUPbBQQO9mjyAcXS886dIYWy_idYe18slB",
+              "inventoryLevel": 438,
+              "prices": [
+                {
+                  "price": 29.84,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 25.36,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 22.64,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 21.69,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 21.69,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 21.69,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=sthT5-MoPR_2JfnCUFGDCroVi79_wYxvvgawI3V_WxYVrkTNree106FLgwMRro4d5CUNSvkpFClrhrc-tGbySO5WFgID8gCgepCgP-w7We31wKIYkPK9LsJU3VviD6hl1Xfh6ZuH5DJ7sgvErH_YEnelnsPa1z8J8Xha1rH4iW87jwBiZf5PZVAix9eRJqJ2dm99ei38-5RQ6pxAOLlNa4JL1AlRX9eOy-0Ue_ERo5kW6Sj48uO9o_waMx94jqIIYPFPbqg",
+              "inventoryLevel": 248,
+              "prices": [
+                {
+                  "price": 28.07,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 18.39,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 16.98,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 16.65,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 16.32,
+                  "currency": "USD",
+                  "quantity": 175
+                },
+                {
+                  "price": 16,
+                  "currency": "USD",
+                  "quantity": 500
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=WEYNPg3Qr0JYfolJm51ojb6qNKOX6wSr2XHV8zMfjojH74xrE4ShfhmBss5k1KhxyMa25cAEz0koVfJfwyQHVdrp1i2ql2p78G_dg7CUktQRGeildDEcBTGy50HRjzr6xTlldBXk-o6xKtGPNyBIwZFXYl2Vfgx27B1NPV2A2kzKKRXqIMGaPKZ5ksCZklqv65qIq-T7p9mjw9jc3BT1NPvLWLxbabM0w-k8UR_ar4EUSlMNBMd87xLw3aET3ceTkZQQapg",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 29.25,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 24.862,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 23.3052,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 22.1934,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 21.1348,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 19.81308,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 18.975,
+                  "currency": "USD",
+                  "quantity": 500
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=AHrT5md446vqueXg0xhWRG0FKke9eFChCa6BSGZ5wzpry_aKGp8JRkE_Gl1upoQijB6SgwHdQPVZylGoBqjVnJg9cL1p1AxkSppF7JdFD7hdmHt5fGNgOu95XOPFeH83TkRmU83-BOWzUqNcDSPt8z7KzfxEfBMLd56tYI2DMhyfunOsTAPn4_-l9nENdg8RzX1kYhCH7-lkBHJIspA8guPkoskFBXGv37kHjrIaGss-IyCmAnegP1I3RGVwxW7rhYTkhVYm7w",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 27.28,
+                  "currency": "USD",
+                  "quantity": 175
+                },
+                {
+                  "price": 26.68,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 26.2,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 25.356,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 24.735,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=QlXuhBL5KzmLOzXpLxd6ANpQBeJehj-Imys80Y1Y2IKSbadALZ43qKJou2_1a64AFYw-Adw90teNXx-naY2LbqSx3esWFYQjZ5LMT3mr5KHsvdBQbX-zOr28cmEav2YEH_P0PnZL6Yfiq7I0mM93tHwU6-CcAAtbY-Z6LQH3q8MmZ48BCCGVsveBrhmcGf-jRF0D8ItlfGAVxM54iOz6M_B3OrHQ39yvjQIwE8LfxQyg4uAqb0bBxPwyYA6B09BEkF6j4wz_VA",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 27.28,
+                  "currency": "USD",
+                  "quantity": 175
+                },
+                {
+                  "price": 26.68,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 26.2,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 25.356,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 24.735,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "ASDD606-09PN-HE",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Standard Circular Connectors, Wire-to-Wire, 9 Position, Black Zinc, Aluminum Alloy, N Polarization Code, Hard Dielectric/Silicone",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "ASDD606-09PN-HE",
+      "genericMpn": "ASDD606",
+      "shortDescription": "Standard Circular Connectors, Wire-to-Wire, 9 Position, Black Zinc, Aluminum Alloy, N Polarization Code, Hard...",
+      "manufacturer": {
+        "name": "TE Connectivity / DEUTSCH"
+      },
+      "sellers": []
+    }
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "202A111-12-0",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "HEAT SHRINK BOOT, 16.5 ID Before Shrink, 2.1:1 Shrink Ratio, BLACK",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "202A111-12-0",
+      "genericMpn": "202A",
+      "shortDescription": "Heat shrink sleeve, straight, S1 (16.51/11.91 mm), S2 (7.9/3.81 mm), 811033-000",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=rrciRfwWNndUI-EfLH1ad4qGEntHHtHRcQ1h1sRoWdg9kkNh-AE63qT1kDgVSjEG-awxadqrLcnRQpi63aGapfbse3fDTuq9tzv-_Jf2l_b9VwWCTDUWALTweAivRFa48e7iVGkxGOwu4UHkgQHnep1a5qgrqs8_FuaKYjeQH4vTwpAfX5Yo0GyQUnBf4ObvzNQbY04_yIvHtDVOzXT-ka93ZBINThruFBmZOUvKj2ziA20o0IHVSlsEwyLJulWOcqDlQWs",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 28.3005,
+                  "currency": "USD",
+                  "quantity": 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=ChkXEUXAJFi-l0C-_Gapxj3aFdTwEX5ueE_DKMpEuIRtpNQN7Kglzq7XI-2DlaOr3ZmXE8VzeS_Akr3HT3tLcJKdwLBmYCnMKoF4V5kQ9LN1AFkZ8tf4Mi4dYMGHRX9MWaum4dj4aLe1rUgFM5UvG_K5snmBooeH98oA85SfIQSOnuEpxjL5fI0Gt6oUrkVrOViCD1XupO68YopFIpZ8mRrJ7MY7xEkdU0VOFUXl-6lsUTF39O2W7uBc-JGvk4_fiCzKe4k",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 25.83,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 25.32,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 23.28,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 22.09,
+                  "currency": "USD",
+                  "quantity": 1000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=LmBvQ7eKz6aZzQsQil2mAy4NwsET8MCuBXtLfm22E1pTC75C5QNz6b-lPaEcVbiuK8SHZ0FsOXXS_x3dQAlxBO42Z9W2K_JROVqkaDpnTv8-WbZRjos8plZ7C8ai2RXV8rbckOWCeAmvL3BNHigMWpKJvEaR9sgGnr19UFfiSZZQToNd4ivbIvium6ezG9Atq_zEqGNzkNXGiFCuSO3TX7Ph79RjSO0IFM9-1tYRQn7VclZFKr_748xIxHH6gUmq9A5HEScj",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 53.42,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 52,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 30.14,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 28.22,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 28.06,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 28.06,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=iTvpAHfgD1JQ8-OKpva3j9ri53nLWeeDrBraIkOjHJuJkf12-YhLC-H9Sl6UmVfFuXK0LJl6xaFzd9vU5eaEXtjCAETUlh87ejcx7FuXj9_ReJfaKHDSnHDn0ZwcysGo7dAMg86Dlymw0CNRTDYkDeQOYOxngZbUxkXQcST3skHsrdyOO4cZ-f7dn5taRh87bp_NPF3pSay7i8yhp3obGDrUAqTVlKwZIjtZ2X4f2PZ36qKbTQyNhrb386TVxvzANt-kxtHxXQ",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 30.26,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 30.03,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 28.31,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 23.67,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 20.73,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "202A111-25-0",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "HEAT SHRINK BOOT, ELASTOMER, 16.5/16.5 ID Before Shrink, 2.1:1 Shrink Ratio, BLACK",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "202A111-25-0",
+      "genericMpn": "202A",
+      "shortDescription": "Heat Shrink Boot, Elastomer, 16.5/16.5 Id Before Shrink, 2.1: 1 Shrink Ratio, Black",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=v-JHbSF1HNgQk-BBnDrqAs74WCOJW4Eh7IOrjzB4fC5LOpA_iauYPfEx6wzPpF43aM31AYnPLETE9s9Pt-mUX3lI27ivGWaP8BQ2u-JAbvkuF6g9X0eNgbjTZa4OYiR4TADETJgr_bwWOpzVEBFX7aeRx_Rvv4y2PishP5QQxeVTDxEtpWVS2BWA2WHtfz0Jht1rqdb8uIDwkWM1Jaeazj4UmO7SvWN3lF9fd6O7v0sfmn5g-Lhjk_PTIo8xSwQkAaQgSwzS",
+              "inventoryLevel": 1001,
+              "prices": [
+                {
+                  "price": 13.72,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 12.7,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 11.03,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 10.39,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 9.27,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 9.27,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=hPkSxx2sNGO-2HEK6oSAJn4nPZjAmrMvrywO13JJe-XkCTCJ2LRUjX2rZtXkbkCpDVoHmSbCjesZ7_lUyBIHsx15LOtSZ9XAPjqv2xlMRsoCmTC8tIW7czHeubdbfZb1CKkydIYtCr1pHgBGNYo08NWRfjpD7V8h20UdovqH2M9emtBnuGgPrZVu0_WkyGB8uwqjWTs0oBeRlbIJR-fECmS3iF3P1C9ZGlsJqZV0ExnfLRexjeah_L_oTXJKvJFCfi3M9xI",
+              "inventoryLevel": 776,
+              "prices": [
+                {
+                  "price": 15.09,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 12.826,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 12.0224,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 11.4486,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 10.9024,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 10.22032,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 9.73302,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 9.26911,
+                  "currency": "USD",
+                  "quantity": 1000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=XJhLg4A3gqj2LATG0FsH4JU776K2gXJRwZWWJSNzfPqJmwi28e1s1Cv2vyPQk5cc0HTz3OTn6Fp5lFYCq-ADeiNgXW7gVOijh_qpMJ_xwpceGzmylIEf30Sah9OdQ-3yfbhPdVMaCeR5f29iG9DmXBIDAVicHVzaK3umCdMmPJ7uC3rc5nIFJt8Em0wfMc72FJHZzmlkCAM-oiUk38I9tw8-dfYITb12-wgOucLigI_s2p3PsUA2oXzHvHTU4yww2ax5Sg4",
+              "inventoryLevel": 513,
+              "prices": [
+                {
+                  "price": 11.56,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 8.26,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 7.96,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 7.8,
+                  "currency": "USD",
+                  "quantity": 325
+                },
+                {
+                  "price": 7.65,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 7.5,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 7.26,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=nLx2tBYFoxfsXfVv9YuPCProhXKxOaeXweq-nsb68EAzGQsPwJ2pB4Qr8_BDpa6C8Nygj8ZKAHJ0jKzuOVfx2AX4IAWMKfNeqYUfHys7B3U1yGBLoEl5_wYJxQvAA1r1Od1M54G5MqiEe6kFLXuVMwMzA90UTy1Gb7wGQ9McZEwpiNPiRYff14obWFuiRCMJv04yQYFFLZ7coBzF8Cp-OOHw9krY2oopcyIfvgvDHRgYoY73UyKQwgRH36VkvD7ZUF8-xIV3cQ",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 8.832,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 8.629,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 8.576,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 8.439,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 8.346,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=2nzd76xVaDnqLxy4U6f1r2uQv4NxhkxYP2hTBvEZlISpoW3N3m0xg9rYl-O-0M6TZ1B0pOYwVGApRWKPXbqMDmUGHy0bfVnTjDrrObfVku0_uJygm1IDpbYmnszaCX2QQNmp6az4_p4Gl-gbvXVPR_ccdoRRDNoViVTxlHb8h9ZwupoF2iReXXvOyZ8v9EKge4iWLzcYa3UpEZVs7LvvQ2YyDpffh6paDNVDbfdQqQELrIWqHyskmErW-ZuM3_RulAd9L731Cw",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 11.575,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 10.974,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 10.716,
+                  "currency": "USD",
+                  "quantity": 25
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=8zlhXME7e6HWnCpcOO3_xJcZNPAzqOLoXyU0PO2_ZFSFNonA5i5TD-2_GtxrPwP40cJx3Mf2LuL9r_-ojFTKacXb27mm8YnojoAr8dQBaCilWjxNqUi4VQiYh4JxWs-AYbnWupNJ9wBf-hHxaVdC0HeDVCTOsnJEHJPQlxvig2JytnvchOh5g3QZ_FTAsWw9PE4_rbfJ0Yp9M-yEgKM1BdKlL6LfK8-_BGIzHoGItRBISuP_AWkWOr6Tm-oQ8n8IY5CIuswBYA",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 8.832,
+                  "currency": "USD",
+                  "quantity": 325
+                },
+                {
+                  "price": 8.629,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 8.576,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 8.439,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 8.346,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "202A111-12-0",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Heat Shrink Molded Boot RA Fluoroelastomer Thin",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "202A111-12-0",
+      "genericMpn": "202A",
+      "shortDescription": "Heat shrink sleeve, straight, S1 (16.51/11.91 mm), S2 (7.9/3.81 mm), 811033-000",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=9cZwFP8udruJb4CZEyoW0aZ39gOj60IK8sGK90L4nF6NbNwDmPo7nkjb_ddO9o-aXMR1J5-Idu4WorRrpkii9gN3UQYA3Mbm0flDpxV8RvnGZvKhuokAuQbGSIrfU3zBaQ51PnKuEBkRnnELn9v6ncL56wUHzWKvZ43SKUydF31U8FJyWwbT-bc6jHgbu7X4EPqylJkDqd14-o1HJXdYIKjOUOEXvSiUIVERwuB2XJiMigxyqjWtf9Dy9ex6bP_H3YSPhrA",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 28.3005,
+                  "currency": "USD",
+                  "quantity": 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=712SjIXVMXVPUKfnvAhsBz87jSyYukFBa9zwg2GAAHvsjXuGMfbehietCoJnYm7MrIpreZN7yWC_dtoyI2GSyGVmlCC4rIEdNrENQ-rLqT_BmZo_iseytZNsQ8LoSgfkdqgIhexbWuMMXxNxS10ko5MmJt-FkwIlyhdeInXa3PUYx4id9p_c7hmZv4Qtm3diYpYwUyQYkh_tnVqB8Tx-E2ixwDA7IFPPy8jF3GprMlFsQnwhTPL3YuX7di1eD6EhJhSS8io",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 25.83,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 25.32,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 23.28,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 22.09,
+                  "currency": "USD",
+                  "quantity": 1000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=dYAaLGKAQ0eobF6C-wiazb87OmNvuneHXM5_DRn2XBGhCKgB5xi_qQQc6GnfvUOZdzYbFFut4g8eudtoIUIC2711uwduob2pQQe5CCuY0_GIQte6P910VYNIMHkKkm0W0c43Bo85UAsaO5MkNtiUpN2CPtnSoJRXvjDV1HmSsr2HzW7p39yqjfVwgHaXMnsaRqmLhdb_-fgLYYBcDfI9EXQ6A6I7oedsy9OuzvT49IVAGD21YZAG8lfm44N7ED4nzau9ddIs",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 53.42,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 52,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 30.14,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 28.22,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 28.06,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 28.06,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=IKCCwSpv3ML9Rid4KBzn9pm06AZPe3UVrfg8WQaP346MceUts1WkQTbl7e-HWApeX5T7yBjRIgt-WlP9pwukOhGrmVpFmBimB2O5SkRICBGqzdvJpBwWXPf1Jq6QDkAh-H2D4mdsm6QQw6dwyGd0WIdht_WoeQ8oE6We4km1u1iXfxDwMpZQHK2_YWxnaFAn74fh18eCe3hOz4KoUVuXi6wPF97XOo9KhMCKvFIbksw_1-wNUt6NmO8vbYNUnlltP-jQyM4uFA",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 30.26,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 30.03,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 28.31,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 23.67,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 20.73,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "ASL606-05SA-HE-952K",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Plug Assy.micro MK3. 952K.FUEL Immersibl",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "ASL606-05SA-HE-952K",
+      "genericMpn": "ASL606",
+      "shortDescription": "Plug Assy.micro MK3. 952K.FUEL Immersibl",
+      "manufacturer": {
+        "name": "TE Connectivity"
+      },
+      "sellers": []
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "EPRB3-5KPA-C00002",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Miniature Pressure Transducer W RTD",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "EPRB3-5KPA-C00002",
+      "genericMpn": "EPRB3",
+      "shortDescription": "",
+      "manufacturer": {
+        "name": "TE Connectivity"
+      },
+      "sellers": []
+    }
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "55PC0111-24-2",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Red-Hook Up Wire, Spec 55, 24 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Length: 1800.00mm",
+    "nexarData": {
+      "mpn": "55PC0111-24-2",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 24AWG Tin Plated Copper White 600VAC",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=yPDAgaheAMfoH_ByNet32sw0PsJpUF_DaIS0OG43AEhHfWdJTLzgblaevNhUesSc6wvuxXANJS_7jXlIjRh0IB3WmP8s24A8CXshlZd6wbZ_HKICEWLn-0zJu3jjZ3bs6Y4xeyVc0YdSVsy0lUisPk9uY1IZkcwF_2t7SKdZr55_dvb-VbzyAooghX9ocNK5dZ8sfZ21d5BCzIo5hdvrXj9EILIsysR4yHnokkvj8HbqaT_IKfanXBXY5mBFPsr4gprwpwM",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.35249,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "55PC0111-24-6",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Blue-Hook Up Wire, Spec 55, 24 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Length: 1800.00mm",
+    "nexarData": {
+      "mpn": "55PC0111-24-6",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 24AWG Tin Plated Copper White 600VAC",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": []
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "55PC0111-26-2",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Red-Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Length: 800.00mm",
+    "nexarData": {
+      "mpn": "55PC0111-26-2",
+      "genericMpn": "55PC",
+      "shortDescription": "Cable 26 AWG Spec 55PC Tin Plated Copper Modified Radiation Cross-linked ETFE Polymer 600V Red",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=JBuBTda3tLrKSy0E8Dx20cZJNUfiwYAmgFu8zZsiVI6Iqg3lTXq5w7NeNNa-ZtetScWZf4bB_p6pif_ihnLfUyl-RRo6RGDyyg3t4otclDstaNhMjIhgj8FcxsMp9klJ9iiXE7AoXUll-Ymw3uVUPVlGlgu4P5RRo3o-F6IN06RMvwfevmQruuF9zTmJJiWCwJ3rEj6WR3DaEG0KRYP84Q41kk9mq-_qUmBNha3mUj1dYiljyVw5-sR7D3C8JUxRWBkWj29x",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3783,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "55PC0111-26-9",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "White-Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Length: 800.00mm",
+    "nexarData": {
+      "mpn": "55PC0111-26-9",
+      "genericMpn": "55PC",
+      "shortDescription": "Hook-up Wire 26AWG CL INS LTW600V PRICE PER FT",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=iwxs7CkYnC2fyV1J6DwTfSDb6Ocu768dssWmgNNNeSem6XTp-TwAYPJsuRJwUMo19OdVkSa0myaDXIeJCK-IqswygtM2y4q9ULokWuPJcsxDJV1tXwT4ZUf6R4u9avJWTxh0ekuo_m7Yv_sEPVVdkQQ5cMbx5TQ6p6FHwfShhxZ_KSiaGF1c9RAVklrxbTtwGTIdehGCGcJlhqa2BGsGXBPrqxsNTmqbRs4vGb3LzO3eZMBCrSUgeDE6z4DvKF4toCDmvo_w",
+              "inventoryLevel": 6465,
+              "prices": [
+                {
+                  "price": 1.2,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 1.07,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.96,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.914,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.914,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.914,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=EtcJmy5i31Xrqi8QXcJE3WuRNS8rXa31HWLvlt8nVdaE9nLVQ4N0aMUqHPw5m8TlGz7lQQDw7fqha3_MfPZ7b59HTSBbUBXVXpCGkSEy8MA0Xh6ptwtHnEzc035FxiglayIpK9apgxVbzNN6Btcc7EYeEV6fWAnxRSLMRXeOy_uIAWqWEK_8byqzERFuzJalrN-jv7l4_OKc7cyb8EchXy8M-1DpBi3ec11J7XkfEzb2MYibwIR4hEDYWD-jYcy0hXPevy4F",
+              "inventoryLevel": 5478,
+              "prices": [
+                {
+                  "price": 1.23,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 1.17,
+                  "currency": "USD",
+                  "quantity": 2
+                },
+                {
+                  "price": 1.13667,
+                  "currency": "USD",
+                  "quantity": 3
+                },
+                {
+                  "price": 1.098,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 1.07286,
+                  "currency": "USD",
+                  "quantity": 7
+                },
+                {
+                  "price": 1.046,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.9808,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.9338,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.8889,
+                  "currency": "USD",
+                  "quantity": 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=G2NRGbiPvBdSPZUYaNC9mQbXKKB9FvoAozeO-GVrdKPxbaTw-drImF6IJCgcYUb_k7pv0JgbIj5Peruu36vBSNa_oSvQHBgsYOTGQSitd2oOIgOvM4Mcn2T5ZEPndna9fW2G6QiiovZIU_GKo07zTp-OGgmIVDnzZbUBmhmIfk6nOJubNbRgBi9rArlTCiw1sNu-8nyq9rTy40kVXB4o-tbFs0LBcawSAHfN3K4cVEapIoucZElUHYb7EWUvbF8AHj_bkstYBA",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 1.0257,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 0.9745,
+                  "currency": "USD",
+                  "quantity": 10000
+                },
+                {
+                  "price": 0.9435,
+                  "currency": "USD",
+                  "quantity": 25000
+                },
+                {
+                  "price": 0.9155,
+                  "currency": "USD",
+                  "quantity": 50000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "55PC0111-26-5",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Green Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Length: 800.00mm",
+    "nexarData": null
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "55PC0111-26-6",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Blue-Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Length: 800.00mm",
+    "nexarData": {
+      "mpn": "648910-000",
+      "genericMpn": "648910-",
+      "shortDescription": "Cable 26 AWG Spec 55PC Tin Plated Copper Modified Radiation Cross-linked ETFE Polymer 600V Blue",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=7ZYEE_lqyvXGgpoWRDiKR7p8V1E8tp_U17Vkm6cNNikoIXR3_gL19XhcKzk0FzMAskQJK4NQJ5kWaROoa7KlSwKvZbAUlEtA7pBQ_ljSXub1ldSJzaUUOknpOxMz8KHCPJxcLcu90vbPRqMCUsXNJtFvagkNS66XP01hzRFQTTsPAL_QLtf-hUMJlLq2PGlANPE1FQtpRKk7dKuoGT3q17VgpEc9mAtU8hK4Z69cFqkmdPXkpNIkq-yXAASapYFseoHxP8ji",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3783,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "55PC0111-26-0",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "Black-Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Length: 800.00mm",
+    "nexarData": {
+      "mpn": "55PC0111-26-0",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 26AWG Tin Plated Copper Black 600Vac",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=rnSpetzuZFhuyTf8v0FnESQ4L7Y-trZ1QzfSC36Q2jEIYfr919T4SSXXQM4KPn6G-pmPdjWwGyA31uLEpznLuVr6_6jQOX1CTzOnrjlYeC5dAPou1YDRi1WsuTWjuRvvhXCgH439-bst87UX1VhZngEwDpq08kk8hqhgBfWQdrvO1Z-ht-oLAWlJaFlFBHNf0R35gal9axuiXuXG-KdXhWWceAl3YhBetYH9qYUAYGqp7Y-9Y1l9NEem1HaS6A-kmo76Qns",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3783,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

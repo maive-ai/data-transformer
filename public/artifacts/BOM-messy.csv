@@ -1,6 +1,0 @@
-Part Number(s),RefDes,Qty,Description,Mfg,Notes
-10k 0603 1% Resistor,R1 R2,2,CRG0603F10K TE Connectivity,,
-C0805C103K1RACTU,C1,1,10nF 50V X7R,KEMET,
-AS1115-BSST,U1,1,LED Driver,,24-QSOP
-Diodes Inc 1N4148-T,D1,1,Diode,,"“Switching”, fast"
-,R3,,1kΩ 0603,,No PN provided

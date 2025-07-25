@@ -1,0 +1,306 @@
+[
+  {
+    "Qty": "1",
+    "Preferred MPN": "601809",
+    "Preferred Manufacturer": "LAPP USA",
+    "Preferred Description": "CABLE,9 COND,18 AWG,.454\" CABLE OD,UNSHIELDED,600V",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "97-3106A18-639-850 97-3057-10 [or 1010]-(639) 97-418-19S",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN,SCKT,18 SHLSZ,W/BACKSHELL,15.9MM MAX DIA",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "97-3106A18-639-850 97-3057-10 [or 1010]-(639) 97-418-19P",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN: ASSY 10 PIN MALE FOR 14SHELL",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "10",
+    "Preferred MPN": "97-45-1622S-4400 (926)",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONTACT,SOCKET,CRIMP,16-22AWG,#16 SIZE,SILVER",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "18041-5/4",
+    "Preferred Manufacturer": "SOUTHWIRE",
+    "Preferred Description": "WIRE,18AWG,GRN/YEL,UL1569,300V,16/30,O.D. 2.2MM",
+    "Alternate MPN": "3055 GY005",
+    "Alternate Manufacturer": "ALPHA WIRE COMPANY",
+    "Alternate Description": "WIRE,18AWG,GRN/YEL,UL1569,300V,16/30,O.D. 2.2MM",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "PNF18-8R-3K",
+    "Preferred Manufacturer": "PANDUIT CORP",
+    "Preferred Description": "TERMINAL,RING,#8, 22-18AWG,.145\"INSUL DIA,RED,600V",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "PNF18-8R-3K",
+      "genericMpn": "PNF18",
+      "shortDescription": "Ring Terminal, nylon insulated, funnel entry, 22 - 18 AWG, #8 stud size. | Panduit PNF18-8R-3K",
+      "manufacturer": {
+        "name": "Panduit"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=YLXYbTQ5GqunLSB3g-nWcLFC6lyTw2uVwuGshjyepkkJuc2tc-7uNLSDXRnxxvuAyqKlV2M-QE_kovPwZz9Gecmxs3LiJrBYl-UFBvBfIQTmZK2R3Q8lbB8KHS9A3P3K3PobvNAYSdRGus2n3bsb9fhOU_UWHIkJKIcKEO2TiUv29TjiUqLYHeWBlPx4LT8O0WAx_WmIkALKV0nAvd5xbTUzzvgxmHNQmiW1mzoOc6Gco7C6lW4bYbEZrc8acYCV8EmSDQ",
+              "inventoryLevel": 7741,
+              "prices": [
+                {
+                  "price": 0.66,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.587,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.587,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.547,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.504,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.391,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=Fg4rsIuHHyQJMcUSNuoLMxedNDhGpWU79sAmOWsApwuIceOu6q67e2075tTLnOKzJnSriJheDKbYPWNrSbVAksSDwdJKW6wa5WcG43k31ASOUhXUnZ319kGCkIh_v1OmgkzetN7npjSmSJIwJVc4Hre21hsMGt3CJ7sFLoMhKethrS6GC__bkYXEchbQs6bnRSNIhNQY_8jeL32HXq0nrMv1en6NBJ_ie0XXL4Y_GrfWMpNhq7x4CbbaE7yYgx5qBHf1eg",
+              "inventoryLevel": 3540,
+              "prices": [
+                {
+                  "price": 0.66,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.617,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.5996,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.5868,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.5742,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.55788,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.54588,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.53411,
+                  "currency": "USD",
+                  "quantity": 1000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=P4DQ6XrWYdoUK-K-MhDJek3j0vL-Mdn9bwZG429IdePC8q0Ku_WutsFCMGNWLWjFGDPkuoZtgRU1164YoweJLKbEAm5h4Sd-1GmKvnokaURpEho_ZeZ8A1dDgeSbrU1KjMp5aot9feEIjHQ7flsxEfrN80ACLsFWbz0jzFYMNP7kqdalxl62bd1ApvCay4WoOtqQXX2XAMmLC2vqDBDNVgkgIOhNchcBTD-wbskurvp4jlUsH-kbOBbGDC06CtyKDgn2cA",
+              "inventoryLevel": 3000,
+              "prices": [
+                {
+                  "price": 0.51595,
+                  "currency": "USD",
+                  "quantity": 3000
+                },
+                {
+                  "price": 0.50479,
+                  "currency": "USD",
+                  "quantity": 6000
+                },
+                {
+                  "price": 0.49837,
+                  "currency": "USD",
+                  "quantity": 9000
+                },
+                {
+                  "price": 0.49039,
+                  "currency": "USD",
+                  "quantity": 15000
+                },
+                {
+                  "price": 0.4852,
+                  "currency": "USD",
+                  "quantity": 21000
+                },
+                {
+                  "price": 0.47976,
+                  "currency": "USD",
+                  "quantity": 30000
+                },
+                {
+                  "price": 0.46603,
+                  "currency": "USD",
+                  "quantity": 75000
+                },
+                {
+                  "price": 0.4559,
+                  "currency": "USD",
+                  "quantity": 150000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=dd1pcvdgEa-ECzQ7Ln0QbdKeGUFMAZgTG8wv5NaPsRzWypWGSj2poqOnh7TNtfGwNfPl8NSE1tlqY38FstsVhbzK9f871Kd2TI6NH2buC3CEQC5MnyNjJzWhaeJTjl73g7vWdzyJsZUpnuZwtny3iQxphZV313jfoFgmJoOK8gJD9h0snOJdheDGH0FHQWZJ3WZIYZ0A_sfEHlxpl9BSbyjs0qnEKVc3cpSVkBYog2EYgiDnRkei0j0RIXQq30ne_UA",
+              "inventoryLevel": 6000,
+              "prices": [
+                {
+                  "price": 0.244,
+                  "currency": "USD",
+                  "quantity": 3000
+                },
+                {
+                  "price": 0.239,
+                  "currency": "USD",
+                  "quantity": 6000
+                },
+                {
+                  "price": 0.234,
+                  "currency": "USD",
+                  "quantity": 9000
+                },
+                {
+                  "price": 0.229,
+                  "currency": "USD",
+                  "quantity": 15000
+                },
+                {
+                  "price": 0.225,
+                  "currency": "USD",
+                  "quantity": 24000
+                },
+                {
+                  "price": 0.221,
+                  "currency": "USD",
+                  "quantity": 39000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "0.5",
+    "Preferred MPN": "FP-301 3/4\" Black",
+    "Preferred Manufacturer": "3M COMPANY",
+    "Preferred Description": "TUBING,HEATSHRINK,3/4\",2:1,600V,THIN WALL,BLK,RC6",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "RoHS 6 Compliant",
+    "nexarData": null
+  },
+  {
+    "Qty": "10",
+    "Preferred MPN": "97-45-1622P-4400 (926)",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONTACT,PIN,CRIMP,22-16AWG,#16 SIZE,SILVER",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "HVC-1312-24",
+    "Preferred Manufacturer": "CAPLUGS",
+    "Preferred Description": "CAP,CONNECTOR, I.D. 1.312 INCH X 1.5 INCH DEEP,BLK",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "0.13",
+    "Preferred MPN": "FP-301 3/16\" BLACK",
+    "Preferred Manufacturer": "3M COMPANY",
+    "Preferred Description": "TUBING,HEATSHRINK,3/16\",2:1,600V,THIN WALL,BLK,RC6",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "RoHS 6 Compliant",
+    "nexarData": null
+  }
+]

@@ -1,6 +1,0 @@
-﻿Reference Designators,Manufacturer Part Number,Description,Manufacturer,Quantity,Status,Internal Part Number
-R1,CRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,Direct Match,AE-36592
-R2,CRG0603F10K,10kΩ 0603 1% Resistor,TE_Connectivity,1,Direct Match,AE-28394
-C1,C0805C103K1RACTU,10nF 50V X7R 0805 Capacitor,KEMET,1,Direct Match,AE-10293
-U1,AS1115-BSST,LED Driver 24-QSOP,ams,1,Substitution,AE-93748
-D1,1N4148-T,Switching Diode,Diodes_Inc,1,Not Found,n/a

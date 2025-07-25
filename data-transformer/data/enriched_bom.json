@@ -1,0 +1,270 @@
+[
+  {
+    "Qty": "1",
+    "Preferred MPN": "97-3106A-14S-01P-639",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN,PLUG,3 POSN,SLDR,PIN,STR,SHLSZ 14,SOLID BKSHL",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "97-3057-1007-0676",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN: STRAIN RELIEF 14S DBL CLAMP",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "97-3057-1007(0676)",
+      "genericMpn": "97-",
+      "shortDescription": "",
+      "manufacturer": {
+        "name": "Amphenol Industrial"
+      },
+      "sellers": []
+    }
+  },
+  {
+    "Qty": "23",
+    "Preferred MPN": "601803",
+    "Preferred Manufacturer": "LAPP USA",
+    "Preferred Description": "CABLE 600V 18AWG STR-18/30 3",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "172160-1803",
+      "genericMpn": "172160-",
+      "shortDescription": "3.96mm Pitch EdgeMate Crimp Terminal, Phosphor Bronze, Tin (Sn), Bifurcated, 18-20 AWG, Reel",
+      "manufacturer": {
+        "name": "Molex"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=7pRYmCuZh6nxZcXZ8wcBbjTZTkNLSyT565EsI7qUHoBjMfwFnfYv_yCjVAUfqfosEwW9QcoJTXXBC8DJuJt6Zzw9W4M05E-yTru7Sff49GJWzpAhJ-xnGTrBStukzKGQKI6RxaxJaU5w3wG8KN0Cbhc5YpJWQ-R3D8pZyWRWUxKpYbO0Qb0M_tisecaKQpDCvZIeheIXjtiDfuV3BdVHUVusP39x7oocOYt8O3m8ofB2O0-91LnBBzzMcJrKu1zSR2gkmS0",
+              "inventoryLevel": 4434,
+              "prices": [
+                {
+                  "price": 0.13,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.093,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.082,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.0752,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.069,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.06188,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.05722,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.05308,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.04834,
+                  "currency": "USD",
+                  "quantity": 2500
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "0.25",
+    "Preferred MPN": "",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "SHRINK TUBING 3/8\"",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "97-3106A-14S-01S-639",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN,PLUG,3POSN,SLDR,SCKT,STR,SHLSZ 14,SOLID BKSHL",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "0.2",
+    "Preferred MPN": "FP-301 1/8\" Black",
+    "Preferred Manufacturer": "3M COMPANY",
+    "Preferred Description": "TUBING,HEATSHRINK,1/8\",2:1,600V,THIN WALL",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "RoHS 6 Compliant",
+    "nexarData": {
+      "mpn": "FP301-1/8-100'-BLACK-SPOOL",
+      "genericMpn": "FP301",
+      "shortDescription": "HEAT SHRINK TUBE, SINGLE WALL, POLYOLEFIN, 3.18 ID Before Shrink, 2: 1 Shrink Ratio, CLEAR",
+      "manufacturer": {
+        "name": "3M"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=rr6Egb2OUAWm-h-Ni8zMhMIBLn22SINF3UamTIY6WLPE_1UXz3FE3zouuvTZns2_pGvjIeBIv-5W48t-hbuEwfHLnHFB7tkfsj2ZxLxj2-3gQkx-j2qN0_7ycO1Ho9zIHt2RYBuEcMbkGkDBCjEiyRPCd55xWd0ItZ9OUU-arDSnzCmh6Ta5fdDYlYn3So1O05ILuvwbNLaMxNA5EO-zpAcau5jNgYLB1BdQXmmJkWgMc-MwSKIRsoos-zfTWt7tP-J8aQU6",
+              "inventoryLevel": 310,
+              "prices": [
+                {
+                  "price": 1.84,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 1.69,
+                  "currency": "USD",
+                  "quantity": 2
+                },
+                {
+                  "price": 1.61,
+                  "currency": "USD",
+                  "quantity": 3
+                },
+                {
+                  "price": 1.514,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 1.45286,
+                  "currency": "USD",
+                  "quantity": 7
+                },
+                {
+                  "price": 1.392,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 1.246,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 1.146,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 1.054,
+                  "currency": "USD",
+                  "quantity": 100
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=5Epw1ZuoxWtC5zI68JNTkHAJEZu4XcCYqq4x73_pjv-cHuwsToYKc_4UBIG1vvk6tOspq0ysxMr9jaLUZ1YafDLQl4wZBJJiwQYpz-ql-PYvtMH7Qlow56I2MPh0MLr2Fnal1XxJeGs05QD26n6QxGvNlLD7ryEfs3lG3QWzLWGg6wuEiNu_clfw-Q63PsydwddE1x1GJUnNu7H60PgZA7BKnD3ARMeDj3PfLOnlOGItPRGrr4EIkUnAhwr9LrYUSZxn8Jo",
+              "inventoryLevel": 155,
+              "prices": [
+                {
+                  "price": 73.5,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 67.6,
+                  "currency": "USD",
+                  "quantity": 2
+                },
+                {
+                  "price": 64.36667,
+                  "currency": "USD",
+                  "quantity": 3
+                },
+                {
+                  "price": 60.518,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 58.10857,
+                  "currency": "USD",
+                  "quantity": 7
+                },
+                {
+                  "price": 55.66,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 50.556,
+                  "currency": "USD",
+                  "quantity": 25
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "EC-16",
+    "Preferred Manufacturer": "CAPLUGS",
+    "Preferred Description": "CAP,CONNECTOR,I.D. 0.973 INCH X 0.5 INCH DEEP,RED",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "EC-16",
+      "genericMpn": "EC-16",
+      "shortDescription": "CARD EDGE 16 PIN CONNECTOR Pan Pacific Part Number: EC-16",
+      "manufacturer": {
+        "name": "Pan Pacific Electronics"
+      },
+      "sellers": []
+    }
+  }
+]

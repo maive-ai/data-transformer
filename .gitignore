@@ -116,3 +116,5 @@ build/
 
 .node_modules/
 
+image-server/data/
+image-server/segmentation_outputs/

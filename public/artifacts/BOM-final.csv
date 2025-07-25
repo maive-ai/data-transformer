@@ -1,7 +1,0 @@
-RefDes,MPN,Manufacturer,Qty,Description,Alternate,Supplier,Quote,Link
-R1,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,No,Digi-Key,$0.00696,https://www.digikey.com/en/products/detail/te-connectivity-passive-product/CRG0603F10K/2055639
-R2,CRG0603F10K,TE_Connectivity,1,10kΩ 0603 1% Resistor,No,Digi-Key,$0.00696,https://www.digikey.com/en/products/detail/te-connectivity-passive-product/CRG0603F10K/2055639
-C1,C0805C103K1RACTU,KEMET,1,10nF 50V X7R 0805 Capacitor,No,Micro-Semiconductor,$0.007000,https://www.micro-semiconductor.com/products/KEMET/C0805C103K1RACTU
-U1,AS1115-BSST,ams,1,LED Driver 24-QSOP,No,Mouser,$1.540000,https://www.mouser.com/ProductDetail/ams-OSRAM/AS1115-BSST?qs=jMXWnm70%252BC%2FTIBNsbFwa8Q%3D%3D
-D1,1N4148WX-TP,Diodes_Inc,1,Switching Diode,Yes,Digi-Key,$0.023340,https://www.digikey.com/en/products/detail/mcc-micro-commercial-components/1N4148WX-TP/717197
-R3,TNPW06031K00BEEA,Vishay Dale,1,1kΩ 0603 Resistor,Yes,Digi-Key,$0.133170,https://www.digikey.com/en/products/detail/vishay-dale/TNPW06031K00BEEA/1606767

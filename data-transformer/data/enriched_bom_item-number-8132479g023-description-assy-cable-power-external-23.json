@@ -1,0 +1,87 @@
+[
+  {
+    "Qty": "1",
+    "Preferred MPN": "97-3106A-14S-01P-639",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN,PLUG,3 POSN,SLDR,PIN,STR,SHLSZ 14,SOLID BKSHL",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "97-3057-1007-0676",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN: STRAIN RELIEF 14S DBL CLAMP",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "23",
+    "Preferred MPN": "601803",
+    "Preferred Manufacturer": "LAPP USA",
+    "Preferred Description": "CABLE 600V 18AWG STR-18/30 3",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "0.25",
+    "Preferred MPN": "",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "SHRINK TUBING 3/8\"",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "97-3106A-14S-01S-639",
+    "Preferred Manufacturer": "AMPHENOL CORP",
+    "Preferred Description": "CONN,PLUG,3POSN,SLDR,SCKT,STR,SHLSZ 14,SOLID BKSHL",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "0.2",
+    "Preferred MPN": "FP-301 1/8\" Black",
+    "Preferred Manufacturer": "3M COMPANY",
+    "Preferred Description": "TUBING,HEATSHRINK,1/8\",2:1,600V,THIN WALL",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "RoHS 6 Compliant",
+    "nexarData": null
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "EC-16",
+    "Preferred Manufacturer": "CAPLUGS",
+    "Preferred Description": "CAP,CONNECTOR,I.D. 0.973 INCH X 0.5 INCH DEEP,RED",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "EC-16",
+      "genericMpn": "EC-16",
+      "shortDescription": "CARD EDGE 16 PIN CONNECTOR Pan Pacific Part Number: EC-16",
+      "manufacturer": {
+        "name": "Pan Pacific Electronics"
+      },
+      "sellers": []
+    }
+  }
+]

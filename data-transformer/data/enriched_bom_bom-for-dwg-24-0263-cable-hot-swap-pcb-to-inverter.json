@@ -1,0 +1,1757 @@
+[
+  {
+    "Qty": "1",
+    "Preferred MPN": "44441-2002",
+    "Preferred Manufacturer": "MOLEX",
+    "Preferred Description": "HOUSING, 2 CIRCUIT",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "44441-2002",
+      "genericMpn": "44441-",
+      "shortDescription": "Rectangular Power Connector, 2 Contact(s), Female, Crimp Terminal, Receptacle",
+      "manufacturer": {
+        "name": "Molex"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=Y9isgIAwSOh3jrop8e1Y9cbQ9SSKVNpBXktTz5lsf4vQXTannASzxC8HCcM8y5Aq_NF908E4eGeFD-_kQ3yxbRfkDqDIoa1EnupBXEd_kSG82g19i4X1ENzpDAD630AW2xt8yZQb-6qtGGO1W7wwqgcFbYdiA5Pw5gZsJVnlp8HCRDa0UqwI8l2zqIAu5ubzx3RhyOmiZZFBRfirozkZVWtDAdSJYQ2YO7JyOFv1fMJrtrgX_LZhKDvnkDeufCH2W9Q",
+              "inventoryLevel": 26708,
+              "prices": [
+                {
+                  "price": 0.77,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.598,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.519,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.519,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.479,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.465,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.443,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.383,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.371,
+                  "currency": "USD",
+                  "quantity": 4000
+                },
+                {
+                  "price": 0.37,
+                  "currency": "USD",
+                  "quantity": 8000
+                },
+                {
+                  "price": 0.37,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=jncRvk8gn7Agj5cF3UNVWW5wmKA7M3EUXiDjwnXd3ZdBBt_GkGpMrJ-Fh05iyeVXswXTQRkFedsHT0EAKI8QvKAILhNXWD7HiiUyZd6E5DBWGTlVd-CUq4Sv_wTiaok2h8B0ljH-AMBayyy2xfyX_4lhTeuvxdT1EkvRvRqWUoucYZ1rT3lgLceSis5O401ftxFLijtX1hfUQb2aoocJuhET5aC2S55ccb0bYS7BQ-rz0KW35s5w0xttOAqBFWAqzQ",
+              "inventoryLevel": 32072,
+              "prices": [
+                {
+                  "price": 0.77,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.651,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.6096,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.5806,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.5528,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.51812,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.49336,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.44736,
+                  "currency": "USD",
+                  "quantity": 2000
+                },
+                {
+                  "price": 0.42601,
+                  "currency": "USD",
+                  "quantity": 4000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=PVRu1Isi-KL9uvqRFthChRsJ-PARvPyVPGHg79YUrqJr4nr1zWbcWlpe0-TgSXvDuKzf1Y71BGWZ7aCnWkucGU2Mk3lGag3ChNYCn0QICIigShbaaK6m39l-hC6Efp8WJfbVrzW6dEer0tLHvSV59R99s6FRt30qcXwvrNJfcr54aAyxIMFS2SWSj6RbPRtNeLdx_8bWgYmFqw1OpJMHw9DqLGnBih9KlNsQWvS1Y82iGQgAZTxsIoBVYmG-iE8fujN8iQ",
+              "inventoryLevel": 3095,
+              "prices": [
+                {
+                  "price": 0.7892,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.6685,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.621,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.586,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.5528,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.5133,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.484,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.4348,
+                  "currency": "USD",
+                  "quantity": 2000
+                },
+                {
+                  "price": 0.4184,
+                  "currency": "USD",
+                  "quantity": 4000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=hHfWkBqdTXOfLLM8wuzolkVYDBxOwVLGEDQ7iCPce5pCr9AB032J0RT95h-QiGhortwRGOaotXru8OjZYTgFAg8eoUJLbn6Se5gqlP6JV4vG2F5FSzEj9NeTG3-rlOODuCd6yxqkBfXzc1npi4gofpr-Z3xepi8kggqILk-20cK8UOcmRwikLurP18Pd2J3BTp2-GaeDVoTSsJmXysMN7PViMLU_GcytqDQaPlK0JxF7BIRxLsQTcJSJV-Hu0iecVEwiuQ",
+              "inventoryLevel": 1790,
+              "prices": [
+                {
+                  "price": 0.7665,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.6497,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.6037,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.5699,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.5376,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.4993,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.471,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.4232,
+                  "currency": "USD",
+                  "quantity": 2000
+                },
+                {
+                  "price": 0.3991,
+                  "currency": "USD",
+                  "quantity": 4000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=BchjjOge-CCuUkUeH8idnxQz-35NcYnS6YhmLKvhxFaSNVJLnctrfxqOFXtoUu0kDx8k9iMvzYf28JtriT0XLRDfK1H81l7snbKc2nPuIX-V4u6k1uEg4vZmeJj21XjOrfpXvLgMMB3Vmg86U7EqUN5F49XrA7tCUdFOs4Pb5TrqCJHpMP_odirzpII93NQ9lYcUe-vWJ1C-LY-givm3o8URKK6oIgxsrji8RXx24mgwEAKbOYR5xbafZgZdC3tbypcUWg",
+              "inventoryLevel": 14000,
+              "prices": [
+                {
+                  "price": 0.298,
+                  "currency": "USD",
+                  "quantity": 2000
+                },
+                {
+                  "price": 0.2917,
+                  "currency": "USD",
+                  "quantity": 4000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=QY2AhCZJrfXSnsJhynd5npTSuFShyimCE0hR5bP8p-oxNMaf_cAE9LAOber72hE7PRx8lQTBFFAnLg-nv3ZypQmPB-U26fmTkqUczzGTilM2GFaKV8VnhOZpMpq8sUTIIeR1_Hs1pv4pBg4TMQ2puWm65E2O3h4aJrfSojdSznqITOwOrUbHeTWaMaFDSwEX6-KBoEFn9p7YohLKDsUvgylAi9VBV-EDANZYIvEM5d1db9lXtaAnvsf5-XowbUzOSWiC6Q",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3726,
+                  "currency": "USD",
+                  "quantity": 4000
+                },
+                {
+                  "price": 0.3504,
+                  "currency": "USD",
+                  "quantity": 8000
+                },
+                {
+                  "price": 0.344,
+                  "currency": "USD",
+                  "quantity": 20000
+                },
+                {
+                  "price": 0.3331,
+                  "currency": "USD",
+                  "quantity": 40000
+                },
+                {
+                  "price": 0.3216,
+                  "currency": "USD",
+                  "quantity": 100000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=O7XDdyFNNM90nGqj287qPJNES998M8ew1NJYCkIp5E9OvdE0oLnEpbAFjRbokMsKlpY7P4zux0NyGfLzLAC6vw_LUlUK0nrFcIfvlPHCpZyJlzG7U0W7Bsj5o3QxlFbsv8TjnMoqncaIYYUeJZbyFulbOQWv2Lp-ILyghM7q_KWW9TSUz6ZVipdwJTnp6ZjTBIyy3PKll2FqKfJ86EUNm3dQhUXYGHh1wk6HlQKtneIvWvXrbqmljYT7Lap6lhKVdOM4kg",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3726,
+                  "currency": "USD",
+                  "quantity": 4000
+                },
+                {
+                  "price": 0.3504,
+                  "currency": "USD",
+                  "quantity": 8000
+                },
+                {
+                  "price": 0.344,
+                  "currency": "USD",
+                  "quantity": 20000
+                },
+                {
+                  "price": 0.3331,
+                  "currency": "USD",
+                  "quantity": 40000
+                },
+                {
+                  "price": 0.3216,
+                  "currency": "USD",
+                  "quantity": 100000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=y5OflKB8bwg7w13L6tSL8aZ-O0QFkfCgVwjhR1a7MW_kPiY8gu4DTN1I8BTd7KtO2wIsWVXGfVFJMO_wCHu3qHqHcL4e0TfKsw2ogW-ijx9I37cbevXLzjmlBHB-TcDeKbGN6BNG8igGVoRAJYmRfTSMSCZi3LqruUevnE98Y7BGXThJokJngpnztGGC-_MLlGuDjqR-j64RZo-EnlBbt0zV9l1KwptaC39XrV4eBH7ZoWy-etBG9f_OVRMa9g89mg",
+              "inventoryLevel": 51854,
+              "prices": [
+                {
+                  "price": 0.404,
+                  "currency": "USD",
+                  "quantity": 13
+                },
+                {
+                  "price": 0.374,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.352,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.345,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.338,
+                  "currency": "USD",
+                  "quantity": 150
+                },
+                {
+                  "price": 0.315,
+                  "currency": "USD",
+                  "quantity": 2000
+                },
+                {
+                  "price": 0.308,
+                  "currency": "USD",
+                  "quantity": 4000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "43375-1001",
+    "Preferred Manufacturer": "MOLEX",
+    "Preferred Description": "CONTACT, FEMALE, 14-16 AWG",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "43375-1001",
+      "genericMpn": "43375-",
+      "shortDescription": "Molex 433751001 Sabre Crimp Terminal Female 18 AWG 4.57mm Reel Plated",
+      "manufacturer": {
+        "name": "Molex"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=nFxc2q3FRc99QRYTJwn1yZYJgYp3jicrl731s98oKLLY57P6D4WtiYGcr3UTt91sigwncKuxg0vu_q4hOisCrjg73BhmBTAizNFcvkYBFW1pj1Ih-TmYJ-7BeHFBHdNacrjTGoBcfhOAPIhBOCQ6VuzQLEya6thntfcTnWjtDTd9mSbYr5gT_crEsfpc23almXCdm0qCic5uQEEUYgE1Qv84nmkbN3FHZ30qmBGAGFUVTNBPy8oXOaZnwdK3Q4FLJEs",
+              "inventoryLevel": 72000,
+              "prices": [
+                {
+                  "price": 0.071,
+                  "currency": "USD",
+                  "quantity": 3000
+                },
+                {
+                  "price": 0.069,
+                  "currency": "USD",
+                  "quantity": 6000
+                },
+                {
+                  "price": 0.069,
+                  "currency": "USD",
+                  "quantity": 10000
+                },
+                {
+                  "price": 0.062,
+                  "currency": "USD",
+                  "quantity": 12000
+                },
+                {
+                  "price": 0.058,
+                  "currency": "USD",
+                  "quantity": 45000
+                },
+                {
+                  "price": 0.056,
+                  "currency": "USD",
+                  "quantity": 99000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=Z9E7ftmGfF4W-sIFxU1c8QqR608J0LqP1aORLupSAkD-SkLNaiEvTqwBYQb6wKHpBqQ00azkIJAyRqXsCxt4lwlGZ-fELVIz4yMKK5i61dbD4_YmiaaYmp-12rr0qebkLqt2kEqUNtgeqSQI511I7HCN8wdm0X-PMe3aJIoe4QWraZ00rcG7alxBU678AaUlZ2uHKMfsSrae6iPucGfu7a7DM8oDtb8Tj6L5UaASrHe1RxIxABWWGv2NjbGnsDW8QQ",
+              "inventoryLevel": 235461,
+              "prices": [
+                {
+                  "price": 0.11,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.095,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.0892,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.0848,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.0808,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.07568,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.07206,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.06861,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.06349,
+                  "currency": "USD",
+                  "quantity": 3000
+                },
+                {
+                  "price": 0.06045,
+                  "currency": "USD",
+                  "quantity": 6000
+                },
+                {
+                  "price": 0.05875,
+                  "currency": "USD",
+                  "quantity": 9000
+                },
+                {
+                  "price": 0.05666,
+                  "currency": "USD",
+                  "quantity": 15000
+                },
+                {
+                  "price": 0.05534,
+                  "currency": "USD",
+                  "quantity": 21000
+                },
+                {
+                  "price": 0.05396,
+                  "currency": "USD",
+                  "quantity": 30000
+                },
+                {
+                  "price": 0.05058,
+                  "currency": "USD",
+                  "quantity": 75000
+                },
+                {
+                  "price": 0.04817,
+                  "currency": "USD",
+                  "quantity": 150000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=WMGVMQU5RzPCrj1MGbhmdBxrOGGNIECfDvM1fRtSrIiuTAE1EWb6x54R1w48HYOt5kwnoGXUPtYBdHJIA54CBYqAmeyMg5vT5pGH1VLK5GjMlHFlEzqDxEziqucvbjuqsMcILHBfCgYT7EHfq8Cix1Y6tAsHVqtQdljIavzBZWaF1jQr9RTHSANRpzePUCS7epsXx930F7NcU2HQLmrPU93feKSrKbjQ9aVlnAsjPTUoMGdY4hfYJDn5ye0WWwzXoQ",
+              "inventoryLevel": 231000,
+              "prices": [
+                {
+                  "price": 0.06349,
+                  "currency": "USD",
+                  "quantity": 3000
+                },
+                {
+                  "price": 0.06045,
+                  "currency": "USD",
+                  "quantity": 6000
+                },
+                {
+                  "price": 0.05875,
+                  "currency": "USD",
+                  "quantity": 9000
+                },
+                {
+                  "price": 0.05666,
+                  "currency": "USD",
+                  "quantity": 15000
+                },
+                {
+                  "price": 0.05534,
+                  "currency": "USD",
+                  "quantity": 21000
+                },
+                {
+                  "price": 0.05396,
+                  "currency": "USD",
+                  "quantity": 30000
+                },
+                {
+                  "price": 0.05058,
+                  "currency": "USD",
+                  "quantity": 75000
+                },
+                {
+                  "price": 0.04817,
+                  "currency": "USD",
+                  "quantity": 150000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=9fVCPdDDP8azOtU0gEvW3mFMfAVWi4x6eAzjQO4j96uMPaDZxQxsmMzCOYU0fq6lc2XNX7JXQgmWH5okJhiTgdD3WnHOcgOhB5AHtOQlnjvl6_q0YHB5BkDVsk2HcJH4ba5oUTobartjiYtcN9xc1MRSFBlg32_jhhFbsSdUdsOypNnaWiI7vUY9jykRMQaeRzCXuR5mZFQU8GKywVAdr1SbdLtP75fg-TpHeQUYQEeJNe3cizaMD48OgQrbLsQLzQL4Kw",
+              "inventoryLevel": 4646,
+              "prices": [
+                {
+                  "price": 0.1074,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.0922,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.0818,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.0773,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.0718,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.0677,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.0638,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.0446,
+                  "currency": "USD",
+                  "quantity": 3000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=ctNfTM4lzqorpOGByaZ4VVZKh1s6LoQWbnpBGelxpn9oQENFszEot3u_KLiEFVTg0Xqu8sTT5TjPwx9U8WTubewLjE5RhM6us0IFSVPCeMwW-QOBzTWdvK0rgd7kUtIADMtloOkm3k_AU1Vu5xjJpOpM6LxlMmpFy3AExU0MdIOSOZszyh2DeZbonVevPCbRaQdcxEC3yWyJmy-Zw04Eoo-hkIsgiTITvPg11-3oAcPBUwqWcAEQKSTTheIPuN45KEJqmQ",
+              "inventoryLevel": 51000,
+              "prices": [
+                {
+                  "price": 0.0741,
+                  "currency": "USD",
+                  "quantity": 3000
+                },
+                {
+                  "price": 0.071,
+                  "currency": "USD",
+                  "quantity": 6000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=RSTVWxEGKz2af5q2yjbHXoER8ClvdLVWUnQsiInr8UVNg9wn9er4iE6NbnA0U57Pjv6HOx1dm5914MuKKuKocXL9iEovA83XuF9ZUiqp5tvJ5YjZ18ldTzbfaDWzgOgMqRXQMFupX9MlsLNVGPVaHZ3gIjbRvJNRw5ndOgZEFofTBAu8mlkl-pvJH3qDqhRaFMqfbhRNhL6QcCagUNiifEk4GzWa-aMO2GSI7RMtjiTj96KrcBvsMokg7SWgaThSpv66IQ",
+              "inventoryLevel": 144000,
+              "prices": [
+                {
+                  "price": 0.0392,
+                  "currency": "USD",
+                  "quantity": 69000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=BUI6dMzdyqp9atN1-0aVMrqu_WcLLav2vBLSAw6EUdMPzBM97tbN3ibaJpeInJYTUIPxl-FE5f34Oj4tF4LuzFUThGJbqbVgdZJ3GN6h8N5PqcK5kX1CM0VbItwdVwg8HsbQQJ2i5wtxe1xoKQgxyhh8uxiBraROep8iuAauSFAzb0FI8izszmUMg1nfiEbDeC0bvCZ6ihSurSz4OxUiSij4S_nOkEljMN0XneK92tBI3QGa4H6I3oZUBfcFoS0J--Twbg",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.0511,
+                  "currency": "USD",
+                  "quantity": 69000
+                },
+                {
+                  "price": 0.0447,
+                  "currency": "USD",
+                  "quantity": 160000
+                },
+                {
+                  "price": 0.0434,
+                  "currency": "USD",
+                  "quantity": 400000
+                },
+                {
+                  "price": 0.042,
+                  "currency": "USD",
+                  "quantity": 800000
+                },
+                {
+                  "price": 0.0408,
+                  "currency": "USD",
+                  "quantity": 2000000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=a95jYz_W1FjWQ9zNODBJgfpBNUsxmvXi98faTyAoM8cKwpKlsvH-i7Uq4yubudB5RE2wOV5iU1HeWN6V3yiCrmPQZ8fXD5Qw-a7OD8mX164btBt_Xdmc8ne90jUjW9dem-83sr5HVf379MyyMSNAt0ZRDZsGy5ofbhEarqm4YkH8AnR393VcZK9GrxtHX8TNszWXJ1FyR5ksB9O9lNcHH3aW9ADLFsZ0xmbTpI6oscoM5d5lVjOI6e9uQPio-ofQl4raSw",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.0511,
+                  "currency": "USD",
+                  "quantity": 69000
+                },
+                {
+                  "price": 0.0447,
+                  "currency": "USD",
+                  "quantity": 160000
+                },
+                {
+                  "price": 0.0434,
+                  "currency": "USD",
+                  "quantity": 400000
+                },
+                {
+                  "price": 0.042,
+                  "currency": "USD",
+                  "quantity": 800000
+                },
+                {
+                  "price": 0.0408,
+                  "currency": "USD",
+                  "quantity": 2000000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=Yuod_hxJlpVXK4_epP4v3kyxsJb6r1vIoXYt04z8PkQ6nxQ6BabsYKelleBCLNrcl-3PbjKZgkbJ5JtK2VROdoDe-XAe2cYfsfEPNl1PwMwaa5vxg78FYJ9qA8P-dYvkz4fcRkiXPS4eHWuf1OOo8kvRyXUKQIwr_Brr3cbMTRFiX1xQ_BEH-pIMlv5q1d1fFHkz5SX7BiSho6XhvAnv3iyJ1bD9QIxC5bMLtcJFGDPQggcg9swxaNhA4WHyZCryZg",
+              "inventoryLevel": 21000,
+              "prices": [
+                {
+                  "price": 0.06,
+                  "currency": "USD",
+                  "quantity": 3000
+                },
+                {
+                  "price": 0.057,
+                  "currency": "USD",
+                  "quantity": 6000
+                },
+                {
+                  "price": 0.055,
+                  "currency": "USD",
+                  "quantity": 9000
+                },
+                {
+                  "price": 0.054,
+                  "currency": "USD",
+                  "quantity": 15000
+                },
+                {
+                  "price": 0.053,
+                  "currency": "USD",
+                  "quantity": 30000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=00oEXOacRl91SA4N1MdKi3A4ulNzrNr8EGmiJ5lmMbQArnvobgLZb1MUdzKbitUIxffQK4iwWnxPPyhcI11AIQ3kv7WZFjQI7VtQWOXjeEIHO-M25Ba-zG8SN6o_oMgf8nCSJnLfT__g5vW3iV7IXl2_8monnGcXqYG0P_udf_ZAz8rP-wE5wQ5kFZkXPizr6gLOyPv0RIhEh-Oj4AcJA-TOfDf6tjrystHczObY9djMgx7H4CdhUL2B9wqKhFKiMiE",
+              "inventoryLevel": 3000,
+              "prices": [
+                {
+                  "price": 0.167,
+                  "currency": "USD",
+                  "quantity": 30
+                },
+                {
+                  "price": 0.081,
+                  "currency": "USD",
+                  "quantity": 3000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "1327G8",
+    "Preferred Manufacturer": "ANDERSON",
+    "Preferred Description": "CONN HOUSING, 1 POS, PP BLUE",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "1327G8",
+      "genericMpn": "1327G",
+      "shortDescription": "Heavy Duty Power Connectors PP15/45 HOUSING ONLY BLUE - BULK",
+      "manufacturer": {
+        "name": "Anderson Power"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=-OLFsz4Vq_NgrsuYNCVMfuxeTor6pGL53Awf_2vO2PGMtLPN5m6qAWb74T2eSTzitYVhBskJDpvLKEY8gqdSyCDgIOliODEpXjQ5UaBctTEKcfEKulDMK5tv1X3RTElQzf-wwwBiFkUkkTgnsQnrR0Jn1rzH4qba6NhIoufdcXfaJd3FVCOKolIYlEiSb8jZ6AWMyjJe9XjebhZG_7mfGkOS0Rlfhor0-N16iVHsLkqqLb7tAvPxFtedSiMkG18",
+              "inventoryLevel": 8319,
+              "prices": [
+                {
+                  "price": 0.66,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.54,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.469,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.441,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.331,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.328,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=JshPIiImn9Mj3ynSnrR6Yu92W4Zb6zvfynBs1IkzWQoUzojNpaZ3MtFi8vmotxLSIfsEcS8snKDwVkzMwt_1tY93bZf8E9igp-Tvfpf2rV1uEHAcXSTZ6n1mtvtpAskVv_g_eNMJETwhuJY-L5mgoODxs2KLX4brcNO-ZN3TQzRHWlVrNpgyi612MQaWck_lwH8sq__Yi-QPQWXAI4retA7Lf6PY0-bRqceq7M0jmw8em94yEKhMJf-QVauT_Gk",
+              "inventoryLevel": 6429,
+              "prices": [
+                {
+                  "price": 0.76,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.642,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.572,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.545,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.463,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.434,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=Ol3KUBTtLAmMWlWnWtImS-zd_nvf2zEfQBS30Kug8U0dwNgXnzzPJhR3mrWRnJ3nMErzBe_KFZBj7B2aCEDTAnLcK2qsdoC8DiuMRN_e5AovbvPoWMNrDseJ5kddWDfJ8gz0nWOJ-CM9SCWCGy2qrP2mGsGpI9K3kFYPzJGrhC7aUUcEdVuAlDNpfxCu1weqZbco2zyn9fmPxgSzaSb1AGU5_g0AXle91Q8G6u1J9sKSaB3UcCgYKMiFjgoJf34",
+              "inventoryLevel": 2362,
+              "prices": [
+                {
+                  "price": 0.66,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.56,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.5244,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.4992,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.4754,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.44556,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.42428,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.40401,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.37871,
+                  "currency": "USD",
+                  "quantity": 2500
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=AAdhAptDM_OBU4IyngXmUgSu0Vx2p5MfPE-HTTRxuCMRr5El9pgSNVGZs-6PkIUcpVt_bRYfnSaA7ZAVxFQjZcTsKy_cnjIOKWoKBV3Uz6X1tm-m4-Aeuh36yACer-_EMxTkICrjeWBD3_n0EV51T69bFHadwEhN_HU-yO8R0sSmk-VFAG7lz9IduOCus4pSOSnBvz070pcTAMhkkKEmXRUm_XCf1t8rdrtHztLhFstcg67u12h-YDJhXNvBE2Q",
+              "inventoryLevel": 2345,
+              "prices": [
+                {
+                  "price": 0.76,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.642,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.6016,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.5728,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.5453,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.51116,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 0.48672,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.46348,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.43446,
+                  "currency": "USD",
+                  "quantity": 2500
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "1327",
+    "Preferred Manufacturer": "ANDERSON",
+    "Preferred Description": "CONN HOUSING, 1 POS, PP RED",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "02800",
+      "genericMpn": "02800",
+      "shortDescription": "Z 1327 30-0-30Dca 3.5 Ul Wv |Simpson 02800",
+      "manufacturer": {
+        "name": "Simpson"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=ji7_o2EF_V_0X09n2opREyVi0Mt8UFZOJqZQYQjrCpQXzebZ87iC08U-yQxIByLfcx4-eZgGCPK-W_KAbryLrLIx3av_ml2kuZ98JtUWZ1CE54qWQ7le4MBpy8vfvLgeQkZZYwSiTtYhcnhW-NORshqw-PCeaQ6U1A7guUtqDY2r71m4ypM6leiryrdF-L_kqKBeuhhdnyNSAnpvOFcR06LRsGlNeGh5zTKfbgbgjySFV4a-5zhrFuiFg5wYmvAaCciK",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 165.38,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 165.38,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 165.38,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 165.38,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 165.38,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 165.38,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "2",
+    "Preferred MPN": "261G2-LPBK",
+    "Preferred Manufacturer": "ANDERSON",
+    "Preferred Description": "CONTACT 10-14 AWG",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "261G2-LPBK",
+      "genericMpn": "261G",
+      "shortDescription": "14-10 GA Powerpole Contact 45 AMP, Anderson ANDERSON 261G2-LPBK",
+      "manufacturer": {
+        "name": "Anderson Power"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=37H4JAsrKYCCh9o7D0FIydoDygR9U784F08JdG5Ez0aODXuHX8tgagoAG8dTr-o9tULmaCEZnRGbz43wixqQkEKErOMvUlThgDjYTcRacfLeTcPDylbZo9bs43y3xcxiMUB1paYLnkVtEZM_xurGs8huuwLIhVVYP0x_gO-aVaZS5qsjGqIHl2-NFxw4RmxAtpkS2pGCaDqGm4SHGqo7W3swfSZ-zI0ctjlFtROH9ilbwhE5r99xcl7aXtElp7c",
+              "inventoryLevel": 25111,
+              "prices": [
+                {
+                  "price": 0.92,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.813,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.726,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.683,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.578,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.542,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=gxg5hPx-Cah8lh1kCAYdst5BBY90BLjrR5IeIfM-Hn3pp-hID1lpg4085gVXY_VG_XKIl5meDn2sfyM6Tz4F3OgH00Mr3t2iRdnPCEse_u52IXZIQq-USg7aaDE-m4gdd80Db7-LAZlF6gyrTEmyJvsNuqZWva_pBVqN3fZkHGCXqFhG41QoVP0wR0vcNOIFPzpF2_U_SpUUVV9kFNoL1IUf3ZB5JocWJelDDI8PoauAjbOHapV0wjYKQaNi-G0",
+              "inventoryLevel": 7160,
+              "prices": [
+                {
+                  "price": 0.96,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.813,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.762,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.7254,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.6577,
+                  "currency": "USD",
+                  "quantity": 200
+                },
+                {
+                  "price": 0.62628,
+                  "currency": "USD",
+                  "quantity": 400
+                },
+                {
+                  "price": 0.6086,
+                  "currency": "USD",
+                  "quantity": 600
+                },
+                {
+                  "price": 0.58704,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.54877,
+                  "currency": "USD",
+                  "quantity": 2600
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "AR",
+    "Preferred MPN": "WIRE, 12 AWG BLUE",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "12 AWG, 600V, 105degC, MTW or TW or AWM 1015/1230, VW-1, FT1",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "FSD81-18-C",
+      "genericMpn": "FSD81",
+      "shortDescription": "Poly insulated ferrulessingle wire gray DIN 12 AWG .71\" pin length. | Panduit FSD81-18-C",
+      "manufacturer": {
+        "name": "Panduit"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=iI5IueNhH-asavikpd7eF3ArQJj_uMFTlhRPoxs8ktClJDNWRjOaHe1ceKtn8vW0zKLiR-zd9irdESDWlbqOmD4-h_W53A5noxL2msl-sJx7QjrZArXqTsrY7MxBm0hQmpL7gl4bwJBNBv7KpbMDBS4-BWdqwJCgCSppKHzBvGxwCmjosvUsZIOabHSr_0yswvdjXMXbLY3w6cNfUrF-O0hShOtcKwO88AORI24rmzxpGumqSdDbeaZNkUdnlLgF-UU",
+              "inventoryLevel": 6348,
+              "prices": [
+                {
+                  "price": 0.8,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.748,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.7268,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.7114,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.6961,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.67247,
+                  "currency": "USD",
+                  "quantity": 300
+                },
+                {
+                  "price": 0.66174,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.64746,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.62904,
+                  "currency": "USD",
+                  "quantity": 2500
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=cNeJdESHfkiJoBxpUA8jS8takOmx2ESwWD_lb_dD2mgSSExGDaVc8zsfZcPhEdv0j_YuOlyyl6N4W0g57JezORZSQ_R3c_jylk4aeMwvpnwiP5RHUqAB82nBeKyubn1Z8My7ZG8TMjmBywvJfW96LtoozYwws0EMowVcLAoZVY3lEKMsu39G4vwELMjZ4nGK7VK9TbIJ2r4y6OqRWFtaS3dBem48HhSZ0iMm8ZHwFt2H1iDefFl6Fj8xKc1SdLP4chM",
+              "inventoryLevel": 3838,
+              "prices": [
+                {
+                  "price": 0.79,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 0.701,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.701,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.658,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.647,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.607,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=-gEM0wl3Umz0v5F8e7R1piHJ_FEF3823H3ogCF30bi70M8x2qvrIKCIfa9aClKt6yXGOpr3lmMBS3OyqMXxh_V80TwEr-mhgw4id0E7xB-r9XZG9MAN8PxIDUJQ5OVghq4L-jUYNDRWFoeZR-bAFZQ3lP9V4aIoIjCjjOPsrN2QD8rys8BuRMIA9xAO60ufKjWG5oQ4AgRgJuszzPZTDhQxD9w97d3PE1-UAp6mQuwOx6iI7fkoL7Y9Ce4Qx5J53Tw",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.633,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.62,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.608,
+                  "currency": "USD",
+                  "quantity": 2500
+                },
+                {
+                  "price": 0.596,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=Da9Vsfy6YjdBcPdy9zU1j1UFHUa99Q2PxQpQs5an0boBPMZAO11QZ18sVqQJdN994BIhaoh6pPTPsDqdsENIHeKe6msw_G6eMgV3T7eVHw-C6UCAncyU73ft93Ym-8eV82--aWL3o-F7h353C73uTGYmjQ6lITEJCAuQMz8sfcyQZwqPwlfT_u_GqCz4P3A7JSf_iHtWHFbIFMX809V3tNUvrVeM_dNksIU9IdDJY3ODdE0mH3MLr1Be-k1PnNjyzHJ-xQ",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.5763,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.5658,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.5293,
+                  "currency": "USD",
+                  "quantity": 2500
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=WqLhsEvtdwfIus1R53xZLSzCtzEaaUR84OxbzvfvofKoJ-NYleNNIHuxTWRLy_ziwKbucThjNjzKt0kb6ujdUsy9T_GNYqASs3z82fBZk77STqVahplVRgWDX249-18TfE4aWVgQaWMjHptwcKmCpScZ2NYch5yBm9Yw_diY6LDTJxlkW-QIwOpvZvz4fgVYjvZpE9G4JwjMevqii1lYsJ0w0PZc9Zep23N5t_hObdaqPOv-bHVpWuO8yrmpC3H1pEsWnQ",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.5763,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 0.5658,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.5293,
+                  "currency": "USD",
+                  "quantity": 2500
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "AR",
+    "Preferred MPN": "WIRE, 12 AWG RED",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "12 AWG, 600V, 105degC, MTW or TW or AWM 1015/1230, VW-1, FT1",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "7036 RD005",
+      "genericMpn": "7036 RD",
+      "shortDescription": "Hook-Up Wire, 12 AWG, 19/25, 300V, Red PVC, Mil-W-16878E Type C | Alpha Wire 7036 RD005",
+      "manufacturer": {
+        "name": "Alpha Wire"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=EpWxYIDFEHtVCWDMbTIEq4HIMhrewgfa8T6FlQakiqO6rQMvz3FAOUdFgEKa4ZG0PZniE0ewA7y4tbnj4-LOZODQiYONtlkTBFbw3hi-PKpnMIEnjpO7cQRAjebnXwYCwVtOymVW5x4IosKSfmdthZk3pYO3XKsZbd8av9xXZz9nzcPN-cczlICcX0ed3MIFAZWcnU0gCOWzBN3F7u9W2IjmXrjgI41SlMMqCnpBRY91XY4NfkRXH_V8hBw92VNFdbJMdA",
+              "inventoryLevel": 200,
+              "prices": [
+                {
+                  "price": 3.3018,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 3.13945,
+                  "currency": "USD",
+                  "quantity": 200
+                },
+                {
+                  "price": 3.0475,
+                  "currency": "USD",
+                  "quantity": 300
+                },
+                {
+                  "price": 2.93484,
+                  "currency": "USD",
+                  "quantity": 500
+                },
+                {
+                  "price": 2.86246,
+                  "currency": "USD",
+                  "quantity": 700
+                },
+                {
+                  "price": 2.78732,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 2.73073,
+                  "currency": "USD",
+                  "quantity": 2500
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=U6PqNL1oHynCWe_O-LuM4xKUcAWKhNlZWIYFqIacpUg7JccvwVZwvYwDDvzTyYi-oYLHGoU2yL1TEygzgN0rSYGfetMmMKOBnXkX2AD_2fen6uyqkSvEM1Ob9aVheSumEpuPq3pObn1KSbHWONWhgKY2GeT9MJnag9L8Yx_08oNsU1QTCMC2Sb00DyNcw16HkbWoqKlcXOZvjr3dUIc2HCpxTUVZVDolfL_vlCpinkCwbfkhp7_QyoKQ5gvi7A0XYzIPHhQ",
+              "inventoryLevel": 4,
+              "prices": [
+                {
+                  "price": 336.8,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 284.72,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 273.18,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 273.18,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 273.18,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 273.18,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "1",
+    "Preferred MPN": "90692A139",
+    "Preferred Manufacturer": "MCMASTER CARR",
+    "Preferred Description": "SLOTTED SPRING PIN, 3/32 DIA 1/4\" L",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": null
+  },
+  {
+    "Qty": "AR",
+    "Preferred MPN": "110NF14",
+    "Preferred Manufacturer": "ALPHA WIRE GRP",
+    "Preferred Description": "SLEEVING BRAIDED, EXPANDABLE, .125-.440 ID",
+    "Alternate MPN": "900T 3/8",
+    "Alternate Manufacturer": "HILEC",
+    "Alternate Description": "SLEEVING, BRAIDED EXPANDABLE 3/16-5/8 ID",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "G110NF14 BK005",
+      "genericMpn": "G110",
+      "shortDescription": "Fit Wire Management, GRP110NF1/4 Black 100 Ft Expandable Polyester Sleeving Removed 4/21/23",
+      "manufacturer": {
+        "name": "Alpha Wire"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=LSddoz5bxH4cbxlHQU_f-nTpbYQgYrdT41VH-CEf5LgzF8uQc2l4UOybVdlNdUu9VVH1xT-AtJ4ZzhICompskONJ5QxLw_5cIWMdXhXAD7i3DjcacD3q6NHPNNcnwAtt-BFzf7wV6KSQB0Jr6Oih1MdX2LKZZGq34I7YveEw-2ZqzWMUTazeT9ePJQ5Ugd0HLSoJYavKL8M28NgyOe_KJ2n8LbhCZsAULIyjV6ToMO3Urw25dGKHsYysqqNwYZglnyX_5w",
+              "inventoryLevel": 37,
+              "prices": [
+                {
+                  "price": 203.86,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 187.49,
+                  "currency": "USD",
+                  "quantity": 2
+                },
+                {
+                  "price": 178.53333,
+                  "currency": "USD",
+                  "quantity": 3
+                },
+                {
+                  "price": 167.858,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 161.17857,
+                  "currency": "USD",
+                  "quantity": 7
+                },
+                {
+                  "price": 154.388,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 138.2288,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 135.8828,
+                  "currency": "USD",
+                  "quantity": 50
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "AR",
+    "Preferred MPN": "SHRINK TUBING",
+    "Preferred Manufacturer": "",
+    "Preferred Description": "SHRINK TUBING",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "",
+    "nexarData": {
+      "mpn": "ATUM-24/6-0-STK",
+      "genericMpn": "ATUM-24",
+      "shortDescription": "ATUM-24/6-0-STK Heat Shrink Tubing ST Polyolefin Black Medium Stick",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=kgVOzYUCou_pq2IC1AMniEpSkXg_K9779Ii8eDegu_tiW1V1IElWYAaQTD4JC23dxSzePOUxJt6ld8cxut3zlVKqVjMsRpSqDJGQ6Dp4kLGqs4FcFkKN2ZggO6B7J-yZvSOx5NffigBLZ1OvT7W7HnvJ-mGHivRjgj8mE_Rl8kD5jqBu8UTdwml1RkQAX4ieqZ8ydGsckT1cI4m27vuKdWewOb9bHz3W3nP1nuJSo5X6xkxD7QAX5aurpBAW9UpYlQl0lHI",
+              "inventoryLevel": 100,
+              "prices": [
+                {
+                  "price": 39.8588,
+                  "currency": "USD",
+                  "quantity": 25
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=LY231jARdUSlnCabOC-WC2cqlgaFQJ5ZRa0UlsPAgWiKs9d6yNmZaTc-Dv74AG5q6Hc6xSLJOAFoGQESXQ1zFrRCjR4gYOkNvbhnmpc-rh7TDtKynUn4RJNyyhu2aYHEm-C4PwHGy8U7OGibcsWjIVNERk9H2rn8JXdRg0zm3cpULmSTwbohYcWscRvfsnXAf_Kh3dL3wI0Kq4I7iet_avPOPUnB0fcuJHy5lUGdNzAV5LkgRcrR6BCA_am_QgZ-I-H3zkU",
+              "inventoryLevel": 75,
+              "prices": [
+                {
+                  "price": 36.26,
+                  "currency": "USD",
+                  "quantity": 25
+                }
+              ]
+            },
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=NJXkPGjT4HCI-JEWqQ-033ziC6y-G5KFZL2694zxkNdIHsuNa2sD4QXqu4pUhxHxurVjT_ImhvQrN-ir8jbNM17cFjvMDMCXgp1BgLe1Iu5Ar9P4pQufV5QC_XVBVv6dx72zzpZZtbXGOJKJn3mKCFECysmxgmitLaHA8PgOnWyeXBQM1hzdb1OUboELVRqC6DzN4XYcLReJnwNei8nCXJrA9AFACbux1OjLx5SCs7wqHSsOmoHTfPgUevtnmqE8iDsNS4A",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 30,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 17.65,
+                  "currency": "USD",
+                  "quantity": 125
+                },
+                {
+                  "price": 16.94,
+                  "currency": "USD",
+                  "quantity": 250
+                },
+                {
+                  "price": 16.35,
+                  "currency": "USD",
+                  "quantity": 1250
+                },
+                {
+                  "price": 16.19,
+                  "currency": "USD",
+                  "quantity": 2500
+                },
+                {
+                  "price": 16.02,
+                  "currency": "USD",
+                  "quantity": 6250
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=UYk77sqHwQ_fJwyaLoO0yvKrhUBHsCx7jUuQEanYZnkXhHgWaTDqU3epHLmECM6PoeaKlBRlJ_5hSD1ZK6hDr9gUgiCHeD7ilcO7XIVwZmrcOBLG3H1zixSGyoGkKvlqcs0Pk6Pxsp_yC3_NEocNlVlaiVg_sAyjN8xwt3elQFWb7YxSOFX1GrVakIG7NXs67kJIUIAkgXnqNSL4ZLUMnNwTo82LrLW4lPq4IgCbhaYVaJEFP4K1DPZjYQMP3g6eIGqH",
+              "inventoryLevel": 42,
+              "prices": [
+                {
+                  "price": 46.54,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 42.805,
+                  "currency": "USD",
+                  "quantity": 2
+                },
+                {
+                  "price": 40.75667,
+                  "currency": "USD",
+                  "quantity": 3
+                },
+                {
+                  "price": 38.32,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 36.79429,
+                  "currency": "USD",
+                  "quantity": 7
+                },
+                {
+                  "price": 35.243,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 31.5532,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 30.6042,
+                  "currency": "USD",
+                  "quantity": 50
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "TTI"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=LEWy2_MpOnMamotX4IMs1KWr6ypMYwSS5F0osh5wgq4CUnGf0jG3KYan1THH6bK7Isy6kkFtZrxDzU8Ft2t5M9EcYZolaFnEJLY_5vZQpsgn2Y9Uym7wIQMmsqgRCems1yDBZjnOQ9MAS9dL0iCDi0nom09_RPRhp31sKrKZKpqdLbv4AgwPKMlVTmpNLylojdVe6jYCx9PBzt43DLyQRI_tjVtva_i2YM7-wueIM2NqQaLgmrJY3GYx_L7sxkS-Q-k",
+              "inventoryLevel": 1798,
+              "prices": [
+                {
+                  "price": 23.09,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 22.64,
+                  "currency": "USD",
+                  "quantity": 2
+                },
+                {
+                  "price": 22.19,
+                  "currency": "USD",
+                  "quantity": 3
+                },
+                {
+                  "price": 17.11,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 16.78,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 16.45,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 16.13,
+                  "currency": "USD",
+                  "quantity": 150
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

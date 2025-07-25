@@ -1,0 +1,395 @@
+[
+  {
+    "Qty": "900.00mm",
+    "Preferred MPN": "55PC0111-24-2",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Red - Hook Up Wire, Spec 55, 24 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W1, From: CON1-1, To: POS1-1, Twist: TP1",
+    "nexarData": {
+      "mpn": "55PC0111-24-2",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 24AWG Tin Plated Copper White 600VAC",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=c9cCKNvfs-YTGqQbtDmEglx5Qt7CCmm-ya6lO542bKopWrW0mMn4HC3BMIEyEzv-w6CpVwKWJ8LXudsGKV9N0eQ49_e5UxR3UXVAuqVVTHPr5He31DQ9_t0EGtGbartoLTYX2iL9m8wgp2fJf7hy3DPL67N9czzsjUpNPMyYqFYIdafRx02K9_AUY63AAafausBH2_eE7zysvToKliHAPrV39kMQRU5SApKrIlciyoK1N22wLrKnV5EA1R5AaXBIaVCjIvg",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.35249,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "900.00mm",
+    "Preferred MPN": "55PC0111-24-6",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Blue - Hook Up Wire, Spec 55, 24 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W2, From: CON1-2, To: POS1-2, Twist: TP1",
+    "nexarData": {
+      "mpn": "55PC0111-24-6",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 24AWG Tin Plated Copper White 600VAC",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": []
+    }
+  },
+  {
+    "Qty": "900.00mm",
+    "Preferred MPN": "55PC0111-24-2",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Red - Hook Up Wire, Spec 55, 24 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W3, From: CON1-3, To: POS2-1, Twist: TP2",
+    "nexarData": {
+      "mpn": "55PC0111-24-2",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 24AWG Tin Plated Copper White 600VAC",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=mhL2_eLTF-0VqYR9-p_CWlDtNKsedyx3yxeI7aSEbRFPvnCaHNXPBvrB4tR8uDKFmXbfmZqStvLTG7K_nvUh4ACO6q8qXRyDfIQb9L0H_zUVGE-FrByNcNP6N8HTpcXRhq9E3aggi6EWUF9seXCbW4wGLoK7FwPvx2I5ZIEWXBxOHB689M5_LUaFyPaf5yL2oYTFlTOo8a2y5gc5o-afAxuEHisrZmw7Uc3R_Ko-U_k4uQMTA6wCpFhRZjqNjUUfSPtm3F0",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.35249,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "900.00mm",
+    "Preferred MPN": "55PC0111-24-6",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Blue - Hook Up Wire, Spec 55, 24 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W4, From: CON1-4, To: POS2-2, Twist: TP2",
+    "nexarData": {
+      "mpn": "55PC0111-24-6",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 24AWG Tin Plated Copper White 600VAC",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": []
+    }
+  },
+  {
+    "Qty": "800.00mm",
+    "Preferred MPN": "55PC0111-26-2",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Red - Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W5, From: CON1-5, To: SENSOR-5",
+    "nexarData": {
+      "mpn": "55PC0111-26-2",
+      "genericMpn": "55PC",
+      "shortDescription": "Cable 26 AWG Spec 55PC Tin Plated Copper Modified Radiation Cross-linked ETFE Polymer 600V Red",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=luMIt2tr0gcvaWUAwKGM_qVHZLq7kcxkJAXTS47qlNk3HViQ7-NrQ_hQW7hwR3t0Psj3CgSG5CGKUXC8GiE0IkY5-3aDn_A7KpKaiL1FSUfs7BW58LGaiRHZbHLlbs7k6M_3Lw4xgjCwRlM7FWLgjw5gAtkJ2KKCa4Kalq-J1WxvYv7m4o1YetNxKLOWik0z18lzI-qymkyE6k6UeljH4hO1D3n4HNDkR2uZ6xBy7Dv8NPQ9TyU64yeDq7EeKPuzFFOcTGde",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3783,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "800.00mm",
+    "Preferred MPN": "55PC0111-26-9",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "White - Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W6, From: CON1-6, To: SENSOR-4",
+    "nexarData": {
+      "mpn": "55PC0111-26-9",
+      "genericMpn": "55PC",
+      "shortDescription": "Hook-up Wire 26AWG CL INS LTW600V PRICE PER FT",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "Mouser"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=lB7piVWmgIJZ-u4xXxH2QujacF8lS9kGRxmcqM04Q9ypcKrcY-T6h4qnBVtTPFnSOEfhYPLpu1oI8taDzjn02CeKYNikhPfzcmM7oJFQ5bG68c68-oBTaivJOilqzaDd15LwhxrkoBmTMiAl-Ow2g187DfaTRwLdOD2wHBk_YwzZO6rj88nVgAV3pDGLWbFPsT5Udr5BpARVXN5EeRRM6SXYqprghVndFyUefjbhbCtAulGYb79yaY_tetr-CNi9p0X848CZ",
+              "inventoryLevel": 6465,
+              "prices": [
+                {
+                  "price": 1.2,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 1.07,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.96,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.914,
+                  "currency": "USD",
+                  "quantity": 100
+                },
+                {
+                  "price": 0.914,
+                  "currency": "USD",
+                  "quantity": 1000
+                },
+                {
+                  "price": 0.914,
+                  "currency": "USD",
+                  "quantity": 10000
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=Lk7PU1hPldqROMLvnCCM7suBKYWjHag3uneyvXlp_3sV_OX-eOdQ2_Hcs7ak8zKuWM_zm1eFee5DLf3Y2eGRDOijVc9Qx-dEc7t7o4K0sv1HcCsBL_vnXo7ZEmi2R5ovFRXbLJEv_QkxmqDz1bSkTRsFSahV4h1Xy16W5lWJH25DCJKBy2uPGeVeJrjM-fEoqVxZFC-P_qah3VTs7Ce9Bt9IR0N36Ut6qr83xAJOZuCb2T7x2t1RfEAdk7Zy8P2rK0cKTq4z",
+              "inventoryLevel": 5478,
+              "prices": [
+                {
+                  "price": 1.23,
+                  "currency": "USD",
+                  "quantity": 1
+                },
+                {
+                  "price": 1.17,
+                  "currency": "USD",
+                  "quantity": 2
+                },
+                {
+                  "price": 1.13667,
+                  "currency": "USD",
+                  "quantity": 3
+                },
+                {
+                  "price": 1.098,
+                  "currency": "USD",
+                  "quantity": 5
+                },
+                {
+                  "price": 1.07286,
+                  "currency": "USD",
+                  "quantity": 7
+                },
+                {
+                  "price": 1.046,
+                  "currency": "USD",
+                  "quantity": 10
+                },
+                {
+                  "price": 0.9808,
+                  "currency": "USD",
+                  "quantity": 25
+                },
+                {
+                  "price": 0.9338,
+                  "currency": "USD",
+                  "quantity": 50
+                },
+                {
+                  "price": 0.8889,
+                  "currency": "USD",
+                  "quantity": 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "company": {
+            "name": "Arrow Electronics"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=luk47Y9tlM5MHHar7ZQbho336akegsRIFGlYDPV3TJovoXRYY7S-5cn2zSEZzpoFR3TUCl8ZmB8MEWfLw8H3fF6kARsHkflnobwZjJe_9rA_k0ixzzh09B6CuwQ7CzQVwzM45dlqQtyTQE7p8YtF3QDRcX5Sjd3qS2CoTN-cS1BWUVSjWUMao-0AxteePKpbAZt7R9OZcJMSg7bjEMsp934yAf50WQC-SU_7OICY9lWwKsKhIuM1Ot16r8BAs68IBWZ-k-axCQ",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 1.0257,
+                  "currency": "USD",
+                  "quantity": 5000
+                },
+                {
+                  "price": 0.9745,
+                  "currency": "USD",
+                  "quantity": 10000
+                },
+                {
+                  "price": 0.9435,
+                  "currency": "USD",
+                  "quantity": 25000
+                },
+                {
+                  "price": 0.9155,
+                  "currency": "USD",
+                  "quantity": 50000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "800.00mm",
+    "Preferred MPN": "55PC0111-26-5",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Green - Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W7, From: CON1-7, To: SENSOR-3",
+    "nexarData": null
+  },
+  {
+    "Qty": "800.00mm",
+    "Preferred MPN": "55PC0111-26-6",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Blue - Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W8, From: CON1-8, To: SENSOR-2",
+    "nexarData": {
+      "mpn": "648910-000",
+      "genericMpn": "648910-",
+      "shortDescription": "Cable 26 AWG Spec 55PC Tin Plated Copper Modified Radiation Cross-linked ETFE Polymer 600V Blue",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=mmiBqWTuQqnZ0rHkkE73062SczH-vwsQRODxLG0ESdUVEjjas8tuUtyMtIhyLKekql9xj6RLXxhrzKwoeCvBZ6jB1YkPRel8J-epn82Rzjz06us5bqJpwDOM4L1CdmjmAjXVXOdjaWCewAvwvm4-18Zg4dg_IQ8xj99lxGpATFWnPQV15JQ2ANTJeLnsXV1WpiBaEqu0pgRAbLljRJTCCtnSZpscovkqafYqsmJXBFRbf0-8x-r-5plh9B7i2ZbwQbJ_JO6M",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3783,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Qty": "800.00mm",
+    "Preferred MPN": "55PC0111-26-0",
+    "Preferred Manufacturer": "TE Connectivity",
+    "Preferred Description": "Black - Hook Up Wire, Spec 55, 26 AWG Wire Size",
+    "Alternate MPN": "",
+    "Alternate Manufacturer": "",
+    "Alternate Description": "",
+    "Reference Notes": "Designator: W9, From: CON1-9, To: SENSOR-1",
+    "nexarData": {
+      "mpn": "55PC0111-26-0",
+      "genericMpn": "55PC",
+      "shortDescription": "High Performance Cable 1Conductors 26AWG Tin Plated Copper Black 600Vac",
+      "manufacturer": {
+        "name": "TE Connectivity / Raychem"
+      },
+      "sellers": [
+        {
+          "company": {
+            "name": "DigiKey"
+          },
+          "offers": [
+            {
+              "clickUrl": "https://octopart.com/opatz8j6/a1?t=A8ZXUtA-KG1Bf3WgI3xVmc7Y6VJE2h6KQI5YIHL0EvuXd7x9Uffgf6D-lTQE3xzOIdHIVt0kGo7mPkYF1b8FmhhIy-0xYOiDwjJHsy4hgszGEoopcMsLKx7cEXMO4ITVaJxtgBWuSzEfRhgLfkHpQk8IbQZ4aEz_6i-XhBTYKUAb4Uday11qitbgFRAktdzrgehyjU89M-vKI8URY1OgEpwnUp2X6pWHBBtEwr9O6m1ylnzuDRceH5MC7lS1Jirlvr4QsN8",
+              "inventoryLevel": 0,
+              "prices": [
+                {
+                  "price": 0.3783,
+                  "currency": "USD",
+                  "quantity": 5000
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+]
